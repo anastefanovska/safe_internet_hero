@@ -237,8 +237,8 @@ class _MoreOptionState extends State<_MoreOption> {
       child: GestureDetector(
         onTap: widget.onTap,
         behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
+        // Plain Container for instant hover (see _RailItem) — no fade trail.
+        child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
             color: _hovered ? AppColors.background : Colors.transparent,
@@ -291,8 +291,10 @@ class _RailItemState extends State<_RailItem> {
       onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
+        // Crisp hover: a plain Container so the background tracks the cursor
+        // instantly. An AnimatedContainer would leave the item you're leaving
+        // mid-fade while the next one fades in, showing two greyed items at once.
+        child: Container(
           margin: const EdgeInsets.fromLTRB(10, 2, 10, 2),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(

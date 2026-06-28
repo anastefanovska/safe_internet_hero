@@ -55,6 +55,11 @@ class _QuizScreenState extends State<QuizScreen> {
   bool _answered = false;
   bool _isLoading = true;
   final Map<int, bool> _answeredCorrectly = {};
+  // Snapshot of the just-answered result, kept so the explanation sheet retains
+  // its colour/text while it slides away on "Continue" (avoids a red flash when
+  // _answered flips back to false). Updated only when an answer is selected.
+  bool _resultCorrect = false;
+  String _resultExplanation = '';
   // null = practice/unknown, 0 = no questions in DB, >0 = has questions (all answered)
   int? _topicQuestionCount;
 
@@ -107,6 +112,8 @@ class _QuizScreenState extends State<QuizScreen> {
       _selectedAnswer = index;
       _answered = true;
       _answeredCorrectly[_currentIndex] = isCorrect;
+      _resultCorrect = isCorrect;
+      _resultExplanation = _questions[_currentIndex].explanation;
       if (isCorrect) {
         _score++;
         _totalPoints += _questions[_currentIndex].points;
@@ -555,8 +562,6 @@ class _QuizScreenState extends State<QuizScreen> {
     final question = _questions[_currentIndex];
     final letters = ['A', 'B', 'C', 'D'];
     final progress = (_currentIndex + 1) / _questions.length;
-    final isCorrect =
-        _answered && _selectedAnswer == question.correctIndex;
 
     return Stack(
       children: [
@@ -830,10 +835,10 @@ class _QuizScreenState extends State<QuizScreen> {
           left: 0,
           right: 0,
           child: _ExplanationSheet(
-            isCorrect: isCorrect,
-            explanation: _answered
-                ? _questions[_currentIndex].explanation
-                : '',
+            // Use the snapshot so the sheet keeps its green/red look and text
+            // while it slides away on Continue, instead of flashing red.
+            isCorrect: _resultCorrect,
+            explanation: _resultExplanation,
             isLast: _currentIndex >= _questions.length - 1,
             onContinue: _next,
           ),

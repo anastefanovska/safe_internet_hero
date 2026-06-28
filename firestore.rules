@@ -72,8 +72,10 @@ service cloud.firestore {
     // writable only by admins
     // Questions are world-readable (guests play). Admins write freely.
     // Moderators may ONLY create questions that are pending and authored by
-    // themselves — they can never update/delete (so cannot self-approve) nor
-    // create an already-approved question.
+    // themselves. They may also revise & resubmit a question they authored, but
+    // the result must stay authored by them and re-enter review as 'pending' —
+    // so a moderator can never self-approve, take over someone else's question,
+    // or delete. Admins approve/reject/request-changes.
     match /questions/{questionId} {
       allow read: if true;
       allow create: if isAdmin() || (
@@ -81,7 +83,19 @@ service cloud.firestore {
         && request.resource.data.status == 'pending'
         && request.resource.data.authorId == request.auth.uid
       );
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        isModerator()
+        && resource.data.authorId == request.auth.uid
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.status == 'pending'
+      );
+      // Moderators may delete their OWN submissions to declutter, but never an
+      // approved (live) question — that stays admin-only.
+      allow delete: if isAdmin() || (
+        isModerator()
+        && resource.data.authorId == request.auth.uid
+        && resource.data.status != 'approved'
+      );
     }
 
     match /categories/{categoryId} {

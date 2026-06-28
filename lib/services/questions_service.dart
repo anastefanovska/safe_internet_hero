@@ -152,19 +152,36 @@ class QuestionService {
         .length;
   }
 
-  /// All live questions for the admin manager. Pending moderator submissions
-  /// are excluded here — they have their own review queue
-  /// ([watchPendingSubmissions]).
+  /// All live questions for the admin manager. In-flight moderator submissions
+  /// (pending / needs-revision) are excluded here — they live in the moderation
+  /// queue ([watchAllSubmissions] / [watchPendingSubmissions]).
   Stream<List<QuestionModel>> watchAllQuestions() {
     return _db.collection('questions').snapshots().map((snap) => snap.docs
         .map((doc) =>
             QuestionModel.fromMap({'id': doc.id, ...doc.data()}))
-        .where((q) => q.status != QuestionStatus.pending)
+        .where((q) =>
+            q.status != QuestionStatus.pending &&
+            q.status != QuestionStatus.needsRevision)
         .toList());
   }
 
   Future<void> deleteQuestion(String id) async {
     await _db.collection('questions').doc(id).delete();
+  }
+
+  /// Updates an existing question doc in place. Used by admin edits and by a
+  /// moderator revising their own submission. When [resetForReview] is true the
+  /// question is forced back to `pending` and its prior review feedback cleared
+  /// so a revised submission re-enters the queue with a clean slate.
+  Future<void> updateQuestion(QuestionModel question,
+      {bool resetForReview = false}) async {
+    final data = question.toMap();
+    if (resetForReview) {
+      data['status'] = QuestionStatus.pending.name;
+      data['reviewNote'] = '';
+      data['reviewedBy'] = '';
+    }
+    await _db.collection('questions').doc(question.id).update(data);
   }
 
   /// Creates a moderator submission: forced to `pending`, stamped with the
@@ -197,5 +214,20 @@ class QuestionService {
         .map((snap) => snap.docs
             .map((doc) => QuestionModel.fromMap({'id': doc.id, ...doc.data()}))
             .toList());
+  }
+
+  /// Every moderator submission (any status), for the admin review queue with
+  /// its status filter. A submission is any question stamped with an author —
+  /// admin-authored content has an empty `authorId`. Sorted newest-first in
+  /// Dart (auto-ids are roughly time-ordered) to avoid a composite index.
+  Stream<List<QuestionModel>> watchAllSubmissions() {
+    return _db.collection('questions').snapshots().map((snap) {
+      final list = snap.docs
+          .map((doc) => QuestionModel.fromMap({'id': doc.id, ...doc.data()}))
+          .where((q) => q.authorId.isNotEmpty)
+          .toList();
+      list.sort((a, b) => b.id.compareTo(a.id));
+      return list;
+    });
   }
 }

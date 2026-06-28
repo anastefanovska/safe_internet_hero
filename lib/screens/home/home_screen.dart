@@ -6,9 +6,14 @@ import 'package:provider/provider.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/category_model.dart';
+import '../../models/enums.dart';
+import '../../models/moderator_request_model.dart';
+import '../../models/question_model.dart';
 import '../../models/topic_model.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/moderator_service.dart';
+import '../../services/notification_service.dart';
 import '../../services/questions_service.dart';
 import '../../services/topics_service.dart';
 import '../../widgets/app_avatar.dart';
@@ -18,6 +23,7 @@ import '../moderator/moderator_request_screen.dart';
 import '../moderator/moderator_screen.dart';
 import '../quiz/quiz_screen.dart';
 import '../quiz/topics_screen.dart';
+import '../social/notifications_screen.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -156,31 +162,19 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
 
-      // Admin button
+      // Admin button — badged with the open review workload.
       if (user?.isAdmin == true) ...[
         const SizedBox(height: 8),
-        AppButton(
-          label: 'Admin Panel',
-          variant: AppButtonVariant.secondary,
-          icon: Icons.admin_panel_settings_rounded,
-          onTap: () => Navigator.push(
-              context,
-              AppPageRoute(
-                  builder: (_) => const AdminDashboardScreen())),
-        ).animate(delay: 500.ms).fadeIn(),
+        const _AdminPanelButton().animate(delay: 500.ms).fadeIn(),
       ],
 
-      // Moderator tools (for approved moderators)
+      // Moderator tools (for approved moderators) — badged with the number of
+      // their submissions that need changes.
       if (user?.isModerator == true) ...[
         const SizedBox(height: 8),
-        AppButton(
-          label: 'Moderator Tools',
-          variant: AppButtonVariant.secondary,
-          icon: Icons.shield_rounded,
-          onTap: () => Navigator.push(
-              context,
-              AppPageRoute(builder: (_) => const ModeratorScreen())),
-        ).animate(delay: 500.ms).fadeIn(),
+        _ModeratorToolsButton(userId: user!.id)
+            .animate(delay: 500.ms)
+            .fadeIn(),
       ]
       // Become-a-moderator entry (logged-in, non-admin, non-moderator users)
       else if (!isGuest && user != null && user.isAdmin != true) ...[
@@ -220,9 +214,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ── Hero banner — full-width ─────────────────────────────
-                  _HeroBanner(username: username, streak: streak)
-                      .animate()
-                      .fadeIn(duration: 400.ms),
+                  _HeroBanner(
+                    username: username,
+                    streak: streak,
+                    // Guests are unauthenticated and have no notifications.
+                    notificationsUserId: isGuest ? null : user?.id,
+                    notificationsIsAdmin: user?.isAdmin == true,
+                  ).animate().fadeIn(duration: 400.ms),
 
                   // ── Padded content (centered on all sizes) ───────────────
                   Align(
@@ -276,7 +274,14 @@ class _HomeScreenState extends State<HomeScreen> {
 class _HeroBanner extends StatelessWidget {
   final String username;
   final int streak;
-  const _HeroBanner({required this.username, required this.streak});
+  final String? notificationsUserId;
+  final bool notificationsIsAdmin;
+  const _HeroBanner({
+    required this.username,
+    required this.streak,
+    this.notificationsUserId,
+    this.notificationsIsAdmin = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -421,8 +426,199 @@ class _HeroBanner extends StatelessWidget {
               ],
             ),
           ),
+
+          // Notification bell (top-right) — only for signed-in users.
+          if (notificationsUserId != null)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: _NotificationBell(
+                userId: notificationsUserId!,
+                isAdmin: notificationsIsAdmin,
+              ),
+            ),
         ],
       ),
+    );
+  }
+}
+
+/// Overlays a small red workload count pill on the top-right of a home button.
+class _BadgedButton extends StatelessWidget {
+  final Widget child;
+  final int count;
+  const _BadgedButton({required this.child, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        child,
+        if (count > 0)
+          Positioned(
+            right: -2,
+            top: -8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              constraints: const BoxConstraints(minWidth: 22),
+              decoration: BoxDecoration(
+                color: AppColors.red,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.background, width: 2),
+              ),
+              child: Text(
+                count > 99 ? '99+' : '$count',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 11),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Admin Panel button badged with pending submissions + pending moderator
+/// requests (the admin's open review workload).
+class _AdminPanelButton extends StatelessWidget {
+  const _AdminPanelButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final button = AppButton(
+      label: 'Admin Panel',
+      variant: AppButtonVariant.secondary,
+      icon: Icons.admin_panel_settings_rounded,
+      onTap: () => Navigator.push(
+        context,
+        AppPageRoute(builder: (_) => const AdminDashboardScreen()),
+      ),
+    );
+    return StreamBuilder<List<QuestionModel>>(
+      stream: QuestionService().watchPendingSubmissions(),
+      builder: (context, subSnap) {
+        final subs = subSnap.data?.length ?? 0;
+        return StreamBuilder<List<ModeratorRequestModel>>(
+          stream: ModeratorService().watchPendingRequests(),
+          builder: (context, reqSnap) {
+            final reqs = reqSnap.data?.length ?? 0;
+            return _BadgedButton(count: subs + reqs, child: button);
+          },
+        );
+      },
+    );
+  }
+}
+
+/// Moderator Tools button badged with the count of the moderator's own
+/// submissions that need changes (their actionable items).
+class _ModeratorToolsButton extends StatelessWidget {
+  final String userId;
+  const _ModeratorToolsButton({required this.userId});
+
+  @override
+  Widget build(BuildContext context) {
+    final button = AppButton(
+      label: 'Moderator Tools',
+      variant: AppButtonVariant.secondary,
+      icon: Icons.shield_rounded,
+      onTap: () => Navigator.push(
+        context,
+        AppPageRoute(builder: (_) => const ModeratorScreen()),
+      ),
+    );
+    return StreamBuilder<List<QuestionModel>>(
+      stream: QuestionService().watchSubmissionsByAuthor(userId),
+      builder: (context, snap) {
+        final count = (snap.data ?? const <QuestionModel>[])
+            .where((q) => q.status == QuestionStatus.needsRevision)
+            .length;
+        return _BadgedButton(count: count, child: button);
+      },
+    );
+  }
+}
+
+/// White notification bell with an unread-count badge, sitting over the hero
+/// banner. Opens the (previously unreachable) notifications screen.
+class _NotificationBell extends StatelessWidget {
+  final String userId;
+
+  /// Admins get no notification docs of their own, so their bell also surfaces
+  /// the live review queue (pending requests + submissions) — this is what makes
+  /// it light up when new questions come in. It reflects work still waiting, so
+  /// it clears as items are approved/rejected/deleted, not merely on open.
+  final bool isAdmin;
+  const _NotificationBell({required this.userId, this.isAdmin = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<int>(
+      stream: NotificationService().watchUnreadCount(userId),
+      builder: (context, unreadSnap) {
+        final unread = unreadSnap.data ?? 0;
+        if (!isAdmin) return _bell(context, unread);
+        return StreamBuilder<List<ModeratorRequestModel>>(
+          stream: ModeratorService().watchPendingRequests(),
+          builder: (context, reqSnap) {
+            return StreamBuilder<List<QuestionModel>>(
+              stream: QuestionService().watchPendingSubmissions(),
+              builder: (context, subSnap) {
+                final total = unread +
+                    (reqSnap.data?.length ?? 0) +
+                    (subSnap.data?.length ?? 0);
+                return _bell(context, total);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _bell(BuildContext context, int count) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        IconButton(
+          tooltip: 'Notifications',
+          icon: const Icon(Icons.notifications_rounded,
+              color: Colors.white, size: 24),
+          onPressed: () => Navigator.push(
+            context,
+            AppPageRoute(builder: (_) => const NotificationsScreen()),
+          ),
+        ),
+        if (count > 0)
+          Positioned(
+            right: 4,
+            top: 4,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+              decoration: BoxDecoration(
+                color: AppColors.red,
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(color: Colors.white, width: 1.5),
+              ),
+              child: Center(
+                child: Text(
+                  count > 9 ? '9+' : '$count',
+                  style: GoogleFonts.nunito(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    height: 1.1,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

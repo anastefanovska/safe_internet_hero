@@ -19,7 +19,13 @@ extension ModeratorStatusExtension on ModeratorStatus {
 
 /// Review state of a quiz question. Legacy questions have no `status` field, so
 /// they default to [approved] and stay visible to learners.
-enum QuestionStatus { pending, approved, rejected }
+///
+/// - [pending] — submitted by a moderator, awaiting admin review.
+/// - [approved] — live in quizzes (the only state learners ever see).
+/// - [rejected] — declined by an admin; final, not editable by the author.
+/// - [needsRevision] — an admin asked for changes; the author can edit and
+///   resubmit (which returns it to [pending]). Carries `reviewNote` feedback.
+enum QuestionStatus { pending, approved, rejected, needsRevision }
 
 extension QuestionStatusExtension on QuestionStatus {
   static QuestionStatus fromString(String value) {

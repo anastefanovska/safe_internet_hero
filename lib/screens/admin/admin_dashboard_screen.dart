@@ -1,6 +1,10 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
+import '../../models/moderator_request_model.dart';
+import '../../models/question_model.dart';
+import '../../services/moderator_service.dart';
+import '../../services/questions_service.dart';
 import '../../widgets/admin_widgets.dart';
 import 'import_data_screen.dart';
 import 'manage_categories_topics_screen.dart';
@@ -103,14 +107,7 @@ class AdminDashboardScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                AdminDashboardCard(
-                  title: 'Moderators',
-                  subtitle:
-                      'Review moderator requests and approve submitted questions.',
-                  icon: Icons.shield_rounded,
-                  onTap: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => const ManageModeratorsScreen())),
-                ),
+                const _ModeratorsCard(),
                 const SizedBox(height: 24),
                 Text(
                   'Tools',
@@ -163,6 +160,40 @@ class AdminDashboardScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The Moderators dashboard card, badged with the admin's open workload:
+/// pending submissions + pending moderator requests. Two streams are nested
+/// (no rxdart in the project) and summed.
+class _ModeratorsCard extends StatelessWidget {
+  const _ModeratorsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<QuestionModel>>(
+      stream: QuestionService().watchPendingSubmissions(),
+      builder: (context, subSnap) {
+        final pendingSubs = subSnap.data?.length ?? 0;
+        return StreamBuilder<List<ModeratorRequestModel>>(
+          stream: ModeratorService().watchPendingRequests(),
+          builder: (context, reqSnap) {
+            final pendingReqs = reqSnap.data?.length ?? 0;
+            return AdminDashboardCard(
+              title: 'Moderators',
+              subtitle:
+                  'Review moderator requests and approve submitted questions.',
+              icon: Icons.shield_rounded,
+              badgeCount: pendingSubs + pendingReqs,
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const ManageModeratorsScreen())),
+            );
+          },
+        );
+      },
     );
   }
 }

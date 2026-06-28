@@ -12,7 +12,10 @@ import '../../services/questions_service.dart';
 import '../../widgets/admin_widgets.dart';
 
 class ManageModeratorsScreen extends StatefulWidget {
-  const ManageModeratorsScreen({super.key});
+  /// Tab to open on (0 = Requests, 1 = Submissions). Lets the notification
+  /// review-queue cards deep-link to the relevant tab.
+  final int initialTab;
+  const ManageModeratorsScreen({super.key, this.initialTab = 0});
 
   @override
   State<ManageModeratorsScreen> createState() => _ManageModeratorsScreenState();
@@ -25,7 +28,8 @@ class _ManageModeratorsScreenState extends State<ManageModeratorsScreen>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 2, vsync: this);
+    _tabs = TabController(
+        length: 2, vsync: this, initialIndex: widget.initialTab);
   }
 
   @override
@@ -40,10 +44,25 @@ class _ManageModeratorsScreenState extends State<ManageModeratorsScreen>
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          AdminHeader(
-            title: 'Moderators',
-            tabController: _tabs,
-            tabs: const ['Requests', 'Submissions'],
+          // Live tab badges so an admin sees at a glance whether the pending
+          // work is requests or submissions.
+          StreamBuilder<List<ModeratorRequestModel>>(
+            stream: _service.watchPendingRequests(),
+            builder: (context, reqSnap) {
+              final reqCount = reqSnap.data?.length ?? 0;
+              return StreamBuilder<List<QuestionModel>>(
+                stream: QuestionService().watchPendingSubmissions(),
+                builder: (context, subSnap) {
+                  final subCount = subSnap.data?.length ?? 0;
+                  return AdminHeader(
+                    title: 'Moderators',
+                    tabController: _tabs,
+                    tabs: const ['Requests', 'Submissions'],
+                    tabBadges: [reqCount, subCount],
+                  );
+                },
+              );
+            },
           ),
           Expanded(
             child: Align(
@@ -78,6 +97,81 @@ void _snack(BuildContext context, String msg, {bool isError = false}) {
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
   ));
+}
+
+/// A confirm dialog that collects a reason the user will see. Used for both
+/// rejecting (reason optional) and requesting changes (reason required — the
+/// action button stays disabled until something is typed). Returns null if
+/// cancelled, otherwise the (trimmed-by-caller) reason text.
+Future<String?> _reasonDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String actionLabel,
+  required Color actionColor,
+  required bool requireReason,
+}) async {
+  final controller = TextEditingController();
+  final result = await showDialog<String>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setLocal) {
+        final canSubmit =
+            !requireReason || controller.text.trim().isNotEmpty;
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(title,
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w800)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(message,
+                  style: GoogleFonts.nunito(
+                      color: AppColors.textSecondary, fontSize: 13)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                maxLines: 3,
+                autofocus: true,
+                onChanged: (_) => setLocal(() {}),
+                style: GoogleFonts.nunito(fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: requireReason
+                      ? 'What needs to change? (shown to the author)'
+                      : 'Optional reason (shown to the user)',
+                  hintStyle: GoogleFonts.nunito(
+                      color: AppColors.textLight, fontSize: 12.5),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('Cancel',
+                    style:
+                        GoogleFonts.nunito(color: AppColors.textSecondary))),
+            TextButton(
+                onPressed: canSubmit
+                    ? () => Navigator.pop(ctx, controller.text)
+                    : null,
+                child: Text(actionLabel,
+                    style: GoogleFonts.nunito(
+                        color: canSubmit ? actionColor : AppColors.textLight,
+                        fontWeight: FontWeight.w700))),
+          ],
+        );
+      },
+    ),
+  );
+  controller.dispose();
+  return result;
 }
 
 class _SectionLabel extends StatelessWidget {
@@ -145,18 +239,33 @@ class _RequestsTab extends StatelessWidget {
   String _adminUid(BuildContext context) =>
       context.read<AuthProvider>().user?.id ?? '';
 
-  Future<void> _review(BuildContext context, ModeratorRequestModel req,
-      {required bool approve}) async {
+  Future<void> _approve(
+      BuildContext context, ModeratorRequestModel req) async {
     final adminUid = _adminUid(context);
     try {
-      if (approve) {
-        await _service.approveRequest(req, adminUid);
-      } else {
-        await _service.rejectRequest(req, adminUid);
-      }
+      await _service.approveRequest(req, adminUid);
       if (!context.mounted) return;
-      _snack(context,
-          approve ? '${req.username} is now a moderator' : 'Request rejected');
+      _snack(context, '${req.username} is now a moderator');
+    } catch (e) {
+      if (!context.mounted) return;
+      _snack(context, 'Error: $e', isError: true);
+    }
+  }
+
+  Future<void> _reject(
+      BuildContext context, ModeratorRequestModel req) async {
+    final reason = await _reasonDialog(context,
+        title: 'Reject ${req.username}?',
+        message: 'They\'ll be notified and can apply again later.',
+        actionLabel: 'Reject',
+        actionColor: AppColors.red,
+        requireReason: false);
+    if (reason == null || !context.mounted) return;
+    final adminUid = _adminUid(context);
+    try {
+      await _service.rejectRequest(req, adminUid, reason: reason);
+      if (!context.mounted) return;
+      _snack(context, 'Request rejected');
     } catch (e) {
       if (!context.mounted) return;
       _snack(context, 'Error: $e', isError: true);
@@ -227,8 +336,8 @@ class _RequestsTab extends StatelessWidget {
               children: reqs
                   .map((r) => _RequestCard(
                         request: r,
-                        onApprove: () => _review(context, r, approve: true),
-                        onReject: () => _review(context, r, approve: false),
+                        onApprove: () => _approve(context, r),
+                        onReject: () => _reject(context, r),
                       ))
                   .toList(),
             );
@@ -294,6 +403,16 @@ class _RequestCard extends StatelessWidget {
                     fontSize: 14,
                     color: AppColors.textPrimary)),
           ),
+          Row(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(Icons.schedule_rounded,
+                color: AppColors.textLight, size: 13),
+            const SizedBox(width: 4),
+            Text('Requested ${timeAgo(request.createdAt)}',
+                style: GoogleFonts.nunito(
+                    color: AppColors.textLight,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700)),
+          ]),
         ]),
         const SizedBox(height: 12),
         Row(children: [
@@ -352,20 +471,105 @@ class _ModeratorCard extends StatelessWidget {
 
 // ─── Submissions tab ─────────────────────────────────────────────────────────
 
-class _SubmissionsTab extends StatelessWidget {
+/// Label + colour for a submission status (admin side).
+(String, Color) _subStatusStyle(QuestionStatus s) => switch (s) {
+      QuestionStatus.approved => ('APPROVED', AppColors.green),
+      QuestionStatus.rejected => ('REJECTED', AppColors.red),
+      QuestionStatus.pending => ('PENDING', AppColors.orange),
+      QuestionStatus.needsRevision => ('NEEDS CHANGES', AppColors.blue),
+    };
+
+class _SubmissionsTab extends StatefulWidget {
   const _SubmissionsTab();
 
-  Future<void> _review(BuildContext context, QuestionModel q,
-      {required bool approve}) async {
+  @override
+  State<_SubmissionsTab> createState() => _SubmissionsTabState();
+}
+
+class _SubmissionsTabState extends State<_SubmissionsTab> {
+  // Open on the review queue; admins switch to see decided submissions.
+  QuestionStatus _filter = QuestionStatus.pending;
+
+  Future<void> _approve(BuildContext context, QuestionModel q) async {
     final adminUid = context.read<AuthProvider>().user?.id ?? '';
     try {
-      if (approve) {
-        await _service.approveSubmission(q, adminUid);
-      } else {
-        await _service.rejectSubmission(q, adminUid);
-      }
+      await _service.approveSubmission(q, adminUid);
       if (!context.mounted) return;
-      _snack(context, approve ? 'Question approved & live' : 'Submission rejected');
+      _snack(context, 'Question approved & live');
+    } catch (e) {
+      if (!context.mounted) return;
+      _snack(context, 'Error: $e', isError: true);
+    }
+  }
+
+  Future<void> _reject(BuildContext context, QuestionModel q) async {
+    final reason = await _reasonDialog(context,
+        title: 'Reject this question?',
+        message: 'It won\'t go live and the author can\'t edit it. '
+            'They\'ll be notified.',
+        actionLabel: 'Reject',
+        actionColor: AppColors.red,
+        requireReason: false);
+    if (reason == null || !context.mounted) return;
+    final adminUid = context.read<AuthProvider>().user?.id ?? '';
+    try {
+      await _service.rejectSubmission(q, adminUid, reason: reason);
+      if (!context.mounted) return;
+      _snack(context, 'Submission rejected');
+    } catch (e) {
+      if (!context.mounted) return;
+      _snack(context, 'Error: $e', isError: true);
+    }
+  }
+
+  Future<void> _requestChanges(BuildContext context, QuestionModel q) async {
+    final reason = await _reasonDialog(context,
+        title: 'Request changes',
+        message: 'The author keeps the question and can edit & resubmit it.',
+        actionLabel: 'Send',
+        actionColor: AppColors.blue,
+        requireReason: true);
+    if (reason == null || !context.mounted) return;
+    final adminUid = context.read<AuthProvider>().user?.id ?? '';
+    try {
+      await _service.requestChangesSubmission(q, adminUid, reason);
+      if (!context.mounted) return;
+      _snack(context, 'Sent back for changes');
+    } catch (e) {
+      if (!context.mounted) return;
+      _snack(context, 'Error: $e', isError: true);
+    }
+  }
+
+  Future<void> _delete(BuildContext context, QuestionModel q) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Delete submission?',
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w800)),
+        content: Text(
+            'This permanently removes the submission. This can\'t be undone.',
+            style: GoogleFonts.nunito(
+                color: AppColors.textSecondary, fontSize: 13)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text('Cancel',
+                  style: GoogleFonts.nunito(color: AppColors.textSecondary))),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text('Delete',
+                  style: GoogleFonts.nunito(
+                      color: AppColors.red, fontWeight: FontWeight.w700))),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+    try {
+      await QuestionService().deleteQuestion(q.id);
+      if (!context.mounted) return;
+      _snack(context, 'Submission deleted');
     } catch (e) {
       if (!context.mounted) return;
       _snack(context, 'Error: $e', isError: true);
@@ -375,30 +579,108 @@ class _SubmissionsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<QuestionModel>>(
-      stream: QuestionService().watchPendingSubmissions(),
+      stream: QuestionService().watchAllSubmissions(),
       builder: (context, snap) {
         if (!snap.hasData) {
           return const Center(
               child: CircularProgressIndicator(color: AppColors.blue));
         }
-        final items = snap.data!;
-        if (items.isEmpty) {
-          return const AdminEmptyState(
-            icon: Icons.inbox_rounded,
-            title: 'No submissions to review',
-            subtitle: 'Questions submitted by moderators show up here',
-          );
-        }
-        return ListView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
-          itemCount: items.length,
-          itemBuilder: (context, i) => _SubmissionCard(
-            question: items[i],
-            onApprove: () => _review(context, items[i], approve: true),
-            onReject: () => _review(context, items[i], approve: false),
-          ),
+        final all = snap.data!;
+        final items = all.where((q) => q.status == _filter).toList();
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: _SubFilterBar(
+                all: all,
+                selected: _filter,
+                onChanged: (f) => setState(() => _filter = f),
+              ),
+            ),
+            Expanded(
+              child: items.isEmpty
+                  ? AdminEmptyState(
+                      icon: Icons.inbox_rounded,
+                      title: 'Nothing here',
+                      subtitle: _filter == QuestionStatus.pending
+                          ? 'New moderator submissions will appear here'
+                          : 'No ${_subStatusStyle(_filter).$1.toLowerCase()} '
+                              'submissions',
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+                      itemCount: items.length,
+                      itemBuilder: (context, i) => _SubmissionCard(
+                        question: items[i],
+                        onApprove: () => _approve(context, items[i]),
+                        onReject: () => _reject(context, items[i]),
+                        onRequestChanges: () =>
+                            _requestChanges(context, items[i]),
+                        // Approved questions are live content — delete them from
+                        // the Questions manager, not here.
+                        onDelete: items[i].status == QuestionStatus.approved
+                            ? null
+                            : () => _delete(context, items[i]),
+                      ),
+                    ),
+            ),
+          ],
         );
       },
+    );
+  }
+}
+
+/// Status filter chips with live counts for the submissions queue.
+class _SubFilterBar extends StatelessWidget {
+  final List<QuestionModel> all;
+  final QuestionStatus selected;
+  final ValueChanged<QuestionStatus> onChanged;
+  const _SubFilterBar(
+      {required this.all, required this.selected, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    const order = [
+      QuestionStatus.pending,
+      QuestionStatus.needsRevision,
+      QuestionStatus.approved,
+      QuestionStatus.rejected,
+    ];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: order.map((s) {
+          final (label, color) = _subStatusStyle(s);
+          final count = all.where((q) => q.status == s).length;
+          final active = selected == s;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: () => onChanged(s),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                decoration: BoxDecoration(
+                  color: active ? color.withValues(alpha: 0.12) : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: active ? color : AppColors.border,
+                      width: active ? 1.8 : 1.5),
+                ),
+                child: Text(
+                  '${label[0]}${label.substring(1).toLowerCase()} ($count)',
+                  style: GoogleFonts.nunito(
+                      color: active ? color : AppColors.textSecondary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12.5),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 }
@@ -407,10 +689,16 @@ class _SubmissionCard extends StatelessWidget {
   final QuestionModel question;
   final VoidCallback onApprove;
   final VoidCallback onReject;
+  final VoidCallback onRequestChanges;
+
+  /// Null for approved (live) questions, which can't be deleted from here.
+  final VoidCallback? onDelete;
   const _SubmissionCard({
     required this.question,
     required this.onApprove,
     required this.onReject,
+    required this.onRequestChanges,
+    required this.onDelete,
   });
 
   @override
@@ -423,6 +711,8 @@ class _SubmissionCard extends StatelessWidget {
             : AppColors.red;
     final diffLabel =
         q.difficulty.name[0].toUpperCase() + q.difficulty.name.substring(1);
+    final (statusLabel, statusColor) = _subStatusStyle(q.status);
+    final isPending = q.status == QuestionStatus.pending;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -438,7 +728,17 @@ class _SubmissionCard extends StatelessWidget {
           AdminBadge(
               text: q.type == QuestionType.trueFalse ? 'T/F' : 'MCQ',
               color: AppColors.blue),
-          const AdminBadge(text: 'PENDING', color: AppColors.orange),
+          AdminBadge(text: statusLabel, color: statusColor),
+          const Spacer(),
+          if (onDelete != null)
+            IconButton(
+              tooltip: 'Delete',
+              icon: const Icon(Icons.delete_outline_rounded,
+                  color: AppColors.textLight, size: 20),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: onDelete,
+            ),
         ]),
         const SizedBox(height: 8),
         Text(q.text,
@@ -446,28 +746,96 @@ class _SubmissionCard extends StatelessWidget {
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
                 color: AppColors.textPrimary)),
-        const SizedBox(height: 4),
-        Text(
-          'Correct: ${q.options.isNotEmpty ? q.options[q.correctIndex] : ''}',
-          style: GoogleFonts.nunito(
-              color: AppColors.green, fontSize: 12, fontWeight: FontWeight.w600),
-        ),
+        const SizedBox(height: 8),
+        // Full option list so the reviewer can judge every choice, not just the
+        // correct one. The correct answer is highlighted green.
+        for (var i = 0; i < q.options.length; i++)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Icon(
+                i == q.correctIndex
+                    ? Icons.check_circle_rounded
+                    : Icons.radio_button_unchecked,
+                size: 15,
+                color: i == q.correctIndex
+                    ? AppColors.green
+                    : AppColors.textLight,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(q.options[i],
+                    style: GoogleFonts.nunito(
+                        fontSize: 12.5,
+                        height: 1.3,
+                        fontWeight: i == q.correctIndex
+                            ? FontWeight.w800
+                            : FontWeight.w600,
+                        color: i == q.correctIndex
+                            ? AppColors.green
+                            : AppColors.textSecondary)),
+              ),
+            ]),
+          ),
+        if (q.explanation.trim().isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.blueLight,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text('Explanation: ${q.explanation}',
+                style: GoogleFonts.nunito(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    height: 1.35)),
+          ),
+        ],
+        // Prior decision feedback (for reviewed items shown via the filter).
+        if (q.reviewNote.trim().isNotEmpty && !isPending) ...[
+          const SizedBox(height: 6),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: statusColor.withValues(alpha: 0.25)),
+            ),
+            child: Text('Feedback sent: ${q.reviewNote}',
+                style: GoogleFonts.nunito(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    height: 1.35)),
+          ),
+        ],
+        const SizedBox(height: 6),
         Text('${q.categoryId} / ${q.topicId}',
             style: GoogleFonts.nunito(color: AppColors.textLight, fontSize: 11)),
-        const SizedBox(height: 12),
-        Row(children: [
-          _ActionButton(
-              label: 'Approve',
-              color: AppColors.green,
-              icon: Icons.check_rounded,
-              onTap: onApprove),
-          const SizedBox(width: 8),
-          _ActionButton(
-              label: 'Reject',
-              color: AppColors.red,
-              icon: Icons.close_rounded,
-              onTap: onReject),
-        ]),
+        // Actions only for items in the review queue. Decided items are
+        // read-only history.
+        if (isPending) ...[
+          const SizedBox(height: 12),
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            _ActionButton(
+                label: 'Approve',
+                color: AppColors.green,
+                icon: Icons.check_rounded,
+                onTap: onApprove),
+            _ActionButton(
+                label: 'Request changes',
+                color: AppColors.blue,
+                icon: Icons.rate_review_rounded,
+                onTap: onRequestChanges),
+            _ActionButton(
+                label: 'Reject',
+                color: AppColors.red,
+                icon: Icons.close_rounded,
+                onTap: onReject),
+          ]),
+        ],
       ]),
     );
   }

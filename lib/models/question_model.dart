@@ -22,6 +22,10 @@ class QuestionModel {
   /// uid of the admin who approved/rejected a moderator submission.
   final String reviewedBy;
 
+  /// Reviewer feedback shown to the author when a submission is rejected or
+  /// marked [QuestionStatus.needsRevision]. Empty for approved/legacy questions.
+  final String reviewNote;
+
   QuestionModel({
     required this.id,
     required this.categoryId,
@@ -36,6 +40,7 @@ class QuestionModel {
     this.status = QuestionStatus.approved,
     this.authorId = '',
     this.reviewedBy = '',
+    this.reviewNote = '',
   });
 
   factory QuestionModel.fromMap(Map<String, dynamic> map) {
@@ -60,6 +65,7 @@ class QuestionModel {
           QuestionStatusExtension.fromString(map['status'] ?? 'approved'),
       authorId: map['authorId'] ?? '',
       reviewedBy: map['reviewedBy'] ?? '',
+      reviewNote: map['reviewNote'] ?? '',
     );
   }
 
@@ -78,6 +84,7 @@ class QuestionModel {
       'status': status.name,
       'authorId': authorId,
       'reviewedBy': reviewedBy,
+      'reviewNote': reviewNote,
     };
   }
 }

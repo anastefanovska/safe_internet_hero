@@ -2,20 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/app_notification_model.dart';
+import '../../models/moderator_request_model.dart';
+import '../../models/question_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/friend_service.dart';
+import '../../services/moderator_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/questions_service.dart';
+import '../admin/manage_moderators_screen.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
+
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Clear the unread badge as soon as the user opens the screen.
+    final user = context.read<AuthProvider>().user;
+    if (user != null) {
+      NotificationService().markAllRead(user.id);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
-    final desktop = isDesktop(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -31,7 +51,9 @@ class NotificationsScreen extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                   child: Row(
                     children: [
-                      if (!desktop)
+                      // The bell pushes this screen as a route on every layout,
+                      // so always offer a way back when one exists.
+                      if (Navigator.of(context).canPop())
                         IconButton(
                           icon: const Icon(Icons.arrow_back_ios_rounded,
                               color: AppColors.textPrimary, size: 20),
@@ -48,7 +70,9 @@ class NotificationsScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (!desktop) const SizedBox(width: 48),
+                      // Balance the leading arrow so the title stays centered.
+                      if (Navigator.of(context).canPop())
+                        const SizedBox(width: 48),
                     ],
                   ),
                 ),
@@ -68,12 +92,16 @@ class NotificationsScreen extends StatelessWidget {
                         builder: (context, snap) {
                           final notifs = snap.data ?? const [];
                           final friendReqs = user.friendRequests;
-                          if (notifs.isEmpty && friendReqs.isEmpty) {
+                          final isAdmin = user.isAdmin == true;
+                          // Admins are the deciders, so no notification doc ever
+                          // targets them — their "feed" is the live review queue.
+                          if (notifs.isEmpty && friendReqs.isEmpty && !isAdmin) {
                             return const _EmptyState();
                           }
                           return ListView(
                             padding: const EdgeInsets.all(16),
                             children: [
+                              if (isAdmin) const _AdminQueueSection(),
                               ...notifs.map((n) => _NotificationCard(
                                   notification: n)),
                               ...friendReqs.map((fromId) =>
@@ -124,6 +152,149 @@ class _EmptyState extends StatelessWidget {
             style: TextStyle(color: AppColors.textSecondary),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Admin-only live "Review queue": tappable cards for pending moderator
+/// requests and pending question submissions, each opening the moderators
+/// screen on the right tab. Computed from streams admins can already read, so
+/// no notification docs (or rule changes) are needed.
+class _AdminQueueSection extends StatelessWidget {
+  const _AdminQueueSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<ModeratorRequestModel>>(
+      stream: ModeratorService().watchPendingRequests(),
+      builder: (context, reqSnap) {
+        final reqCount = reqSnap.data?.length ?? 0;
+        return StreamBuilder<List<QuestionModel>>(
+          stream: QuestionService().watchPendingSubmissions(),
+          builder: (context, subSnap) {
+            final subCount = subSnap.data?.length ?? 0;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10, left: 2),
+                  child: Text('REVIEW QUEUE',
+                      style: GoogleFonts.nunito(
+                          color: AppColors.textSecondary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8)),
+                ),
+                if (reqCount == 0 && subCount == 0)
+                  _QueueCard(
+                    icon: Icons.check_circle_rounded,
+                    color: AppColors.green,
+                    title: 'All caught up',
+                    subtitle: 'No moderator requests or submissions to review',
+                    onTap: null,
+                  )
+                else ...[
+                  if (reqCount > 0)
+                    _QueueCard(
+                      icon: Icons.how_to_reg_rounded,
+                      color: AppColors.blue,
+                      title: '$reqCount moderator '
+                          '${reqCount == 1 ? 'request' : 'requests'} to review',
+                      subtitle: 'Tap to open the Requests tab',
+                      onTap: () => _open(context, 0),
+                    ),
+                  if (subCount > 0)
+                    _QueueCard(
+                      icon: Icons.inbox_rounded,
+                      color: AppColors.orange,
+                      title: '$subCount question '
+                          '${subCount == 1 ? 'submission' : 'submissions'} '
+                          'to review',
+                      subtitle: 'Tap to open the Submissions tab',
+                      onTap: () => _open(context, 1),
+                    ),
+                ],
+                const SizedBox(height: 6),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _open(BuildContext context, int tab) => Navigator.push(
+        context,
+        AppPageRoute(
+            builder: (_) => ManageModeratorsScreen(initialTab: tab)),
+      );
+}
+
+class _QueueCard extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final VoidCallback? onTap;
+  const _QueueCard({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.14),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: GoogleFonts.nunito(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14)),
+                const SizedBox(height: 2),
+                Text(subtitle,
+                    style: GoogleFonts.nunito(
+                        color: AppColors.textSecondary, fontSize: 12.5)),
+              ],
+            ),
+          ),
+          if (onTap != null)
+            const Icon(Icons.chevron_right_rounded,
+                color: AppColors.textLight, size: 22),
+        ]),
       ),
     );
   }
@@ -189,6 +360,12 @@ class _NotificationCard extends StatelessWidget {
                         color: AppColors.textSecondary,
                         fontSize: 12.5,
                         height: 1.35)),
+                const SizedBox(height: 4),
+                Text(timeAgo(notification.createdAt),
+                    style: GoogleFonts.nunito(
+                        color: AppColors.textLight,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700)),
               ],
             ),
           ),

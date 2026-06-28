@@ -21,12 +21,17 @@ class AdminHeader extends StatelessWidget {
   final TabController? tabController;
   final List<String>? tabs;
 
+  /// Optional per-tab count badges (parallel to [tabs]). A red pill is shown on
+  /// a tab when its count is greater than zero.
+  final List<int>? tabBadges;
+
   const AdminHeader({
     super.key,
     required this.title,
     this.trailing,
     this.tabController,
     this.tabs,
+    this.tabBadges,
   });
 
   @override
@@ -80,11 +85,53 @@ class AdminHeader extends StatelessWidget {
               indicatorColor: AppColors.blue,
               indicatorWeight: 2.5,
               dividerColor: Colors.transparent,
-              tabs: tabs!.map((t) => Tab(text: t)).toList(),
+              tabs: [
+                for (var i = 0; i < tabs!.length; i++)
+                  Tab(
+                    child: _AdminTabLabel(
+                      text: tabs![i],
+                      badge: (tabBadges != null && i < tabBadges!.length)
+                          ? tabBadges![i]
+                          : 0,
+                    ),
+                  ),
+              ],
             ),
         ],
       ),
     );
+  }
+}
+
+/// A tab label that inherits the TabBar's animated colour and optionally shows
+/// a red count pill (e.g. number of pending items in that tab).
+class _AdminTabLabel extends StatelessWidget {
+  final String text;
+  final int badge;
+  const _AdminTabLabel({required this.text, required this.badge});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      Text(text),
+      if (badge > 0) ...[
+        const SizedBox(width: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+          constraints: const BoxConstraints(minWidth: 18),
+          decoration: BoxDecoration(
+            color: AppColors.red,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            badge > 99 ? '99+' : '$badge',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.nunito(
+                color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10),
+          ),
+        ),
+      ],
+    ]);
   }
 }
 
@@ -681,12 +728,18 @@ class AdminDashboardCard extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final VoidCallback onTap;
+
+  /// Optional workload badge (e.g. number of items needing attention). When
+  /// greater than zero, a red count pill is shown next to the title.
+  final int badgeCount;
+
   const AdminDashboardCard({
     super.key,
     required this.title,
     required this.subtitle,
     required this.icon,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   @override
@@ -721,11 +774,19 @@ class AdminDashboardCard extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text(title,
-                    style: GoogleFonts.nunito(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16)),
+                Row(children: [
+                  Flexible(
+                    child: Text(title,
+                        style: GoogleFonts.nunito(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16)),
+                  ),
+                  if (badgeCount > 0) ...[
+                    const SizedBox(width: 8),
+                    AdminCountBadge(count: badgeCount),
+                  ],
+                ]),
                 const SizedBox(height: 3),
                 Text(subtitle,
                     style: GoogleFonts.nunito(
@@ -740,4 +801,28 @@ class AdminDashboardCard extends StatelessWidget {
       ),
     );
   }
+}
+
+// ─── AdminCountBadge ──────────────────────────────────────────────────────────
+// Small red pill showing a workload count (pending reviews, etc.).
+
+class AdminCountBadge extends StatelessWidget {
+  final int count;
+  const AdminCountBadge({super.key, required this.count});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+        constraints: const BoxConstraints(minWidth: 20),
+        decoration: BoxDecoration(
+          color: AppColors.red,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          count > 99 ? '99+' : '$count',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.nunito(
+              color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11),
+        ),
+      );
 }

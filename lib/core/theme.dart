@@ -122,6 +122,22 @@ const double kDesktopPanelMargin = 12.0;
 bool isDesktop(BuildContext context) =>
     MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
 
+/// Compact relative time ("just now", "5m ago", "3d ago", "Jan 4") used by
+/// notification cards and the moderator review queue. Falls back to a short
+/// date for anything older than a week.
+String timeAgo(DateTime time) {
+  final diff = DateTime.now().difference(time);
+  if (diff.inSeconds < 60) return 'just now';
+  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+  if (diff.inHours < 24) return '${diff.inHours}h ago';
+  if (diff.inDays < 7) return '${diff.inDays}d ago';
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  return '${months[time.month - 1]} ${time.day}';
+}
+
 class AppTheme {
   AppTheme._();
 

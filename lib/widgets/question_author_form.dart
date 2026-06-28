@@ -20,10 +20,20 @@ class QuestionAuthorForm extends StatefulWidget {
   final bool submitAsPending;
   final String authorId;
 
+  /// When provided, the form opens pre-filled with this question and saves by
+  /// updating it in place instead of creating a new one. Used by a moderator
+  /// revising a `needsRevision` submission (resubmits it as `pending`).
+  final QuestionModel? editQuestion;
+
+  /// Called after a successful in-place update (e.g. to pop the edit screen).
+  final VoidCallback? onSubmitted;
+
   const QuestionAuthorForm({
     super.key,
     this.submitAsPending = false,
     this.authorId = '',
+    this.editQuestion,
+    this.onSubmitted,
   });
 
   @override
@@ -53,6 +63,7 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
   int _correctIndex = 0;
 
   bool get _pending => widget.submitAsPending;
+  bool get _isEdit => widget.editQuestion != null;
 
   @override
   void initState() {
@@ -75,12 +86,19 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
     try {
       final cats = await _topicsService.getCategories();
       if (!mounted) return;
+      final edit = widget.editQuestion;
+      if (edit != null) _prefillFromEdit(edit);
+      // When editing, keep the question's own category if it still exists.
+      final initialCat = edit != null &&
+              cats.any((c) => c.id == edit.categoryId)
+          ? edit.categoryId
+          : (cats.isNotEmpty ? cats.first.id : null);
       setState(() {
         _categories = cats;
-        _categoryId = cats.isNotEmpty ? cats.first.id : null;
+        _categoryId = initialCat;
       });
       if (_categoryId != null) {
-        await _loadTopics(_categoryId!);
+        await _loadTopics(_categoryId!, preselect: edit?.topicId);
       } else {
         if (mounted) setState(() => _loading = false);
       }
@@ -89,14 +107,32 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
     }
   }
 
-  Future<void> _loadTopics(String catId) async {
+  /// Copies an existing question's content into the form fields (edit mode).
+  void _prefillFromEdit(QuestionModel q) {
+    _textCtrl.text = q.text;
+    _explanationCtrl.text = q.explanation;
+    _type = q.type;
+    _difficulty = q.difficulty;
+    _correctIndex = q.correctIndex;
+    if (q.type == QuestionType.multipleChoice) {
+      final o = q.options;
+      if (o.isNotEmpty) _opt0Ctrl.text = o[0];
+      if (o.length > 1) _opt1Ctrl.text = o[1];
+      if (o.length > 2) _opt2Ctrl.text = o[2];
+      if (o.length > 3) _opt3Ctrl.text = o[3];
+    }
+  }
+
+  Future<void> _loadTopics(String catId, {String? preselect}) async {
     if (mounted) setState(() => _loading = true);
     try {
       final topics = await _topicsService.getTopicsByCategory(catId);
       if (!mounted) return;
       setState(() {
         _topics = topics;
-        _topicId = topics.isNotEmpty ? topics.first.id : null;
+        _topicId = preselect != null && topics.any((t) => t.id == preselect)
+            ? preselect
+            : (topics.isNotEmpty ? topics.first.id : null);
         _loading = false;
       });
     } catch (_) {
@@ -149,7 +185,7 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
     setState(() => _saving = true);
     try {
       final question = QuestionModel(
-        id: '',
+        id: widget.editQuestion?.id ?? '',
         categoryId: _categoryId!,
         topicId: _topicId!,
         text: _textCtrl.text.trim(),
@@ -162,15 +198,23 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
         status: _pending ? QuestionStatus.pending : QuestionStatus.approved,
         authorId: widget.authorId,
       );
-      if (_pending) {
+      if (_isEdit) {
+        // Resubmitting a revision: update in place and bounce back to pending.
+        await _questionService.updateQuestion(question, resetForReview: _pending);
+      } else if (_pending) {
         await _questionService.submitPendingQuestion(question);
       } else {
         await _questionService.seedQuestions([question]);
       }
       if (!mounted) return;
-      _clearForm();
       setState(() => _saving = false);
-      _snack(_pending ? 'Question submitted for review!' : 'Question saved!');
+      if (_isEdit) {
+        _snack(_pending ? 'Resubmitted for review!' : 'Question updated!');
+        widget.onSubmitted?.call();
+      } else {
+        _clearForm();
+        _snack(_pending ? 'Question submitted for review!' : 'Question saved!');
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -200,6 +244,43 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
         children: [
+          // ── Reviewer feedback (revision mode) ─────────────────────────────
+          if (_isEdit &&
+              (widget.editQuestion?.reviewNote.trim().isNotEmpty ?? false)) ...[
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.orange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                    color: AppColors.orange.withValues(alpha: 0.4), width: 1.5),
+              ),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Icon(Icons.rate_review_rounded,
+                    color: AppColors.orange, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Reviewer asked for changes',
+                            style: GoogleFonts.nunito(
+                                color: AppColors.orangeDark,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13)),
+                        const SizedBox(height: 2),
+                        Text(widget.editQuestion!.reviewNote,
+                            style: GoogleFonts.nunito(
+                                color: AppColors.textSecondary,
+                                fontSize: 12.5,
+                                height: 1.35)),
+                      ]),
+                ),
+              ]),
+            ),
+            const SizedBox(height: 12),
+          ],
+
           // ── Location ──────────────────────────────────────────────────────
           AdminCard(
             title: 'Location',
@@ -413,8 +494,12 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
           const SizedBox(height: 16),
           AdminPrimaryButton(
             label: _saving
-                ? (_pending ? 'Submitting...' : 'Saving...')
-                : (_pending ? 'Submit for review' : 'Save Question'),
+                ? (_isEdit
+                    ? 'Resubmitting...'
+                    : (_pending ? 'Submitting...' : 'Saving...'))
+                : (_isEdit
+                    ? 'Resubmit for review'
+                    : (_pending ? 'Submit for review' : 'Save Question')),
             onTap: _saving ? () {} : _save,
           ),
         ],

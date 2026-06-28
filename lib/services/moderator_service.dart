@@ -155,9 +155,11 @@ class ModeratorService {
   }
 
   /// Rejects an application: marks the request rejected and notifies the user.
-  /// The role bool stays false.
+  /// The role bool stays false. An optional [reason] is shown to the applicant
+  /// so the decision isn't a black box.
   Future<void> rejectRequest(
-      ModeratorRequestModel request, String adminUid) async {
+      ModeratorRequestModel request, String adminUid,
+      {String? reason}) async {
     final batch = _db.batch();
     batch.update(_db.collection('moderator_requests').doc(request.userId), {
       'status': ModeratorStatus.rejected.name,
@@ -166,11 +168,14 @@ class ModeratorService {
     });
     batch.update(_db.collection('users').doc(request.userId),
         {'moderatorStatus': ModeratorStatus.rejected.name});
+    final note = (reason != null && reason.trim().isNotEmpty)
+        ? ' Reason: ${reason.trim()}'
+        : '';
     _addNotification(batch,
         userId: request.userId,
         type: 'mod_request_rejected',
         title: 'Moderator request update',
-        body: 'Your moderator request wasn\'t approved this time. Keep '
+        body: 'Your moderator request wasn\'t approved this time.$note Keep '
             'learning and you can apply again later.');
     await batch.commit();
   }
@@ -200,6 +205,7 @@ class ModeratorService {
     batch.update(_db.collection('questions').doc(question.id), {
       'status': QuestionStatus.approved.name,
       'reviewedBy': adminUid,
+      'reviewNote': '',
     });
     if (question.authorId.isNotEmpty) {
       _addNotification(batch,
@@ -211,20 +217,48 @@ class ModeratorService {
     await batch.commit();
   }
 
-  Future<void> rejectSubmission(
-      QuestionModel question, String adminUid) async {
+  /// Sends a submission back to its author for changes. The [reason] is required
+  /// (it's the whole point) — it's stored on the question as `reviewNote` so the
+  /// author sees it inline, and echoed in a notification. The question becomes
+  /// [QuestionStatus.needsRevision]; the author can edit and resubmit.
+  Future<void> requestChangesSubmission(
+      QuestionModel question, String adminUid, String reason) async {
     final batch = _db.batch();
     batch.update(_db.collection('questions').doc(question.id), {
-      'status': QuestionStatus.rejected.name,
+      'status': QuestionStatus.needsRevision.name,
       'reviewedBy': adminUid,
+      'reviewNote': reason.trim(),
     });
     if (question.authorId.isNotEmpty) {
       _addNotification(batch,
           userId: question.authorId,
+          type: 'submission_changes',
+          title: 'Changes requested on your question ✏️',
+          body: 'A reviewer asked for changes: ${reason.trim()} '
+              'Open Moderator Tools to edit and resubmit it.');
+    }
+    await batch.commit();
+  }
+
+  Future<void> rejectSubmission(
+      QuestionModel question, String adminUid,
+      {String? reason}) async {
+    final batch = _db.batch();
+    batch.update(_db.collection('questions').doc(question.id), {
+      'status': QuestionStatus.rejected.name,
+      'reviewedBy': adminUid,
+      'reviewNote': reason?.trim() ?? '',
+    });
+    if (question.authorId.isNotEmpty) {
+      final note = (reason != null && reason.trim().isNotEmpty)
+          ? ' Reason: ${reason.trim()}'
+          : '';
+      _addNotification(batch,
+          userId: question.authorId,
           type: 'submission_rejected',
           title: 'Question submission update',
-          body: 'A question you submitted wasn\'t approved. Thanks for helping '
-              'keep the quiz great!');
+          body: 'A question you submitted wasn\'t approved.$note Thanks for '
+              'helping keep the quiz great!');
     }
     await batch.commit();
   }

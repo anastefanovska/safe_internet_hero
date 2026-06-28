@@ -25,9 +25,12 @@ class QuestionService {
     }
 
     final snap = await query.get();
+    // Only approved questions reach learners. Legacy docs without a `status`
+    // field default to approved in fromMap, so they stay visible.
     final allQuestions = snap.docs
         .map((doc) => QuestionModel.fromMap(
             {'id': doc.id, ...doc.data() as Map<String, dynamic>}))
+        .where((q) => q.status == QuestionStatus.approved)
         .toList();
 
     final filtered = forReplay
@@ -52,8 +55,8 @@ class QuestionService {
     final snaps = await Future.wait(futures);
     final questions = snaps
         .expand((s) => s.docs)
-        .map((doc) => QuestionModel.fromMap(
-            {'id': doc.id, ...doc.data() as Map<String, dynamic>}))
+        .map((doc) => QuestionModel.fromMap({'id': doc.id, ...doc.data()}))
+        .where((q) => q.status == QuestionStatus.approved)
         .toList();
     return _sortedByDifficulty(questions);
   }
@@ -125,6 +128,10 @@ class QuestionService {
     }
   }
 
+  /// Counts only approved questions for a topic. We fetch and count in Dart
+  /// rather than using the aggregate `.count()` because a learner-facing total
+  /// must exclude pending/rejected moderator submissions, and legacy docs with
+  /// no `status` field (treated as approved) can't be matched by a count query.
   Future<int> getTotalQuestionsCount({
     required String categoryId,
     required String topicId,
@@ -137,18 +144,58 @@ class QuestionService {
       query = query.where('topicId', isEqualTo: topicId);
     }
 
-    final snap = await query.count().get();
-    return snap.count ?? 0;
+    final snap = await query.get();
+    return snap.docs
+        .map((doc) => QuestionModel.fromMap(
+            {'id': doc.id, ...doc.data() as Map<String, dynamic>}))
+        .where((q) => q.status == QuestionStatus.approved)
+        .length;
   }
 
+  /// All live questions for the admin manager. Pending moderator submissions
+  /// are excluded here — they have their own review queue
+  /// ([watchPendingSubmissions]).
   Stream<List<QuestionModel>> watchAllQuestions() {
     return _db.collection('questions').snapshots().map((snap) => snap.docs
         .map((doc) =>
             QuestionModel.fromMap({'id': doc.id, ...doc.data()}))
+        .where((q) => q.status != QuestionStatus.pending)
         .toList());
   }
 
   Future<void> deleteQuestion(String id) async {
     await _db.collection('questions').doc(id).delete();
+  }
+
+  /// Creates a moderator submission: forced to `pending`, stamped with the
+  /// author's uid. Auto id, back-filled into the `id` field.
+  Future<void> submitPendingQuestion(QuestionModel question) async {
+    final doc = _db.collection('questions').doc();
+    await doc.set(question.toMap()
+      ..['id'] = doc.id
+      ..['status'] = QuestionStatus.pending.name);
+  }
+
+  /// Pending moderator submissions awaiting admin review, newest first.
+  Stream<List<QuestionModel>> watchPendingSubmissions() {
+    return _db
+        .collection('questions')
+        .where('status', isEqualTo: QuestionStatus.pending.name)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((doc) => QuestionModel.fromMap({'id': doc.id, ...doc.data()}))
+            .toList());
+  }
+
+  /// A moderator's own submissions (any status), for their "My submissions"
+  /// list. Sorted in Dart to avoid a composite index.
+  Stream<List<QuestionModel>> watchSubmissionsByAuthor(String authorId) {
+    return _db
+        .collection('questions')
+        .where('authorId', isEqualTo: authorId)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((doc) => QuestionModel.fromMap({'id': doc.id, ...doc.data()}))
+            .toList());
   }
 }

@@ -12,6 +12,16 @@ class QuestionModel {
   final DifficultyLevel difficulty;
   final int points;
 
+  /// Review state. Legacy questions have no `status` field and default to
+  /// [QuestionStatus.approved] so they remain visible to learners.
+  final QuestionStatus status;
+
+  /// uid of whoever authored the question (admin or moderator submission).
+  final String authorId;
+
+  /// uid of the admin who approved/rejected a moderator submission.
+  final String reviewedBy;
+
   QuestionModel({
     required this.id,
     required this.categoryId,
@@ -23,6 +33,9 @@ class QuestionModel {
     required this.explanation,
     required this.difficulty,
     required this.points,
+    this.status = QuestionStatus.approved,
+    this.authorId = '',
+    this.reviewedBy = '',
   });
 
   factory QuestionModel.fromMap(Map<String, dynamic> map) {
@@ -43,6 +56,10 @@ class QuestionModel {
         orElse: () => DifficultyLevel.beginner,
       ),
       points: map['points'] ?? 10,
+      status:
+          QuestionStatusExtension.fromString(map['status'] ?? 'approved'),
+      authorId: map['authorId'] ?? '',
+      reviewedBy: map['reviewedBy'] ?? '',
     );
   }
 
@@ -58,6 +75,9 @@ class QuestionModel {
       'explanation': explanation,
       'difficulty': difficulty.name,
       'points': points,
+      'status': status.name,
+      'authorId': authorId,
+      'reviewedBy': reviewedBy,
     };
   }
 }

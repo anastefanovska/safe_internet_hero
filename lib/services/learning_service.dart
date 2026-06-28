@@ -14,6 +14,13 @@ class LearningService {
         .toList());
   }
 
+  /// Total number of learning-content items. Uses the aggregate count query
+  /// (cheaper than fetching docs) — used for moderator eligibility (% read).
+  Future<int> getTotalContentCount() async {
+    final snap = await _db.collection('learning_content').count().get();
+    return snap.count ?? 0;
+  }
+
   Stream<List<LearningContentModel>> getContentByCategory(String categoryId) {
     return _db
         .collection('learning_content')

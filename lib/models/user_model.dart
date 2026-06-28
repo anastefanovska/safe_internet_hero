@@ -14,8 +14,11 @@ class UserModel {
   final List<String> friends;
   final List<String> friendRequests;
   final bool isAdmin;
+  final bool isModerator;
+  final ModeratorStatus moderatorStatus;
   final List<String> answeredQuestions;
   final List<String> incorrectlyAnsweredIds;
+  final List<String> readContentIds;
   final int streakFreezeCount;
   final bool xpBoostActive;
   final bool hasGoldFrame;
@@ -33,8 +36,11 @@ class UserModel {
     this.friends = const [],
     this.friendRequests = const [],
     this.isAdmin = false,
+    this.isModerator = false,
+    this.moderatorStatus = ModeratorStatus.none,
     this.answeredQuestions = const [],
     this.incorrectlyAnsweredIds = const [],
+    this.readContentIds = const [],
     this.streakFreezeCount = 0,
     this.xpBoostActive = false,
     this.hasGoldFrame = false,
@@ -54,9 +60,13 @@ class UserModel {
       friends: List<String>.from(map['friends'] ?? []),
       friendRequests: List<String>.from(map['friendRequests'] ?? []),
       isAdmin: map['isAdmin'] ?? false,
+      isModerator: map['isModerator'] ?? false,
+      moderatorStatus:
+          ModeratorStatusExtension.fromString(map['moderatorStatus'] ?? 'none'),
       answeredQuestions: List<String>.from(map['answeredQuestions'] ?? []),
       incorrectlyAnsweredIds:
           List<String>.from(map['incorrectlyAnsweredIds'] ?? []),
+      readContentIds: List<String>.from(map['readContentIds'] ?? []),
       streakFreezeCount: map['streakFreezeCount'] ?? 0,
       xpBoostActive: map['xpBoostActive'] ?? false,
       hasGoldFrame: map['hasGoldFrame'] ?? false,
@@ -78,8 +88,11 @@ class UserModel {
       'friends': friends,
       'friendRequests': friendRequests,
       'isAdmin': isAdmin,
+      'isModerator': isModerator,
+      'moderatorStatus': moderatorStatus.name,
       'answeredQuestions': answeredQuestions,
       'incorrectlyAnsweredIds': incorrectlyAnsweredIds,
+      'readContentIds': readContentIds,
       'streakFreezeCount': streakFreezeCount,
       'xpBoostActive': xpBoostActive,
       'hasGoldFrame': hasGoldFrame,

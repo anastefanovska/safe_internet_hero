@@ -26,6 +26,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
   bool _completionTriggered = false;
   bool _completionVisible = false;
   bool _completionLoading = false;
+  bool _completionError = false;
   int? _xpEarned;
 
   int get _xpAmount =>
@@ -89,7 +90,10 @@ class _ArticleScreenState extends State<ArticleScreen> {
       if (earned > 0) auth.refreshUser();
     } catch (_) {
       if (!mounted) return;
-      setState(() => _completionLoading = false);
+      setState(() {
+        _completionLoading = false;
+        _completionError = true;
+      });
     }
   }
 
@@ -237,6 +241,14 @@ class _ArticleScreenState extends State<ArticleScreen> {
                               ? _CompletionCard(
                                   isGuest: isGuest,
                                   isLoading: _completionLoading,
+                                  hasError: _completionError,
+                                  onRetry: () {
+                                    setState(() {
+                                      _completionError = false;
+                                      _completionLoading = true;
+                                    });
+                                    _handleCompletion();
+                                  },
                                   xpEarned: _xpEarned,
                                   xpAmount: _xpAmount,
                                   onCreateAccount: () {
@@ -631,6 +643,8 @@ class _TipBox extends StatelessWidget {
 class _CompletionCard extends StatelessWidget {
   final bool isGuest;
   final bool isLoading;
+  final bool hasError;
+  final VoidCallback onRetry;
   final int? xpEarned;
   final int xpAmount;
   final VoidCallback onCreateAccount;
@@ -638,6 +652,8 @@ class _CompletionCard extends StatelessWidget {
   const _CompletionCard({
     required this.isGuest,
     required this.isLoading,
+    required this.hasError,
+    required this.onRetry,
     required this.xpEarned,
     required this.xpAmount,
     required this.onCreateAccount,
@@ -646,9 +662,68 @@ class _CompletionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isGuest) return _GuestCard(onCreateAccount: onCreateAccount);
-    if (isLoading || xpEarned == null) return _LoadingCard();
+    if (isLoading) return _LoadingCard();
+    if (hasError) return _ErrorCard(onRetry: onRetry);
+    if (xpEarned == null) return _LoadingCard();
     if (xpEarned! == 0) return const _AlreadyReadCard();
     return _EarnedCard(xp: xpEarned!);
+  }
+}
+
+class _ErrorCard extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _ErrorCard({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.redLight,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: AppColors.red.withValues(alpha: 0.3), width: 1.5),
+      ),
+      child: Column(children: [
+        const Icon(Icons.wifi_off_rounded, color: AppColors.red, size: 32),
+        const SizedBox(height: 10),
+        Text("Couldn't save your progress",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.nunito(
+                color: AppColors.red,
+                fontWeight: FontWeight.w900,
+                fontSize: 16)),
+        const SizedBox(height: 4),
+        Text('Check your connection and try again.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.nunito(
+                color: AppColors.red.withValues(alpha: 0.8),
+                fontSize: 13,
+                fontWeight: FontWeight.w600)),
+        const SizedBox(height: 14),
+        GestureDetector(
+          onTap: onRetry,
+          child: Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 11),
+            decoration: BoxDecoration(
+              color: AppColors.red,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Text('Try again',
+                  style: GoogleFonts.nunito(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14)),
+            ]),
+          ),
+        ),
+      ]),
+    );
   }
 }
 

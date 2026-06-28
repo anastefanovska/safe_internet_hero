@@ -15,19 +15,73 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
-    // Users: any authenticated user can read (friend search, leaderboard)
-    //        only the user themselves or an admin can write
+    function isModerator() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isModerator == true;
+    }
+
+    // Users: any authenticated user can read (friend search, leaderboard).
+    // Owners may write their own doc, but can NEVER grant themselves the
+    // isAdmin/isModerator role and may only move moderatorStatus between
+    // 'none' and 'pending' (requesting/withdrawing). Roles and an 'approved'
+    // status are admin-only. Admins may write anything.
     match /users/{userId} {
       allow read: if isAuth();
-      allow write: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId)
+        && request.resource.data.get('isAdmin', false) == false
+        && request.resource.data.get('isModerator', false) == false;
+      // Owners may write their own doc but can never change isAdmin/isModerator,
+      // and may only move moderatorStatus to 'none'/'pending' (or leave it
+      // unchanged). `.get(..., default)` keeps legacy docs that predate these
+      // fields working for ordinary self-writes (stars, streak, reads, etc.).
+      allow update: if isAdmin() || (
+        isOwner(userId)
+        && request.resource.data.get('isAdmin', false)
+             == resource.data.get('isAdmin', false)
+        && request.resource.data.get('isModerator', false)
+             == resource.data.get('isModerator', false)
+        && (
+          request.resource.data.get('moderatorStatus', 'none')
+              == resource.data.get('moderatorStatus', 'none')
+          || request.resource.data.get('moderatorStatus', 'none') in ['none', 'pending']
+        )
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Moderator applications: doc id == the applicant's uid.
+    // The user may only ever write a 'pending' request (never self-approve);
+    // admins approve/reject/revoke.
+    match /moderator_requests/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update: if isOwner(userId)
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+
+    // In-app notifications: owner reads/dismisses; only admins create them.
+    match /notifications/{notificationId} {
+      allow read: if isOwner(resource.data.userId);
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin() || isOwner(resource.data.userId);
     }
 
     // Public content (questions, categories, topics, learning_content):
     // readable by anyone (guests play without an account),
     // writable only by admins
+    // Questions are world-readable (guests play). Admins write freely.
+    // Moderators may ONLY create questions that are pending and authored by
+    // themselves — they can never update/delete (so cannot self-approve) nor
+    // create an already-approved question.
     match /questions/{questionId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create: if isAdmin() || (
+        isModerator()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.authorId == request.auth.uid
+      );
+      allow update, delete: if isAdmin();
     }
 
     match /categories/{categoryId} {

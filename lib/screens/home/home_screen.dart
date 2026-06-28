@@ -14,6 +14,8 @@ import '../../services/topics_service.dart';
 import '../../widgets/app_avatar.dart';
 import '../../widgets/app_widgets.dart';
 import '../admin/admin_dashboard_screen.dart';
+import '../moderator/moderator_request_screen.dart';
+import '../moderator/moderator_screen.dart';
 import '../quiz/quiz_screen.dart';
 import '../quiz/topics_screen.dart';
 
@@ -165,6 +167,32 @@ class _HomeScreenState extends State<HomeScreen> {
               context,
               AppPageRoute(
                   builder: (_) => const AdminDashboardScreen())),
+        ).animate(delay: 500.ms).fadeIn(),
+      ],
+
+      // Moderator tools (for approved moderators)
+      if (user?.isModerator == true) ...[
+        const SizedBox(height: 8),
+        AppButton(
+          label: 'Moderator Tools',
+          variant: AppButtonVariant.secondary,
+          icon: Icons.shield_rounded,
+          onTap: () => Navigator.push(
+              context,
+              AppPageRoute(builder: (_) => const ModeratorScreen())),
+        ).animate(delay: 500.ms).fadeIn(),
+      ]
+      // Become-a-moderator entry (logged-in, non-admin, non-moderator users)
+      else if (!isGuest && user != null && user.isAdmin != true) ...[
+        const SizedBox(height: 8),
+        AppButton(
+          label: 'Become a Moderator',
+          variant: AppButtonVariant.secondary,
+          icon: Icons.shield_outlined,
+          onTap: () => Navigator.push(
+              context,
+              AppPageRoute(
+                  builder: (_) => const ModeratorRequestScreen())),
         ).animate(delay: 500.ms).fadeIn(),
       ],
     ];

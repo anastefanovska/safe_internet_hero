@@ -5,6 +5,7 @@ import '../../widgets/admin_widgets.dart';
 import 'import_data_screen.dart';
 import 'manage_categories_topics_screen.dart';
 import 'manage_learning_content_screen.dart';
+import 'manage_moderators_screen.dart';
 import 'manage_questions_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
@@ -90,6 +91,25 @@ class AdminDashboardScreen extends StatelessWidget {
                   icon: Icons.account_tree_rounded,
                   onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const CategoryTopicManagerScreen())),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Community',
+                  style: GoogleFonts.nunito(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                AdminDashboardCard(
+                  title: 'Moderators',
+                  subtitle:
+                      'Review moderator requests and approve submitted questions.',
+                  icon: Icons.shield_rounded,
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const ManageModeratorsScreen())),
                 ),
                 const SizedBox(height: 24),
                 Text(

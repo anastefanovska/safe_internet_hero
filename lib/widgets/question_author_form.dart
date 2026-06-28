@@ -195,7 +195,11 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
         explanation: _explanationCtrl.text.trim(),
         difficulty: _difficulty,
         points: _points,
-        status: _pending ? QuestionStatus.pending : QuestionStatus.approved,
+        // Admin edits keep the question's current status; new questions and
+        // moderator (re)submissions follow the pending/approved rule.
+        status: _isEdit && !_pending
+            ? widget.editQuestion!.status
+            : (_pending ? QuestionStatus.pending : QuestionStatus.approved),
         authorId: widget.authorId,
       );
       if (_isEdit) {

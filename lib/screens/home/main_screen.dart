@@ -161,15 +161,18 @@ class _DesktopRail extends StatelessWidget {
               ...List.generate(_items.length, (i) => _RailItem(
                     svgPath: _items[i].svg,
                     label: _items[i].label,
-                    selected: !showMore && i == currentIndex,
+                    // The active tab keeps its outline even while the More
+                    // panel is open — More is just a toggle, not a tab.
+                    selected: i == currentIndex,
                     onTap: () => onTap(i),
                   )),
-              // "More" sits directly under Profile; hidden for guests.
+              // "More" sits directly under Profile; hidden for guests. It never
+              // takes the active outline; tapping it just toggles its actions.
               if (showMoreButton)
                 _RailItem(
                   svgPath: 'assets/images/more.svg',
                   label: 'More',
-                  selected: showMore,
+                  selected: false,
                   onTap: onMore,
                 ),
               // Tapping More expands its actions inline in the rail.

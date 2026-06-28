@@ -289,6 +289,146 @@ class AdminDropdown<T> extends StatelessWidget {
       );
 }
 
+// ─── AdminSearchField ─────────────────────────────────────────────────────────
+// Rounded search box with a leading magnifier and a clear (×) button.
+
+class AdminSearchField extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final String hint;
+  const AdminSearchField({
+    super.key,
+    required this.controller,
+    required this.onChanged,
+    this.hint = 'Search...',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      onChanged: onChanged,
+      style: GoogleFonts.nunito(fontSize: 14, color: AppColors.textPrimary),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle:
+            GoogleFonts.nunito(color: AppColors.textLight, fontSize: 14),
+        prefixIcon:
+            const Icon(Icons.search_rounded, color: AppColors.textLight),
+        suffixIcon: controller.text.isEmpty
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.close_rounded,
+                    color: AppColors.textLight, size: 20),
+                onPressed: () {
+                  controller.clear();
+                  onChanged('');
+                },
+              ),
+        isDense: true,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.blue, width: 2)),
+      ),
+    );
+  }
+}
+
+// ─── AdminFilterDropdown ──────────────────────────────────────────────────────
+// Compact filter control (e.g. category / topic). Built on MenuAnchor so the
+// menu drops *below* the trigger and the hover/press highlight is rounded to
+// match the box. Controlled via [value] so it always shows the current pick.
+
+class AdminFilterDropdown extends StatelessWidget {
+  final String value;
+  final List<({String value, String label})> options;
+  final ValueChanged<String> onChanged;
+  final IconData icon;
+  const AdminFilterDropdown({
+    super.key,
+    required this.value,
+    required this.options,
+    required this.onChanged,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final current = options.firstWhere((o) => o.value == value,
+        orElse: () => options.first);
+
+    return MenuAnchor(
+      alignmentOffset: const Offset(0, 6),
+      style: MenuStyle(
+        backgroundColor: const WidgetStatePropertyAll(Colors.white),
+        elevation: const WidgetStatePropertyAll(3),
+        padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(vertical: 4)),
+        shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: AppColors.border),
+        )),
+      ),
+      menuChildren: [
+        for (final o in options)
+          MenuItemButton(
+            onPressed: () => onChanged(o.value),
+            leadingIcon: Icon(Icons.check_rounded,
+                size: 18,
+                color:
+                    o.value == value ? AppColors.blue : Colors.transparent),
+            child: Text(o.label,
+                style: GoogleFonts.nunito(
+                    fontSize: 13.5,
+                    fontWeight:
+                        o.value == value ? FontWeight.w800 : FontWeight.w600,
+                    color: o.value == value
+                        ? AppColors.blue
+                        : AppColors.textPrimary)),
+          ),
+      ],
+      builder: (context, controller, _) => InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => controller.isOpen ? controller.close() : controller.open(),
+        child: Container(
+          height: 46,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border, width: 1.5),
+          ),
+          child: Row(children: [
+            Icon(icon, size: 18, color: AppColors.textLight),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(current.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.nunito(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary)),
+            ),
+            const Icon(Icons.keyboard_arrow_down_rounded,
+                color: AppColors.textLight),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
 // ─── AdminToggle ──────────────────────────────────────────────────────────────
 
 class AdminToggle extends StatelessWidget {

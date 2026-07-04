@@ -133,6 +133,18 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Mini-game plays: one marker doc per user per game per day
+    // (id == `${uid}_${gameId}_${yyyy-MM-dd}`), used to grant a mini-game's
+    // coins at most once a day. Owners read/create only their own; the reward is
+    // the owner incrementing coins on their own user doc in the same write.
+    // Immutable once created (no update) so the daily coin can't be re-claimed.
+    match /mini_game_plays/{docId} {
+      allow read: if isAuth() && (resource == null || isOwner(resource.data.userId));
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
     // Activities: authenticated users can read any (friend feed),
     //             users can only create activities for themselves
     match /activities/{activityId} {

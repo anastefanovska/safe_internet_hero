@@ -19,6 +19,7 @@ import '../../widgets/app_avatar.dart';
 import '../../widgets/app_widgets.dart';
 import '../auth/splash_screen.dart';
 import '../quiz/quiz_screen.dart';
+import 'spot_the_scam_screen.dart';
 
 /// The "Games" tab: two sub-sections — Daily Challenges and Mini Games —
 /// under a shared Duolingo-style header (mirrors the Quests screen design).
@@ -118,7 +119,7 @@ class _GamesScreenState extends State<GamesScreen> {
                                   user: user,
                                   resetsIn: _resetsIn(),
                                 )
-                              : const _MiniGamesTab(),
+                              : _MiniGamesTab(user: user),
                         ),
                       ),
                     ),
@@ -323,7 +324,8 @@ class _DailyChallengesTab extends StatelessWidget {
 // ─── Mini games tab ───────────────────────────────────────────────────────────
 
 class _MiniGamesTab extends StatelessWidget {
-  const _MiniGamesTab();
+  final UserModel user;
+  const _MiniGamesTab({required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -340,11 +342,17 @@ class _MiniGamesTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        _LockedCard(
-          title: 'Phish or Legit?',
-          subtitle: 'Swipe real vs. fake messages. Coming soon!',
+        _PlayableGameCard(
+          title: 'Spot the Scam',
+          subtitle: 'Swipe real vs. fake messages to earn coins.',
           icon: Icons.swipe_rounded,
           accent: AppColors.blue,
+          onTap: () => Navigator.push(
+            context,
+            AppPageRoute(
+              builder: (_) => SpotTheScamScreen(userId: user.id),
+            ),
+          ),
         ).animate().fadeIn(duration: 350.ms).slideY(begin: 0.06, end: 0),
         const SizedBox(height: 12),
         const _LockedCard(
@@ -359,6 +367,115 @@ class _MiniGamesTab extends StatelessWidget {
           subtitle: 'New tactile challenges are in the works.',
         ),
       ],
+    );
+  }
+}
+
+// ─── Playable mini-game card ──────────────────────────────────────────────────
+
+/// A launchable mini-game entry: same footprint as [_LockedCard] but tappable,
+/// with a "Play" chip instead of the SOON badge.
+class _PlayableGameCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color accent;
+  final VoidCallback onTap;
+  const _PlayableGameCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.accent,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.border, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: accent, size: 22),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.nunito(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.nunito(
+                        color: AppColors.textLight,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: accent,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.play_arrow_rounded,
+                        color: Colors.white, size: 16),
+                    Text(
+                      'Play',
+                      style: GoogleFonts.nunito(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

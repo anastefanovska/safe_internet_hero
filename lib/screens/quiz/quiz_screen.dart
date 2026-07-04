@@ -10,6 +10,7 @@ import '../../models/question_model.dart';
 import '../../models/enums.dart';
 import '../../models/quiz_result_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/haptic_service.dart';
 import '../../services/questions_service.dart';
 import '../../services/sound_service.dart';
 import '../../widgets/app_widgets.dart';
@@ -121,8 +122,10 @@ class _QuizScreenState extends State<QuizScreen> {
     });
     if (isCorrect) {
       SoundService.instance.playCorrect();
+      HapticService.instance.success();
     } else {
       SoundService.instance.playWrong();
+      HapticService.instance.error();
     }
   }
 

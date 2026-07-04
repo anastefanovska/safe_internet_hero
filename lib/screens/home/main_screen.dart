@@ -6,6 +6,7 @@ import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/haptic_service.dart';
 import '../../widgets/app_widgets.dart';
 import '../auth/login_screen.dart';
 import '../auth/register_screen.dart';
@@ -62,10 +63,13 @@ class _MainScreenState extends State<MainScreen> {
               currentIndex: _currentIndex,
               showMore: showMore,
               showMoreButton: !isGuest,
-              onTap: (i) => setState(() {
-                _currentIndex = i;
-                _showMore = false;
-              }),
+              onTap: (i) {
+                if (i != _currentIndex) HapticService.instance.selection();
+                setState(() {
+                  _currentIndex = i;
+                  _showMore = false;
+                });
+              },
               onMore: () => setState(() => _showMore = !_showMore),
             ),
             Container(width: 1, color: AppColors.border),
@@ -92,7 +96,10 @@ class _MainScreenState extends State<MainScreen> {
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: _DuolingoBottomNav(
         currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
+        onTap: (i) {
+          if (i != _currentIndex) HapticService.instance.selection();
+          setState(() => _currentIndex = i);
+        },
       ),
     );
   }

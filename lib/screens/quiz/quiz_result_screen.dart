@@ -8,6 +8,7 @@ import '../../models/quiz_result_model.dart';
 import '../../models/topic_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/daily_challenge_service.dart';
+import '../../services/haptic_service.dart';
 import '../../services/questions_service.dart';
 import '../../services/shop_service.dart';
 import '../../services/sound_service.dart';
@@ -74,10 +75,15 @@ class _QuizResultScreenState extends State<QuizResultScreen>
     final stars = widget.result.starsEarned;
     if (stars == 0) return;
     SoundService.instance.playComplete(stars);
+    // A celebratory thud as the trophy lands — bigger for a flawless run.
+    stars == 3 ? HapticService.instance.heavy() : HapticService.instance.medium();
     // Delay coin jingle to match the rewards text fade-in (~950ms).
     if (!widget.result.isReplay) {
       Future.delayed(const Duration(milliseconds: 950), () {
-        if (mounted) SoundService.instance.playCoin();
+        if (mounted) {
+          SoundService.instance.playCoin();
+          HapticService.instance.reward();
+        }
       });
     }
   }

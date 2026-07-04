@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
@@ -8,16 +8,19 @@ import '../../core/theme.dart';
 import '../../data/scam_cards.dart';
 import '../../models/scam_card_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/haptic_service.dart';
 import '../../services/mini_game_service.dart';
 import '../../services/sound_service.dart';
 import '../../widgets/app_widgets.dart';
+import 'mini_game_shared.dart';
 
 part 'spot_the_scam_widgets.dart';
 
-/// "Spot the Scam" — a swipe deck mini-game. One message at a time: swipe LEFT
-/// (or tap the red button) to call it a **Scam**, swipe RIGHT (or tap green) to
-/// call it **Safe**. Each answer reveals a short explanation; finishing a round
-/// awards coins once per day via [MiniGameService].
+/// "Spot the Scam" — the scam-detective game. You work a case file of real-world
+/// messages one at a time and judge each **Scam** or **Safe**; every call reveals
+/// *why*, so it teaches as you play. The long game is your **Detective rank**,
+/// which climbs with every scam you correctly identify across all your cases —
+/// that persistent mastery track is the hook, not bolted-on arcade timers.
 class SpotTheScamScreen extends StatefulWidget {
   final String userId;
   const SpotTheScamScreen({super.key, required this.userId});
@@ -28,6 +31,7 @@ class SpotTheScamScreen extends StatefulWidget {
 
 class _SpotTheScamScreenState extends State<SpotTheScamScreen> {
   static const _gameId = 'spot_the_scam';
+  static const _solvedStat = 'scam_solved'; // cumulative correct → rank
   static const _roundSize = 8;
   static const _perfectBonus = 5;
   static const _swipeThreshold = 90.0;
@@ -38,7 +42,6 @@ class _SpotTheScamScreenState extends State<SpotTheScamScreen> {
   int _index = 0;
   int _score = 0;
 
-  // Per-card reveal state.
   bool _answered = false;
   bool _choseScam = false;
   bool _dragging = false;
@@ -49,6 +52,7 @@ class _SpotTheScamScreenState extends State<SpotTheScamScreen> {
   bool _awarding = false;
   int _awardedCoins = 0;
   int _coinsPossible = 0;
+  int _solvedBefore = 0; // total scams solved before this round
 
   @override
   void initState() {
@@ -62,23 +66,16 @@ class _SpotTheScamScreenState extends State<SpotTheScamScreen> {
   ScamCardModel get _card => _deck[_index];
   bool get _lastCard => _index >= _deck.length - 1;
 
-  int get _stars {
-    if (_deck.isEmpty) return 0;
-    final r = _score / _deck.length;
-    if (r >= 1.0) return 3;
-    if (r >= 0.75) return 2;
-    if (r >= 0.5) return 1;
-    return 0;
-  }
-
   void _answer(bool choseScam) {
     if (_answered) return;
     final correct = choseScam == _card.isScam;
     if (correct) {
       _score++;
       SoundService.instance.playCorrect();
+      HapticService.instance.success();
     } else {
       SoundService.instance.playWrong();
+      HapticService.instance.error();
     }
     setState(() {
       _answered = true;
@@ -90,9 +87,9 @@ class _SpotTheScamScreenState extends State<SpotTheScamScreen> {
 
   void _onPanEnd(DragEndDetails _) {
     if (_dragX <= -_swipeThreshold) {
-      _answer(true); // left → scam
+      _answer(true);
     } else if (_dragX >= _swipeThreshold) {
-      _answer(false); // right → safe
+      _answer(false);
     } else {
       setState(() {
         _dragging = false;
@@ -116,24 +113,28 @@ class _SpotTheScamScreenState extends State<SpotTheScamScreen> {
   Future<void> _finish() async {
     final perfect = _score == _deck.length;
     final coins = _score + (perfect ? _perfectBonus : 0);
+    // Snapshot the rank progress *before* this round is written.
+    _solvedBefore =
+        context.read<AuthProvider>().user?.miniGameHighScores[_solvedStat] ?? 0;
     setState(() {
       _finished = true;
       _awarding = true;
       _coinsPossible = coins;
     });
-    SoundService.instance.playComplete(_stars);
+    SoundService.instance.playComplete(miniGameStars(_score, _deck.length));
 
+    await _service.addProgress(
+        userId: widget.userId, statKey: _solvedStat, amount: _score);
     final awarded = await _service.awardCoins(
       userId: widget.userId,
       gameId: _gameId,
       coins: coins,
     );
     if (!mounted) return;
-    if (awarded > 0) {
-      SoundService.instance.playCoin();
-      await context.read<AuthProvider>().refreshUser();
-      if (!mounted) return;
-    }
+    SoundService.instance.playCoin();
+    HapticService.instance.reward();
+    await context.read<AuthProvider>().refreshUser();
+    if (!mounted) return;
     setState(() {
       _awardedCoins = awarded;
       _awarding = false;
@@ -150,35 +151,36 @@ class _SpotTheScamScreenState extends State<SpotTheScamScreen> {
       _finished = false;
       _awardedCoins = 0;
       _coinsPossible = 0;
+      _solvedBefore = 0;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: miniGameBackdrop(context),
       body: SafeArea(
-        child: Column(
+        child: MiniGameShell(
+          child: Column(
           children: [
-            _GameHeader(
-              index: _index,
-              total: _deck.length,
-              score: _score,
-              finished: _finished,
+            MiniGameTopBar(
               onClose: () => Navigator.of(context).maybePop(),
+              progress: _finished ? 1 : _index / _deck.length,
+              score: _score,
+              accent: AppColors.blue,
             ),
             Expanded(
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 460),
+                  constraints: const BoxConstraints(maxWidth: 740),
                   child: _finished
-                      ? _ResultView(
+                      ? _DetectiveResult(
                           score: _score,
                           total: _deck.length,
-                          stars: _stars,
+                          solvedBefore: _solvedBefore,
+                          awarding: _awarding,
                           awardedCoins: _awardedCoins,
                           coinsPossible: _coinsPossible,
-                          awarding: _awarding,
                           onPlayAgain: _playAgain,
                           onDone: () => Navigator.of(context).maybePop(),
                         )
@@ -187,6 +189,7 @@ class _SpotTheScamScreenState extends State<SpotTheScamScreen> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
@@ -221,10 +224,12 @@ class _SpotTheScamScreenState extends State<SpotTheScamScreen> {
           ),
           const SizedBox(height: 16),
           _answered
-              ? _RevealPanel(
-                  card: _card,
+              ? MiniGameReveal(
                   correct: correct,
-                  lastCard: _lastCard,
+                  truthLabel:
+                      _card.isScam ? 'This was a scam' : 'This was safe',
+                  explanation: _card.explanation,
+                  buttonLabel: _lastCard ? 'Close the case' : 'Next message',
                   onContinue: _next,
                 )
               : const _SwipeHint(),

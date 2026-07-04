@@ -11,9 +11,11 @@ import '../../core/theme.dart';
 import '../../data/term_pairs.dart';
 import '../../models/term_pair_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/haptic_service.dart';
 import '../../services/mini_game_service.dart';
 import '../../services/sound_service.dart';
 import '../../widgets/app_widgets.dart';
+import 'mini_game_shared.dart';
 
 part 'match_madness_widgets.dart';
 
@@ -134,6 +136,7 @@ class _MatchMadnessScreenState extends State<MatchMadnessScreen> {
 
   void _onTap(_Tile t) {
     if (_finished || _matched.contains(t.key)) return;
+    HapticService.instance.selection();
     final sel = _selected;
     if (sel == null) {
       setState(() => _selected = t);
@@ -157,6 +160,7 @@ class _MatchMadnessScreenState extends State<MatchMadnessScreen> {
 
   void _onMatch(_Tile a, _Tile b) {
     SoundService.instance.playCorrect();
+    HapticService.instance.success();
     setState(() {
       _matched.addAll({a.key, b.key});
       _selected = null;
@@ -175,6 +179,7 @@ class _MatchMadnessScreenState extends State<MatchMadnessScreen> {
 
   void _onWrong(_Tile a, _Tile b) {
     SoundService.instance.playWrong();
+    HapticService.instance.error();
     setState(() {
       _wrong.addAll({a.key, b.key});
       _selected = null;
@@ -215,6 +220,7 @@ class _MatchMadnessScreenState extends State<MatchMadnessScreen> {
     if (!mounted) return;
     if (awarded > 0) {
       SoundService.instance.playCoin();
+      HapticService.instance.reward();
       await context.read<AuthProvider>().refreshUser();
       if (!mounted) return;
     }
@@ -227,9 +233,11 @@ class _MatchMadnessScreenState extends State<MatchMadnessScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: miniGameBackdrop(context),
       body: SafeArea(
-        child: Column(
+        child: MiniGameShell(
+          maxWidth: 740,
+          child: Column(
           children: [
             _MatchHeader(
               secondsLeft: _secondsLeft,
@@ -241,7 +249,7 @@ class _MatchMadnessScreenState extends State<MatchMadnessScreen> {
             Expanded(
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 560),
+                  constraints: const BoxConstraints(maxWidth: 740),
                   child: _finished
                       ? _MatchResult(
                           score: _score,
@@ -267,6 +275,7 @@ class _MatchMadnessScreenState extends State<MatchMadnessScreen> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

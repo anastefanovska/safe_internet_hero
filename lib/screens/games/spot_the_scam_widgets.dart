@@ -1,7 +1,30 @@
 part of 'spot_the_scam_screen.dart';
 
-// Presentational pieces for [SpotTheScamScreen], split out to keep the screen
-// file lean. Library-private via `part of` so nothing here leaks out.
+// Presentational pieces for the scam-detective "Spot the Scam". Library-private
+// via `part of`.
+
+// ─── Detective ranks (the persistent mastery track) ───────────────────────────
+
+const _rankNames = [
+  'Rookie',
+  'Junior Detective',
+  'Detective',
+  'Senior Detective',
+  'Master Detective',
+];
+const _rankThresholds = [0, 15, 40, 80, 150];
+
+/// Resolves a total-solved count to (rankIndex, thisRankFloor, nextRankGoal).
+/// [nextGoal] is null at the top rank.
+({int index, int floor, int? nextGoal}) _rankFor(int total) {
+  var i = 0;
+  for (var t = 0; t < _rankThresholds.length; t++) {
+    if (total >= _rankThresholds[t]) i = t;
+  }
+  final nextGoal =
+      i + 1 < _rankThresholds.length ? _rankThresholds[i + 1] : null;
+  return (index: i, floor: _rankThresholds[i], nextGoal: nextGoal);
+}
 
 // ─── Channel presentation helpers ─────────────────────────────────────────────
 
@@ -16,78 +39,6 @@ String _channelLabel(ScamChannel c) => switch (c) {
       ScamChannel.email => 'Email',
       ScamChannel.dm => 'Direct message',
     };
-
-// ─── Top bar (close, progress, score) ─────────────────────────────────────────
-
-class _GameHeader extends StatelessWidget {
-  final int index;
-  final int total;
-  final int score;
-  final bool finished;
-  final VoidCallback onClose;
-  const _GameHeader({
-    required this.index,
-    required this.total,
-    required this.score,
-    required this.finished,
-    required this.onClose,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final progress = total == 0 ? 0.0 : (finished ? 1.0 : index / total);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 16, 8),
-      child: Row(
-        children: [
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: onClose,
-              behavior: HitTestBehavior.opaque,
-              child: const Padding(
-                padding: EdgeInsets.all(6),
-                child: Icon(Icons.close_rounded,
-                    color: AppColors.textLight, size: 28),
-              ),
-            ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0, end: progress),
-                duration: const Duration(milliseconds: 350),
-                curve: Curves.easeOut,
-                builder: (_, v, __) => LinearProgressIndicator(
-                  value: v,
-                  minHeight: 12,
-                  backgroundColor: AppColors.border,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.categoryPrivacy),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Icon(Icons.check_circle_rounded,
-              color: score > 0 ? AppColors.green : AppColors.textLight,
-              size: 20),
-          const SizedBox(width: 4),
-          Text(
-            '$score',
-            style: GoogleFonts.nunito(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // ─── The message card (with drag tint + stamp) ────────────────────────────────
 
@@ -110,8 +61,6 @@ class _ScamCardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // While dragging: tint toward the pending choice (left=scam=red,
-    // right=safe=green). After answering: outline by correctness, stamp truth.
     final t = (dragX.abs() / threshold).clamp(0.0, 1.0);
     final draggingScam = dragX < 0;
     final tintColor = draggingScam ? AppColors.red : AppColors.green;
@@ -184,7 +133,6 @@ class _ScamCardView extends StatelessWidget {
               ],
             ),
           ),
-          // Drag / answered stamp.
           if (answered || dragX.abs() > threshold * 0.35)
             Positioned(
               top: 18,
@@ -283,7 +231,7 @@ class _Stamp extends StatelessWidget {
   }
 }
 
-// ─── Swipe hint (shown before answering) ──────────────────────────────────────
+// ─── Swipe hint ───────────────────────────────────────────────────────────────
 
 class _SwipeHint extends StatelessWidget {
   const _SwipeHint();
@@ -315,82 +263,7 @@ class _SwipeHint extends StatelessWidget {
   }
 }
 
-// ─── Reveal panel (after answering) ───────────────────────────────────────────
-
-class _RevealPanel extends StatelessWidget {
-  final ScamCardModel card;
-  final bool correct;
-  final bool lastCard;
-  final VoidCallback onContinue;
-  const _RevealPanel({
-    required this.card,
-    required this.correct,
-    required this.lastCard,
-    required this.onContinue,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = correct ? AppColors.green : AppColors.red;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(correct ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                  color: color, size: 22),
-              const SizedBox(width: 8),
-              Text(
-                correct ? 'Correct!' : 'Not quite',
-                style: GoogleFonts.nunito(
-                  color: color,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                card.isScam ? 'This was a scam' : 'This was safe',
-                style: GoogleFonts.nunito(
-                  color: AppColors.textSecondary,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            card.explanation,
-            style: GoogleFonts.nunito(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              height: 1.45,
-            ),
-          ),
-          const SizedBox(height: 14),
-          AppButton(
-            label: lastCard ? 'See results' : 'Continue',
-            variant:
-                correct ? AppButtonVariant.success : AppButtonVariant.primary,
-            onTap: onContinue,
-          ),
-        ],
-      ),
-    ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.12, end: 0);
-  }
-}
-
-// ─── Scam / Safe buttons (accessible alternative to swiping) ───────────────────
+// ─── Scam / Safe buttons ──────────────────────────────────────────────────────
 
 class _ChoiceButtons extends StatelessWidget {
   final bool enabled;
@@ -428,37 +301,41 @@ class _ChoiceButtons extends StatelessWidget {
   }
 }
 
-// ─── Results ──────────────────────────────────────────────────────────────────
+// ─── Results (case accuracy + detective rank progress) ────────────────────────
 
-class _ResultView extends StatefulWidget {
+class _DetectiveResult extends StatefulWidget {
   final int score;
   final int total;
-  final int stars;
+  final int solvedBefore;
+  final bool awarding;
   final int awardedCoins;
   final int coinsPossible;
-  final bool awarding;
   final VoidCallback onPlayAgain;
   final VoidCallback onDone;
-  const _ResultView({
+  const _DetectiveResult({
     required this.score,
     required this.total,
-    required this.stars,
+    required this.solvedBefore,
+    required this.awarding,
     required this.awardedCoins,
     required this.coinsPossible,
-    required this.awarding,
     required this.onPlayAgain,
     required this.onDone,
   });
 
   @override
-  State<_ResultView> createState() => _ResultViewState();
+  State<_DetectiveResult> createState() => _DetectiveResultState();
 }
 
-class _ResultViewState extends State<_ResultView>
+class _DetectiveResultState extends State<_DetectiveResult>
     with SingleTickerProviderStateMixin {
   late final AnimationController _confetti;
 
-  bool get _celebrate => widget.stars >= 2;
+  int get _stars => miniGameStars(widget.score, widget.total);
+  int get _newTotal => widget.solvedBefore + widget.score;
+  bool get _rankedUp =>
+      _rankFor(_newTotal).index > _rankFor(widget.solvedBefore).index;
+  bool get _celebrate => _rankedUp || _stars >= 3;
 
   @override
   void initState() {
@@ -472,13 +349,6 @@ class _ResultViewState extends State<_ResultView>
     super.dispose();
   }
 
-  String get _headline => switch (widget.stars) {
-        3 => 'Scam-spotting hero!',
-        2 => 'Great instincts!',
-        1 => 'Nice try — keep practising',
-        _ => 'Keep practising!',
-      };
-
   Widget _coinLine() {
     if (widget.awarding) {
       return const SizedBox(
@@ -491,8 +361,8 @@ class _ResultViewState extends State<_ResultView>
       return _CoinChip(text: '+${widget.awardedCoins} coins earned');
     }
     final msg = widget.coinsPossible > 0
-        ? 'Coins already earned today — play on for fun!'
-        : 'Answer more correctly to earn coins!';
+        ? 'Coins already earned today — keep sleuthing for fun!'
+        : 'Spot more scams to earn coins!';
     return Text(
       msg,
       textAlign: TextAlign.center,
@@ -506,26 +376,31 @@ class _ResultViewState extends State<_ResultView>
 
   @override
   Widget build(BuildContext context) {
+    final rank = _rankFor(_newTotal);
+    final rankName = _rankNames[rank.index];
+    final headline = switch (_stars) {
+      3 => 'Case cracked!',
+      2 => 'Sharp work, detective',
+      1 => 'Case closed',
+      _ => 'Keep investigating',
+    };
+
     return Stack(
       alignment: Alignment.topCenter,
       children: [
         SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+          padding: const EdgeInsets.fromLTRB(22, 14, 22, 24),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(3, (i) {
-                  final on = i < widget.stars;
+                  final on = i < _stars;
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: Icon(
-                      Icons.star_rounded,
-                      size: i == 1 ? 56 : 46,
-                      color: on ? AppColors.gold : AppColors.border,
-                    ),
+                    child: Icon(Icons.star_rounded,
+                        size: i == 1 ? 54 : 44,
+                        color: on ? AppColors.gold : AppColors.border),
                   ).animate(delay: (150 * i).ms).scale(
                         begin: const Offset(0.4, 0.4),
                         end: const Offset(1, 1),
@@ -534,37 +409,44 @@ class _ResultViewState extends State<_ResultView>
                       );
                 }),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
               Text(
-                _headline,
-                textAlign: TextAlign.center,
+                headline,
                 style: GoogleFonts.nunito(
                   color: AppColors.textPrimary,
-                  fontSize: 24,
+                  fontSize: 23,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 2),
               Text(
-                'You spotted ${widget.score} of ${widget.total} correctly',
-                textAlign: TextAlign.center,
+                'You judged ${widget.score} of ${widget.total} correctly',
                 style: GoogleFonts.nunito(
                   color: AppColors.textSecondary,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 18),
+              _RankCard(
+                rankName: rankName,
+                rankIndex: rank.index,
+                total: _newTotal,
+                floor: rank.floor,
+                nextGoal: rank.nextGoal,
+                gained: widget.score,
+                rankedUp: _rankedUp,
+              ),
+              const SizedBox(height: 18),
               _coinLine(),
-              const SizedBox(height: 28),
+              const SizedBox(height: 22),
               AppButton(
-                label: 'Play again',
+                label: 'New case',
                 icon: Icons.refresh_rounded,
-                variant: AppButtonVariant.primary,
                 onTap: widget.onPlayAgain,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               AppButton(
                 label: 'Done',
                 variant: AppButtonVariant.secondary,
@@ -589,6 +471,140 @@ class _ResultViewState extends State<_ResultView>
             ),
           ),
       ],
+    );
+  }
+}
+
+/// The persistent "Detective rank" panel with an animated progress bar toward
+/// the next rank — the reason to keep coming back.
+class _RankCard extends StatelessWidget {
+  final String rankName;
+  final int rankIndex;
+  final int total;
+  final int floor;
+  final int? nextGoal;
+  final int gained;
+  final bool rankedUp;
+  const _RankCard({
+    required this.rankName,
+    required this.rankIndex,
+    required this.total,
+    required this.floor,
+    required this.nextGoal,
+    required this.gained,
+    required this.rankedUp,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final atMax = nextGoal == null;
+    final span = atMax ? 1 : (nextGoal! - floor);
+    final into = (total - floor).clamp(0, span);
+    final ratio = atMax ? 1.0 : into / span;
+    final remaining = atMax ? 0 : (nextGoal! - total);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.blue.withValues(alpha: 0.10),
+            AppColors.categoryPrivacy.withValues(alpha: 0.10),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.blue.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.blue.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.local_police_rounded,
+                    color: AppColors.blue, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      rankedUp ? 'Ranked up!' : 'Detective rank',
+                      style: GoogleFonts.nunito(
+                        color: rankedUp ? AppColors.green : AppColors.textLight,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    Text(
+                      rankName,
+                      style: GoogleFonts.nunito(
+                        color: AppColors.textPrimary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (gained > 0)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.blue.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '+$gained solved',
+                    style: GoogleFonts.nunito(
+                      color: AppColors.blueDark,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: ratio.toDouble()),
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeOut,
+              builder: (_, v, __) => LinearProgressIndicator(
+                value: v,
+                minHeight: 9,
+                backgroundColor: Colors.white,
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.blue),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            atMax
+                ? 'Top rank reached — $total scams busted!'
+                : '$remaining more to reach ${_rankNames[rankIndex + 1]}',
+            style: GoogleFonts.nunito(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

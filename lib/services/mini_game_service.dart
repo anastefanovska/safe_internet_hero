@@ -50,4 +50,47 @@ class MiniGameService {
       return 0;
     }
   }
+
+  /// Records an arcade high score for [gameId] on the user's own doc. Returns the
+  /// **previous** best (so the UI can tell whether this run set a new record).
+  /// Only writes when [score] beats the stored best. Runs in a transaction so a
+  /// concurrent play can't clobber a higher score.
+  Future<int> submitHighScore({
+    required String userId,
+    required String gameId,
+    required int score,
+  }) async {
+    final userRef = _db.collection('users').doc(userId);
+    try {
+      return await _db.runTransaction<int>((txn) async {
+        final snap = await txn.get(userRef);
+        final scores = (snap.data()?['miniGameHighScores']
+                as Map<dynamic, dynamic>?) ??
+            const {};
+        final prev = (scores[gameId] as num?)?.toInt() ?? 0;
+        if (score > prev) {
+          txn.update(userRef, {'miniGameHighScores.$gameId': score});
+        }
+        return prev;
+      });
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Adds [amount] to a cumulative progress stat on the user's own doc (used for
+  /// mastery/rank systems, e.g. total scams correctly identified). Stored in the
+  /// same `miniGameHighScores` map under [statKey]. Best-effort.
+  Future<void> addProgress({
+    required String userId,
+    required String statKey,
+    required int amount,
+  }) async {
+    if (amount <= 0) return;
+    try {
+      await _db.collection('users').doc(userId).update(
+        {'miniGameHighScores.$statKey': FieldValue.increment(amount)},
+      );
+    } catch (_) {}
+  }
 }

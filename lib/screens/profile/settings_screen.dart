@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/haptic_service.dart';
+import '../../services/sound_service.dart';
 import '../auth/splash_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -85,6 +87,34 @@ class SettingsScreen extends StatelessWidget {
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Game feel — real, working toggles for the app's sound &
+                    // haptics (session-scoped, like the services they drive).
+                    _SectionHeader('Game'),
+                    const SizedBox(height: 8),
+                    _ToggleGroup(
+                      items: [
+                        _ToggleRow(
+                          icon: Icons.volume_up_rounded,
+                          label: 'Sound effects',
+                          initialValue: !SoundService.instance.isMuted,
+                          onChanged: (on) =>
+                              SoundService.instance.muted = !on,
+                        ),
+                        _ToggleRow(
+                          icon: Icons.vibration_rounded,
+                          label: 'Vibration',
+                          initialValue: HapticService.instance.isEnabled,
+                          onChanged: (on) {
+                            HapticService.instance.enabled = on;
+                            // Let the user feel it switch on.
+                            if (on) HapticService.instance.medium();
+                          },
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 28),
+
                     // Account section
                     _SectionHeader('Account'),
                     const SizedBox(height: 8),
@@ -282,6 +312,96 @@ class _SettingsGroup extends StatelessWidget {
             );
           }).toList(),
         ),
+      ),
+    );
+  }
+}
+
+// ── Toggle group + row (functional Sound / Vibration switches) ─────────────────
+
+class _ToggleGroup extends StatelessWidget {
+  final List<Widget> items;
+  const _ToggleGroup({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Column(
+          children: items.asMap().entries.map((e) {
+            final isLast = e.key == items.length - 1;
+            return Column(
+              children: [
+                e.value,
+                if (!isLast)
+                  Container(
+                    height: 1,
+                    margin: const EdgeInsets.only(left: 52),
+                    color: AppColors.border,
+                  ),
+              ],
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+}
+
+class _ToggleRow extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final bool initialValue;
+  final ValueChanged<bool> onChanged;
+
+  const _ToggleRow({
+    required this.icon,
+    required this.label,
+    required this.initialValue,
+    required this.onChanged,
+  });
+
+  @override
+  State<_ToggleRow> createState() => _ToggleRowState();
+}
+
+class _ToggleRowState extends State<_ToggleRow> {
+  late bool _value = widget.initialValue;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Icon(widget.icon, color: AppColors.textSecondary, size: 22),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              widget.label,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Switch.adaptive(
+            value: _value,
+            activeThumbColor: Colors.white,
+            activeTrackColor: AppColors.green,
+            onChanged: (v) {
+              setState(() => _value = v);
+              widget.onChanged(v);
+            },
+          ),
+        ],
       ),
     );
   }

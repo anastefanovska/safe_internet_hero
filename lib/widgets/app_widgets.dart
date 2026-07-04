@@ -2,6 +2,7 @@
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
+import '../services/haptic_service.dart';
 import 'app_avatar.dart';
 
 // ─── AppButton ─────────────────────────────────────────────────────────────────
@@ -86,12 +87,22 @@ class _AppButtonState extends State<AppButton> {
       child: GestureDetector(
         // onTap fires reliably on both web mouse-click and mobile touch.
         onTap: disabled ? null : widget.onTap,
-        onTapDown:
-            disabled ? null : (_) => setState(() => _pressed = true),
+        onTapDown: disabled
+            ? null
+            : (_) {
+                setState(() => _pressed = true);
+                HapticService.instance.light();
+              },
         onTapUp:
             disabled ? null : (_) => setState(() => _pressed = false),
         onTapCancel: () => setState(() => _pressed = false),
-        child: Opacity(
+        child: AnimatedScale(
+          // A tiny squish on press so the button feels physical on every
+          // platform, not just where haptics fire.
+          scale: _pressed ? 0.97 : 1.0,
+          duration: const Duration(milliseconds: 80),
+          curve: Curves.easeOut,
+          child: Opacity(
           opacity: disabled ? 0.55 : 1.0,
           child: Stack(
             alignment: Alignment.topCenter,
@@ -128,6 +139,7 @@ class _AppButtonState extends State<AppButton> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );
@@ -212,17 +224,17 @@ class AppTopBar extends StatelessWidget {
         children: [
           _Chip(
               icon: Icons.local_fire_department_rounded,
-              value: '$streak',
+              value: streak,
               color: streak > 0 ? AppColors.orange : AppColors.textLight),
           const Spacer(),
           _Chip(
               icon: Icons.star_rounded,
-              value: '$stars',
+              value: stars,
               color: AppColors.gold),
           const SizedBox(width: AppSpacing.sm),
           _Chip(
               icon: Icons.monetization_on_rounded,
-              value: '$coins',
+              value: coins,
               color: AppColors.orangeDark),
           if (username != null) ...[
             const SizedBox(width: 12),
@@ -242,39 +254,89 @@ class AppTopBar extends StatelessWidget {
   }
 }
 
-class _Chip extends StatelessWidget {
+/// A currency/stat pill for [AppTopBar]. The number rolls up to its new value
+/// and the whole pill gives a quick "pop" whenever it *increases*, so earning
+/// coins or stars is felt in the corner of the eye even when the reward moment
+/// happened on another screen. Purely visual, so it reinforces rewards on every
+/// platform (web/desktop included, where haptics don't fire).
+class _Chip extends StatefulWidget {
   final IconData icon;
-  final String value;
+  final int value;
   final Color color;
 
   const _Chip(
       {required this.icon, required this.value, required this.color});
 
   @override
+  State<_Chip> createState() => _ChipState();
+}
+
+class _ChipState extends State<_Chip> with SingleTickerProviderStateMixin {
+  late final int _initial = widget.value;
+  late final AnimationController _pop = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 420),
+  );
+  late final Animation<double> _scale = TweenSequence<double>([
+    TweenSequenceItem(
+      tween: Tween(begin: 1.0, end: 1.22)
+          .chain(CurveTween(curve: Curves.easeOut)),
+      weight: 40,
+    ),
+    TweenSequenceItem(
+      tween: Tween(begin: 1.22, end: 1.0)
+          .chain(CurveTween(curve: Curves.easeIn)),
+      weight: 60,
+    ),
+  ]).animate(_pop);
+
+  @override
+  void didUpdateWidget(_Chip old) {
+    super.didUpdateWidget(old);
+    // Only celebrate gains — spending coins shouldn't bounce.
+    if (widget.value > old.value) _pop.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _pop.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-        border:
-            Border.all(color: color.withValues(alpha: 0.35), width: 1.5),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 5),
-          Text(
-            value,
-            style: GoogleFonts.nunito(
-              color: color,
-              fontWeight: FontWeight.w800,
-              fontSize: 14,
+    return ScaleTransition(
+      scale: _scale,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: widget.color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+              color: widget.color.withValues(alpha: 0.35), width: 1.5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(widget.icon, color: widget.color, size: 16),
+            const SizedBox(width: 5),
+            // Roll the digits from their previous value to the new one.
+            TweenAnimationBuilder<double>(
+              tween: Tween(
+                  begin: _initial.toDouble(), end: widget.value.toDouble()),
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeOut,
+              builder: (_, v, __) => Text(
+                '${v.round()}',
+                style: GoogleFonts.nunito(
+                  color: widget.color,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

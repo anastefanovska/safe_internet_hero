@@ -23,6 +23,10 @@ class UserModel {
   final bool xpBoostActive;
   final bool hasGoldFrame;
 
+  /// Best score per arcade mini-game, keyed by gameId (e.g. `spot_the_scam`).
+  /// Drives the "high score to beat" in the arcade games. Owner-writable.
+  final Map<String, int> miniGameHighScores;
+
   UserModel({
     required this.id,
     required this.email,
@@ -44,6 +48,7 @@ class UserModel {
     this.streakFreezeCount = 0,
     this.xpBoostActive = false,
     this.hasGoldFrame = false,
+    this.miniGameHighScores = const {},
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
@@ -70,6 +75,9 @@ class UserModel {
       streakFreezeCount: map['streakFreezeCount'] ?? 0,
       xpBoostActive: map['xpBoostActive'] ?? false,
       hasGoldFrame: map['hasGoldFrame'] ?? false,
+      miniGameHighScores: (map['miniGameHighScores'] as Map<dynamic, dynamic>?)
+              ?.map((k, v) => MapEntry(k.toString(), (v as num).toInt())) ??
+          const {},
     );
   }
 
@@ -96,6 +104,7 @@ class UserModel {
       'streakFreezeCount': streakFreezeCount,
       'xpBoostActive': xpBoostActive,
       'hasGoldFrame': hasGoldFrame,
+      'miniGameHighScores': miniGameHighScores,
       'usernameLower': username.toLowerCase(),
     };
   }

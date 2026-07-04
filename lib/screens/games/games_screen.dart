@@ -13,6 +13,7 @@ import '../../models/daily_challenge_model.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/daily_challenge_service.dart';
+import '../../services/haptic_service.dart';
 import '../../services/questions_service.dart';
 import '../../services/sound_service.dart';
 import '../../widgets/app_avatar.dart';
@@ -20,6 +21,9 @@ import '../../widgets/app_widgets.dart';
 import '../auth/splash_screen.dart';
 import '../quiz/quiz_screen.dart';
 import 'match_madness_screen.dart';
+import 'password_power_screen.dart';
+import 'privacy_setup_screen.dart';
+import 'red_flag_screen.dart';
 import 'spot_the_scam_screen.dart';
 
 /// The "Games" tab: two sub-sections — Daily Challenges and Mini Games —
@@ -57,6 +61,13 @@ class _GamesScreenState extends State<GamesScreen> {
     final h = d.inHours;
     final m = d.inMinutes % 60;
     return h > 0 ? '${h}h ${m}m left' : '${m}m left';
+  }
+
+  /// Launches a mini-game and, when it closes (Done or back), makes sure we land
+  /// back on the Mini Games tab rather than the Challenges tab.
+  Future<void> _openGame(Widget game) async {
+    await Navigator.of(context).push(AppPageRoute(builder: (_) => game));
+    if (mounted) setState(() => _tab = 1);
   }
 
   @override
@@ -120,7 +131,7 @@ class _GamesScreenState extends State<GamesScreen> {
                                   user: user,
                                   resetsIn: _resetsIn(),
                                 )
-                              : _MiniGamesTab(user: user),
+                              : _MiniGamesTab(user: user, onPlay: _openGame),
                         ),
                       ),
                     ),
@@ -230,7 +241,10 @@ class _HeaderTab extends StatelessWidget {
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
-          onTap: onTap,
+          onTap: () {
+            HapticService.instance.selection();
+            onTap();
+          },
           behavior: HitTestBehavior.opaque,
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 12),
@@ -326,7 +340,8 @@ class _DailyChallengesTab extends StatelessWidget {
 
 class _MiniGamesTab extends StatelessWidget {
   final UserModel user;
-  const _MiniGamesTab({required this.user});
+  final void Function(Widget game) onPlay;
+  const _MiniGamesTab({required this.user, required this.onPlay});
 
   @override
   Widget build(BuildContext context) {
@@ -345,41 +360,48 @@ class _MiniGamesTab extends StatelessWidget {
         const SizedBox(height: 14),
         _PlayableGameCard(
           title: 'Spot the Scam',
-          subtitle: 'Swipe real vs. fake messages to earn coins.',
-          icon: Icons.swipe_rounded,
+          subtitle: 'Judge real messages and climb the detective ranks.',
+          icon: Icons.local_police_rounded,
           accent: AppColors.blue,
-          onTap: () => Navigator.push(
-            context,
-            AppPageRoute(
-              builder: (_) => SpotTheScamScreen(userId: user.id),
-            ),
-          ),
-        ).animate().fadeIn(duration: 350.ms).slideY(begin: 0.06, end: 0),
+          onTap: () => onPlay(SpotTheScamScreen(userId: user.id)),
+        ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
+        const SizedBox(height: 12),
+        _PlayableGameCard(
+          title: 'Tap the Red Flag',
+          subtitle: 'Hunt down every suspicious clue hidden in a message.',
+          icon: Icons.flag_rounded,
+          accent: AppColors.red,
+          onTap: () => onPlay(RedFlagScreen(userId: user.id)),
+        ).animate(delay: 70.ms).fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
+        const SizedBox(height: 12),
+        _PlayableGameCard(
+          title: 'Privacy Setup',
+          subtitle: 'Set who sees each field: public, friends or private.',
+          icon: Icons.tune_rounded,
+          accent: AppColors.categoryPrivacy,
+          onTap: () => onPlay(PrivacySetupScreen(userId: user.id)),
+        ).animate(delay: 140.ms).fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
+        const SizedBox(height: 12),
+        _PlayableGameCard(
+          title: 'Password Power',
+          subtitle: 'Pick the changes that turn a weak password strong.',
+          icon: Icons.lock_rounded,
+          accent: AppColors.categoryPasswords,
+          onTap: () => onPlay(PasswordPowerScreen(userId: user.id)),
+        ).animate(delay: 210.ms).fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
         const SizedBox(height: 12),
         _PlayableGameCard(
           title: 'Match Madness',
           subtitle: 'Match safety terms to their meaning against the clock.',
           icon: Icons.extension_rounded,
           accent: AppColors.green,
-          onTap: () => Navigator.push(
-            context,
-            AppPageRoute(
-              builder: (_) => MatchMadnessScreen(userId: user.id),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        const _LockedCard(
-          title: 'Password Builder',
-          subtitle: 'Build strong passwords against the clock.',
-          icon: Icons.lock_rounded,
-          accent: AppColors.green,
-        ),
+          onTap: () => onPlay(MatchMadnessScreen(userId: user.id)),
+        ).animate(delay: 280.ms).fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
         const SizedBox(height: 12),
         const _LockedCard(
           title: 'More games on the way',
-          subtitle: 'New tactile challenges are in the works.',
-        ),
+          subtitle: 'New challenges are in the works.',
+        ).animate(delay: 350.ms).fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
       ],
     );
   }
@@ -408,7 +430,10 @@ class _PlayableGameCard extends StatelessWidget {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          HapticService.instance.medium();
+          onTap();
+        },
         behavior: HitTestBehavior.opaque,
         child: Container(
           width: double.infinity,
@@ -499,24 +524,18 @@ class _PlayableGameCard extends StatelessWidget {
 class _LockedCard extends StatelessWidget {
   final String title;
   final String subtitle;
-  final IconData? icon;
-  final Color? accent;
   const _LockedCard({
     required this.title,
     required this.subtitle,
-    this.icon,
-    this.accent,
   });
 
   @override
   Widget build(BuildContext context) {
-    final muted = accent == null;
-    final c = accent ?? AppColors.textLight;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: muted ? AppColors.background : Colors.white,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border, width: 1.5),
       ),
@@ -526,10 +545,11 @@ class _LockedCard extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: c.withValues(alpha: 0.12),
+              color: AppColors.textLight.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon ?? Icons.lock_rounded, color: c, size: 22),
+            child: const Icon(Icons.lock_rounded,
+                color: AppColors.textLight, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -539,7 +559,7 @@ class _LockedCard extends StatelessWidget {
                 Text(
                   title,
                   style: GoogleFonts.nunito(
-                    color: muted ? AppColors.textSecondary : AppColors.textPrimary,
+                    color: AppColors.textSecondary,
                     fontWeight: FontWeight.w900,
                     fontSize: 14,
                   ),
@@ -855,6 +875,7 @@ class _DailyChallengePanelState extends State<DailyChallengePanel>
     if (!mounted) return;
     if (ok) {
       SoundService.instance.playCoin();
+      HapticService.instance.reward();
       setState(() => _showBurst = true);
       await context.read<AuthProvider>().refreshUser();
     }

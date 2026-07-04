@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/haptic_service.dart';
 import '../../services/shop_service.dart';
 import '../../services/sound_service.dart';
 import '../../widgets/app_avatar.dart';
@@ -48,7 +49,12 @@ class _ShopScreenState extends State<ShopScreen> {
     if (!mounted) return;
     setState(() => _loadingIds.remove(itemId));
 
-    if (success) SoundService.instance.playPurchase();
+    if (success) {
+      SoundService.instance.playPurchase();
+      HapticService.instance.success();
+    } else {
+      HapticService.instance.error();
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

@@ -19,6 +19,7 @@ import '../../widgets/app_avatar.dart';
 import '../../widgets/app_widgets.dart';
 import '../auth/splash_screen.dart';
 import '../quiz/quiz_screen.dart';
+import 'match_madness_screen.dart';
 import 'spot_the_scam_screen.dart';
 
 /// The "Games" tab: two sub-sections — Daily Challenges and Mini Games —
@@ -354,6 +355,19 @@ class _MiniGamesTab extends StatelessWidget {
             ),
           ),
         ).animate().fadeIn(duration: 350.ms).slideY(begin: 0.06, end: 0),
+        const SizedBox(height: 12),
+        _PlayableGameCard(
+          title: 'Match Madness',
+          subtitle: 'Match safety terms to their meaning against the clock.',
+          icon: Icons.extension_rounded,
+          accent: AppColors.green,
+          onTap: () => Navigator.push(
+            context,
+            AppPageRoute(
+              builder: (_) => MatchMadnessScreen(userId: user.id),
+            ),
+          ),
+        ),
         const SizedBox(height: 12),
         const _LockedCard(
           title: 'Password Builder',

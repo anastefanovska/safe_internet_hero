@@ -62,23 +62,49 @@ class _GamesScreenState extends State<GamesScreen> {
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
     final guest = auth.isGuest || user == null;
+    final desktop = isDesktop(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // Header only for logged-in users; guests get just the blurred
-          // preview + sign-up CTA.
-          if (!guest)
-            _GamesHeader(
-              activeTab: _tab,
-              showTabs: true,
-              onTab: (i) => setState(() => _tab = i),
+          // Mobile streak/stats bar — shown for everyone (guests see zeros),
+          // matching Shop/Learn. Desktop reads stats from the side panel and
+          // AppTopBar self-hides there anyway.
+          if (!desktop)
+            Container(
+              color: Colors.white,
+              child: SafeArea(
+                bottom: false,
+                child: AppTopBar(
+                  stars: user?.totalStars ?? 0,
+                  streak: user?.currentStreak ?? 0,
+                  coins: user?.coins ?? 0,
+                ),
+              ),
             ),
+          if (!desktop) Container(height: 1, color: AppColors.border),
+          // White header — shown for everyone, matching the other tabs. Guests
+          // get the same framing without the segmented tabs (like other tabs
+          // keep their header for guests), above the blurred preview + CTA.
+          _GamesHeader(
+            activeTab: _tab,
+            showTabs: !guest,
+            onTab: (i) => setState(() => _tab = i),
+            // The top bar already consumed the status-bar inset on mobile;
+            // don't let the header's SafeArea add it a second time.
+            applyTopInset: desktop,
+          ),
           Expanded(
             // Guests see a blurred preview + sign-up CTA (like the other tabs).
             child: guest
-                ? const SafeArea(bottom: false, child: _GamesGuestState())
+                // The mobile top bar already consumed the status-bar inset;
+                // only re-apply it on desktop (no top bar there).
+                ? SafeArea(
+                    top: desktop,
+                    bottom: false,
+                    child: const _GamesGuestState(),
+                  )
                 : SingleChildScrollView(
                     child: Align(
                       alignment: Alignment.topCenter,
@@ -110,10 +136,14 @@ class _GamesHeader extends StatelessWidget {
   final int activeTab;
   final bool showTabs;
   final ValueChanged<int> onTab;
+  // Whether this header should pad for the status-bar inset. False when a
+  // streak bar above it already consumed that inset (mobile).
+  final bool applyTopInset;
   const _GamesHeader({
     required this.activeTab,
     required this.showTabs,
     required this.onTab,
+    this.applyTopInset = true,
   });
 
   @override
@@ -122,20 +152,45 @@ class _GamesHeader extends StatelessWidget {
     final onChallenges = !showTabs || activeTab == 0;
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.categoryPrivacy, Color(0xFF6D4CA8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+      color: Colors.white,
       child: SafeArea(
+        top: applyTopInset,
         bottom: false,
         child: Column(
           // Stretch so the title/subtitle block fills the width and left-aligns
           // (otherwise it sizes to the text and gets centered).
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Title + subtitle block, matching TabHeader on the other tabs.
+            Padding(
+              padding: EdgeInsets.fromLTRB(20, 14, 20, showTabs ? 12 : 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    onChallenges ? 'Daily Challenges' : 'Mini Games',
+                    style: GoogleFonts.nunito(
+                      color: AppColors.textPrimary,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    onChallenges
+                        ? 'Complete challenges to earn coins'
+                        : 'Quick games to sharpen your safety skills',
+                    style: GoogleFonts.nunito(
+                      color: AppColors.textSecondary,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             // Segmented tabs (logged-in only)
             if (showTabs)
               Row(
@@ -152,36 +207,7 @@ class _GamesHeader extends StatelessWidget {
                   ),
                 ],
               ),
-            // Welcome banner (text only)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    onChallenges ? 'Daily Challenges' : 'Mini Games',
-                    style: GoogleFonts.nunito(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    onChallenges
-                        ? 'Complete challenges to earn coins.\nThey refresh every day!'
-                        : 'Fun, quick games to sharpen your\nsafety skills. Coming soon!',
-                    style: GoogleFonts.nunito(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            Container(height: 1, color: AppColors.border),
           ],
         ),
       ),
@@ -205,11 +231,12 @@ class _HeaderTab extends StatelessWidget {
           onTap: onTap,
           behavior: HitTestBehavior.opaque,
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: selected ? Colors.white : Colors.transparent,
+                  color:
+                      selected ? AppColors.categoryPrivacy : Colors.transparent,
                   width: 3,
                 ),
               ),
@@ -219,8 +246,8 @@ class _HeaderTab extends StatelessWidget {
               textAlign: TextAlign.center,
               style: GoogleFonts.nunito(
                 color: selected
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: 0.6),
+                    ? AppColors.categoryPrivacy
+                    : AppColors.textLight,
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.3,

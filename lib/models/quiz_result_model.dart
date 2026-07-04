@@ -20,6 +20,11 @@ class QuizResultModel {
   final List<String> incorrectlyAnsweredIds;
   final bool isReplay;
 
+  /// True for question-set runs (practice / daily-challenge) launched with a
+  /// fixed list of questions. These earn no stars regardless of category, which
+  /// keeps the replayable challenge quizzes from farming XP.
+  final bool isPracticeRun;
+
   QuizResultModel({
     required this.id,
     required this.userId,
@@ -38,6 +43,7 @@ class QuizResultModel {
     this.correctlyAnsweredIds = const [],
     this.incorrectlyAnsweredIds = const [],
     this.isReplay = false,
+    this.isPracticeRun = false,
   });
 
   int get percentage {
@@ -45,7 +51,7 @@ class QuizResultModel {
     return ((score / totalQuestions) * 100).round();
   }
 
-  bool get isPractice => categoryId == 'practice';
+  bool get isPractice => isPracticeRun || categoryId == 'practice';
 
   factory QuizResultModel.fromMap(Map<String, dynamic> map) {
     return QuizResultModel(
@@ -71,6 +77,7 @@ class QuizResultModel {
       incorrectlyAnsweredIds:
           List<String>.from(map['incorrectlyAnsweredIds'] ?? []),
       isReplay: map['isReplay'] ?? false,
+      isPracticeRun: map['isPracticeRun'] ?? false,
     );
   }
 
@@ -93,6 +100,7 @@ class QuizResultModel {
       'correctlyAnsweredIds': correctlyAnsweredIds,
       'incorrectlyAnsweredIds': incorrectlyAnsweredIds,
       'isReplay': isReplay,
+      'isPracticeRun': isPracticeRun,
     };
   }
 

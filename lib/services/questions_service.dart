@@ -61,6 +61,28 @@ class QuestionService {
     return _sortedByDifficulty(questions);
   }
 
+  /// Returns up to [limit] random approved questions, optionally restricted to
+  /// [categoryId]. Used by the daily challenge to launch a quiz on the spot
+  /// without the learner picking a topic. Fetches then filters/shuffles in Dart
+  /// (legacy no-status docs count as approved).
+  Future<List<QuestionModel>> getRandomApprovedQuestions({
+    String? categoryId,
+    int limit = 5,
+  }) async {
+    Query query = _db.collection('questions');
+    if (categoryId != null && categoryId.isNotEmpty) {
+      query = query.where('categoryId', isEqualTo: categoryId);
+    }
+    final snap = await query.get();
+    final approved = snap.docs
+        .map((doc) => QuestionModel.fromMap(
+            {'id': doc.id, ...doc.data() as Map<String, dynamic>}))
+        .where((q) => q.status == QuestionStatus.approved)
+        .toList()
+      ..shuffle();
+    return approved.take(limit).toList();
+  }
+
   /// Shuffles within each difficulty tier, then concatenates beginner → intermediate → advanced.
   List<QuestionModel> _sortedByDifficulty(List<QuestionModel> questions) {
     return DifficultyLevel.values

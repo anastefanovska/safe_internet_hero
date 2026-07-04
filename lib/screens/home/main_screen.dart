@@ -13,6 +13,7 @@ import '../auth/splash_screen.dart';
 import '../profile/settings_screen.dart';
 import 'home_screen.dart';
 import '../learn/learn_screen.dart';
+import '../games/games_screen.dart';
 import '../shop/shop_screen.dart';
 import '../social/leaderboard_screen.dart';
 import '../profile/profile_screen.dart';
@@ -38,6 +39,7 @@ class _MainScreenState extends State<MainScreen> {
   static const _screens = [
     HomeScreen(),
     LearnScreen(),
+    GamesScreen(),
     ShopScreen(),
     LeaderboardScreen(),
     ProfileScreen(showBackButton: false),
@@ -115,6 +117,7 @@ class _DesktopRail extends StatelessWidget {
   static const _items = [
     (svg: 'assets/images/home.svg', label: 'Home'),
     (svg: 'assets/images/learn.svg', label: 'Learn'),
+    (svg: 'assets/images/games.svg', label: 'Games'),
     (svg: 'assets/images/store.svg', label: 'Shop'),
     (svg: 'assets/images/leaderboard.svg', label: 'Leaderboard'),
     (svg: 'assets/images/profile.svg', label: 'Profile'),
@@ -354,6 +357,7 @@ class _DuolingoBottomNav extends StatelessWidget {
   static const _svgPaths = [
     'assets/images/home.svg',
     'assets/images/learn.svg',
+    'assets/images/games.svg',
     'assets/images/store.svg',
     'assets/images/leaderboard.svg',
     'assets/images/profile.svg',
@@ -382,8 +386,10 @@ class _DuolingoBottomNav extends StatelessWidget {
                     children: [
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
+                        // Tighter horizontal padding so all six tabs fit without
+                        // overflowing on narrow phones.
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 6),
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14),
                           border: selected
@@ -392,8 +398,8 @@ class _DuolingoBottomNav extends StatelessWidget {
                         ),
                         child: SvgPicture.asset(
                           _svgPaths[i],
-                          width: 30,
-                          height: 30,
+                          width: 28,
+                          height: 28,
                         ),
                       ),
                     ],
@@ -428,7 +434,7 @@ class _DesktopSidePanel extends StatelessWidget {
 
     // The Profile tab already shows stats in the centre, so show friends
     // here instead — otherwise both sides repeat the same stats.
-    if (currentIndex == 4) {
+    if (currentIndex == 5) {
       return _ProfileSidePanel(user: user, auth: auth);
     }
 

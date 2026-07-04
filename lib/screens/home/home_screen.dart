@@ -67,7 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Content children shared between desktop and mobile layouts.
     final contentChildren = <Widget>[
-      // Practice weak spots
+      // Practice weak spots — surfaced at the top when the user has enough
+      // review material.
       if (!isGuest &&
           user != null &&
           user.incorrectlyAnsweredIds.length >= 3) ...[
@@ -82,8 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 topicId: '',
                 topicName: 'Weak Spots',
                 color: AppColors.orange,
-                specificIds:
-                    user.incorrectlyAnsweredIds.take(10).toList(),
+                specificIds: user.incorrectlyAnsweredIds.take(10).toList(),
               ),
             ),
           ),

@@ -185,6 +185,7 @@ class _QuizScreenState extends State<QuizScreen> {
       correctlyAnsweredIds: correctIds,
       incorrectlyAnsweredIds: incorrectIds,
       isReplay: widget.forReplay,
+      isPracticeRun: widget.isPractice,
     );
 
     final catId = widget.categoryId;

@@ -7,6 +7,7 @@ import '../../core/theme.dart';
 import '../../models/quiz_result_model.dart';
 import '../../models/topic_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/daily_challenge_service.dart';
 import '../../services/questions_service.dart';
 import '../../services/shop_service.dart';
 import '../../services/sound_service.dart';
@@ -139,6 +140,13 @@ class _QuizResultScreenState extends State<QuizResultScreen>
           if (mounted) setState(() {});
         }
       }
+
+      // Advance today's daily challenge (replays returned above, so they're
+      // excluded; practice runs still count toward the practice challenge).
+      try {
+        await DailyChallengeService()
+            .recordQuizCompletion(user.id, widget.result);
+      } catch (_) {}
 
       if (!mounted) return;
       await auth.refreshUser();

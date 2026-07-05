@@ -487,28 +487,42 @@ class _QuizResultScreenState extends State<QuizResultScreen>
                       const SizedBox(height: 12),
                     ],
 
+                    // Returns to the topic list. Primary on its own, but steps
+                    // back to a secondary style when the "Up next" card above is
+                    // the main call-to-action, so moving forward stays highlighted.
                     AppButton(
-                      label: isPractice ? 'Done' : 'Continue',
-                      variant: AppButtonVariant.primary,
+                      label: isPractice ? 'Done' : 'Back to Topics',
+                      variant: (!isPractice && _nextTopic != null)
+                          ? AppButtonVariant.secondary
+                          : AppButtonVariant.primary,
                       onTap: _goHome,
                     )
                         .animate(delay: 1000.ms)
                         .fadeIn(duration: 300.ms)
                         .slideY(begin: 0.1, end: 0),
 
+                    // Redo the same topic (no rewards). Kept subtle so it never
+                    // competes with moving forward.
                     if (widget.onPracticeAgain != null) ...[
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 16),
                       GestureDetector(
                         onTap: _practiceAgain,
-                        child: Text(
-                          'Play Again',
-                          style: GoogleFonts.nunito(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            decoration: TextDecoration.underline,
-                            decorationColor: AppColors.textSecondary,
-                          ),
+                        behavior: HitTestBehavior.opaque,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.refresh_rounded,
+                                size: 16, color: AppColors.textSecondary),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Replay this topic',
+                              style: GoogleFonts.nunito(
+                                color: AppColors.textSecondary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                       ).animate(delay: 1100.ms).fadeIn(duration: 300.ms),
                     ],
@@ -603,9 +617,9 @@ class _NextTopicCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border, width: 1.5),
+        border: Border.all(color: color.withValues(alpha: 0.35), width: 1.5),
       ),
       child: Row(
         children: [

@@ -90,6 +90,28 @@ class QuestionService {
         .toList();
   }
 
+  /// Existing question texts for a topic, used by the AI generator to avoid
+  /// producing duplicates. Includes every status (approved/pending/rejected) so
+  /// we don't re-generate something already on file. Two equality filters only —
+  /// no `orderBy`, so no composite index is needed (same shape as [getQuestions]).
+  Future<List<String>> getExistingQuestionTexts({
+    required String categoryId,
+    required String topicId,
+  }) async {
+    Query query = _db
+        .collection('questions')
+        .where('categoryId', isEqualTo: categoryId);
+    if (topicId.isNotEmpty) {
+      query = query.where('topicId', isEqualTo: topicId);
+    }
+    final snap = await query.get();
+    return snap.docs
+        .map((doc) =>
+            ((doc.data() as Map<String, dynamic>)['text'] ?? '').toString().trim())
+        .where((t) => t.isNotEmpty)
+        .toList();
+  }
+
   Future<void> seedQuestions(List<QuestionModel> questions) async {
     const chunkSize = 400;
     for (var i = 0; i < questions.length; i += chunkSize) {

@@ -6,6 +6,7 @@ import '../../models/question_model.dart';
 import '../../services/moderator_service.dart';
 import '../../services/questions_service.dart';
 import '../../widgets/admin_widgets.dart';
+import 'generate_questions_screen.dart';
 import 'import_data_screen.dart';
 import 'manage_categories_topics_screen.dart';
 import 'manage_learning_content_screen.dart';
@@ -69,6 +70,14 @@ class AdminDashboardScreen extends StatelessWidget {
                   icon: Icons.quiz_rounded,
                   onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const ManageQuestionsScreen())),
+                ),
+                const SizedBox(height: 10),
+                AdminDashboardCard(
+                  title: 'Generate with AI',
+                  subtitle: 'Draft quiz questions with AI, then review and save.',
+                  icon: Icons.auto_awesome_rounded,
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const GenerateQuestionsScreen())),
                 ),
                 const SizedBox(height: 10),
                 AdminDashboardCard(

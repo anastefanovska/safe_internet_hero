@@ -1,0 +1,48 @@
+name: Build APK
+
+# Builds a release APK every time master is updated.
+on:
+  push:
+    branches: [master]
+  # Also lets you trigger it by hand from the Actions tab.
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to publish the release and upload the APK
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.7'
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      # Keeps a single, always-up-to-date "latest" release with the newest APK,
+      # so the download link never changes.
+      - name: Publish latest APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest APK
+          body: Automatically built from the newest commit on master.
+          make_latest: true
+          files: build/app/outputs/flutter-apk/app-release.apk

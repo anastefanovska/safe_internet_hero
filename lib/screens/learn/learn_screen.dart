@@ -574,12 +574,14 @@ class _ContentCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(18),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // ── Left panel ───────────────────────────────────────
-                ClipRRect(
+          child: Stack(
+            children: [
+              // ── Left panel (stretches to the card's natural height) ──
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: ClipRRect(
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(18),
                     bottomLeft: Radius.circular(18),
@@ -647,14 +649,17 @@ class _ContentCard extends StatelessWidget {
                           ),
                   ),
                 ),
+              ),
 
-                // ── Right content ─────────────────────────────────────
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+              // ── Right content ─────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.only(left: 80),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                         // Topic pill
                         if (topicLabel.isNotEmpty) ...[
                           Container(
@@ -707,8 +712,7 @@ class _ContentCard extends StatelessWidget {
                           ),
                         ],
 
-                        const Spacer(),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
 
                         // Footer
                         Row(children: [
@@ -764,9 +768,9 @@ class _ContentCard extends StatelessWidget {
                 ),
               ],
             ),
-          ),
         ),
       ),
     );
   }
 }
+

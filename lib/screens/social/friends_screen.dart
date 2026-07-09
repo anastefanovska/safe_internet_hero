@@ -78,7 +78,7 @@ class _AllFriendsScreenState extends State<AllFriendsScreen>
   }
 
   void _onNavTap(BuildContext context, int index) {
-    if (index == 3) {
+    if (index == 5) {
       Navigator.pop(context);
     } else {
       Navigator.pushAndRemoveUntil(
@@ -241,16 +241,19 @@ class _AllFriendsBottomNav extends StatelessWidget {
   final ValueChanged<int> onTap;
   const _AllFriendsBottomNav({required this.onTap});
 
+  // Must mirror MainScreen's tab order so tapping navigates to the right tab.
   static const _svgPaths = [
     'assets/images/home.svg',
-    'assets/images/leaderboard.svg',
     'assets/images/learn.svg',
+    'assets/images/games.svg',
+    'assets/images/store.svg',
+    'assets/images/leaderboard.svg',
     'assets/images/profile.svg',
   ];
 
   @override
   Widget build(BuildContext context) {
-    const selectedIndex = 3; // profile tab
+    const selectedIndex = 5; // profile tab
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -272,8 +275,10 @@ class _AllFriendsBottomNav extends StatelessWidget {
                     children: [
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
+                        // Tighter horizontal padding so all six tabs fit without
+                        // overflowing on narrow phones.
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 6),
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14),
                           border: selected
@@ -282,8 +287,8 @@ class _AllFriendsBottomNav extends StatelessWidget {
                         ),
                         child: SvgPicture.asset(
                           _svgPaths[i],
-                          width: 30,
-                          height: 30,
+                          width: 28,
+                          height: 28,
                         ),
                       ),
                     ],

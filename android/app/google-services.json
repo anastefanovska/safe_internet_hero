@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "195252538925",
+    "project_id": "safe-internet-hero",
+    "storage_bucket": "safe-internet-hero.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195252538925:android:76d6e05892002b162df2a4",
+        "android_client_info": {
+          "package_name": "com.example.safe_internet_hero"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDehb-HZw9xkjFWWQ-uDG8nH-GVqIzJcGM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -42,9 +42,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Firebase — NEVER push these
-google-services.json
-firebase_options.dart
+# Firebase client config — committed so CI can build the APK.
+# These keys are public-by-design (they ship inside every distributed APK);
+# real security comes from Firestore rules + App Check, not from hiding them.
+# NOTE: never commit a service-account key (serviceAccountKey.json) — that IS secret.
 GoogleService-Info.plist
 firebase.json
 

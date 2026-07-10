@@ -184,24 +184,43 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
     }
     setState(() => _saving = true);
     try {
-      final question = QuestionModel(
-        id: widget.editQuestion?.id ?? '',
-        categoryId: _categoryId!,
-        topicId: _topicId!,
-        text: _textCtrl.text.trim(),
-        type: _type,
-        options: _options,
-        correctIndex: _correctIndex,
-        explanation: _explanationCtrl.text.trim(),
-        difficulty: _difficulty,
-        points: _points,
-        // Admin edits keep the question's current status; new questions and
-        // moderator (re)submissions follow the pending/approved rule.
-        status: _isEdit && !_pending
-            ? widget.editQuestion!.status
-            : (_pending ? QuestionStatus.pending : QuestionStatus.approved),
-        authorId: widget.authorId,
-      );
+      final existing = widget.editQuestion;
+      // Admin edits keep the question's current status; new questions and
+      // moderator (re)submissions follow the pending/approved rule.
+      final status = _isEdit && !_pending
+          ? existing!.status
+          : (_pending ? QuestionStatus.pending : QuestionStatus.approved);
+
+      // Editing goes through copyWith so the question's other-language copy
+      // survives; a brand-new question has no translations to preserve.
+      final question = existing != null
+          ? existing.copyWith(
+              categoryId: _categoryId!,
+              topicId: _topicId!,
+              text: _textCtrl.text.trim(),
+              type: _type,
+              options: _options,
+              correctIndex: _correctIndex,
+              explanation: _explanationCtrl.text.trim(),
+              difficulty: _difficulty,
+              points: _points,
+              status: status,
+              authorId: widget.authorId,
+            )
+          : QuestionModel(
+              id: '',
+              categoryId: _categoryId!,
+              topicId: _topicId!,
+              text: _textCtrl.text.trim(),
+              type: _type,
+              options: _options,
+              correctIndex: _correctIndex,
+              explanation: _explanationCtrl.text.trim(),
+              difficulty: _difficulty,
+              points: _points,
+              status: status,
+              authorId: widget.authorId,
+            );
       if (_isEdit) {
         // Resubmitting a revision: update in place and bounce back to pending.
         await _questionService.updateQuestion(question, resetForReview: _pending);

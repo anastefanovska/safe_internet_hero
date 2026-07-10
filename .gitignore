@@ -53,3 +53,6 @@ firebase.json
 android/local.properties
 android/.gradle/
 android/key.properties
+
+# Generated from lib/l10n/*.arb on every build (see l10n.yaml)
+lib/l10n/app_localizations*.dart

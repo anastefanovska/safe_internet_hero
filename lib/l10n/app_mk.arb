@@ -1,0 +1,18 @@
+{
+  "@@locale": "mk",
+
+  "_comment": "Populate the Macedonian values below. Any key you delete or leave out falls back to the English string in app_en.arb, so the app never shows a blank label. Keys must match app_en.arb exactly.",
+
+  "settingsTitle": "Поставки",
+  "settingsDone": "ГОТОВО",
+  "settingsSectionGame": "Игра",
+  "settingsSectionAccount": "Сметка",
+  "settingsSectionSupport": "Поддршка",
+  "settingsSoundEffects": "Звучни ефекти",
+  "settingsVibration": "Вибрации",
+
+  "settingsLanguage": "Јазик",
+  "languageEnglish": "English",
+  "languageMacedonian": "Македонски",
+  "languagePickerTitle": "Изберете јазик"
+}

@@ -90,10 +90,6 @@ class QuestionService {
         .toList();
   }
 
-  /// Existing question texts for a topic, used by the AI generator to avoid
-  /// producing duplicates. Includes every status (approved/pending/rejected) so
-  /// we don't re-generate something already on file. Two equality filters only —
-  /// no `orderBy`, so no composite index is needed (same shape as [getQuestions]).
   Future<List<String>> getExistingQuestionTexts({
     required String categoryId,
     required String topicId,
@@ -106,10 +102,43 @@ class QuestionService {
     }
     final snap = await query.get();
     return snap.docs
-        .map((doc) =>
-            ((doc.data() as Map<String, dynamic>)['text'] ?? '').toString().trim())
+        .map((doc) => QuestionModel.textOf(doc.data() as Map<String, dynamic>,
+            lang: 'en').trim())
         .where((t) => t.isNotEmpty)
         .toList();
+  }
+
+  /// Every question in the collection, resolved in English, for the admin
+  /// translation tool. English because it is the source language the AI
+  /// translates *from* — not whatever language the admin has the app set to.
+  Future<List<QuestionModel>> getAllQuestionsForTranslation() async {
+    final snap = await _db.collection('questions').get();
+    return snap.docs
+        .map((doc) =>
+            QuestionModel.fromMap({'id': doc.id, ...doc.data()}, lang: 'en'))
+        .toList();
+  }
+
+  /// Files a translation under [lang] on the three translatable fields,
+  /// preserving the languages already on the document.
+  ///
+  /// [question] must have been loaded with `lang: 'en'` (see
+  /// [getAllQuestionsForTranslation]) — its resolved values are the English
+  /// copy that gets carried across. Only these three fields are written, so a
+  /// question edited elsewhere in the meantime keeps its other changes.
+  Future<void> saveTranslation(
+    QuestionModel question, {
+    required String lang,
+    required String text,
+    required List<String> options,
+    required String explanation,
+  }) async {
+    await _db.collection('questions').doc(question.id).update({
+      'text': question.fieldWithTranslation('text', text, lang),
+      'options': question.fieldWithTranslation('options', options, lang),
+      'explanation':
+          question.fieldWithTranslation('explanation', explanation, lang),
+    });
   }
 
   Future<void> seedQuestions(List<QuestionModel> questions) async {

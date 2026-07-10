@@ -1,0 +1,43 @@
+{
+  "@@locale": "en",
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Title bar of the settings screen"
+  },
+  "settingsDone": "DONE",
+  "@settingsDone": {
+    "description": "Button that closes the settings screen"
+  },
+  "settingsSectionGame": "Game",
+  "@settingsSectionGame": {
+    "description": "Header above the sound and vibration toggles"
+  },
+  "settingsSectionAccount": "Account",
+  "@settingsSectionAccount": {
+    "description": "Header above the account settings rows"
+  },
+  "settingsSectionSupport": "Support",
+  "@settingsSectionSupport": {
+    "description": "Header above the help centre row"
+  },
+  "settingsSoundEffects": "Sound effects",
+  "settingsVibration": "Vibration",
+
+  "settingsLanguage": "Language",
+  "@settingsLanguage": {
+    "description": "Row label for the language picker"
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Always written in English, even in the Macedonian file, so a lost user can find their way back"
+  },
+  "languageMacedonian": "Македонски",
+  "@languageMacedonian": {
+    "description": "Always written in Macedonian, even in the English file, for the same reason"
+  },
+  "languagePickerTitle": "Choose a language",
+  "@languagePickerTitle": {
+    "description": "Title of the language picker sheet"
+  }
+}

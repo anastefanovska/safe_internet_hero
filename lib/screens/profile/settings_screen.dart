@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:safe_internet_hero/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import '../../core/app_locale.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../services/haptic_service.dart';
 import '../../services/sound_service.dart';
 import '../auth/splash_screen.dart';
@@ -12,6 +15,7 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -42,11 +46,11 @@ class SettingsScreen extends StatelessWidget {
                           )
                         : null,
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Settings',
+                      l10n.settingsTitle,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
@@ -57,12 +61,12 @@ class SettingsScreen extends StatelessWidget {
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     behavior: HitTestBehavior.opaque,
-                    child: const SizedBox(
+                    child: SizedBox(
                       width: 48,
                       child: Text(
-                        'DONE',
+                        l10n.settingsDone,
                         textAlign: TextAlign.right,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.blue,
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
@@ -89,20 +93,20 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     // Game feel — real, working toggles for the app's sound &
                     // haptics (session-scoped, like the services they drive).
-                    _SectionHeader('Game'),
+                    _SectionHeader(l10n.settingsSectionGame),
                     const SizedBox(height: 8),
                     _ToggleGroup(
                       items: [
                         _ToggleRow(
                           icon: Icons.volume_up_rounded,
-                          label: 'Sound effects',
+                          label: l10n.settingsSoundEffects,
                           initialValue: !SoundService.instance.isMuted,
                           onChanged: (on) =>
                               SoundService.instance.muted = !on,
                         ),
                         _ToggleRow(
                           icon: Icons.vibration_rounded,
-                          label: 'Vibration',
+                          label: l10n.settingsVibration,
                           initialValue: HapticService.instance.isEnabled,
                           onChanged: (on) {
                             HapticService.instance.enabled = on;
@@ -110,13 +114,14 @@ class SettingsScreen extends StatelessWidget {
                             if (on) HapticService.instance.medium();
                           },
                         ),
+                        const _LanguageRow(),
                       ],
                     ),
 
                     const SizedBox(height: 28),
 
                     // Account section
-                    _SectionHeader('Account'),
+                    _SectionHeader(l10n.settingsSectionAccount),
                     const SizedBox(height: 8),
                     _SettingsGroup(
                       items: [
@@ -130,7 +135,7 @@ class SettingsScreen extends StatelessWidget {
                     const SizedBox(height: 28),
 
                     // Support section
-                    _SectionHeader('Support'),
+                    _SectionHeader(l10n.settingsSectionSupport),
                     const SizedBox(height: 8),
                     _SettingsGroup(
                       items: [
@@ -404,6 +409,113 @@ class _ToggleRowState extends State<_ToggleRow> {
         ],
       ),
     );
+  }
+}
+
+// ── Language row + picker ──────────────────────────────────────────────────────
+
+class _LanguageRow extends StatelessWidget {
+  const _LanguageRow();
+
+  /// Each language names itself in its own tongue, so someone stranded in a
+  /// language they can't read still recognises the way out.
+  static String _labelOf(AppLanguage language, AppLocalizations l10n) =>
+      switch (language) {
+        AppLanguage.en => l10n.languageEnglish,
+        AppLanguage.mk => l10n.languageMacedonian,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final current = context.watch<LocaleProvider>().language;
+
+    return GestureDetector(
+      onTap: () => _pick(context),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Row(
+          children: [
+            const Icon(Icons.language_rounded,
+                color: AppColors.textSecondary, size: 22),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                l10n.settingsLanguage,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Text(
+              _labelOf(current, l10n),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right_rounded,
+                color: AppColors.textLight, size: 22),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pick(BuildContext context) async {
+    final provider = context.read<LocaleProvider>();
+    final l10n = AppLocalizations.of(context);
+
+    final chosen = await showModalBottomSheet<AppLanguage>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 20),
+            Text(
+              l10n.languagePickerTitle,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 12),
+            for (final language in AppLanguage.values)
+              ListTile(
+                title: Text(
+                  _labelOf(language, l10n),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                trailing: language == provider.language
+                    ? const Icon(Icons.check_rounded, color: AppColors.green)
+                    : null,
+                onTap: () => Navigator.pop(sheetContext, language),
+              ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+
+    if (chosen != null) {
+      HapticService.instance.medium();
+      await provider.setLanguage(chosen);
+    }
   }
 }
 

@@ -11,6 +11,7 @@ import 'import_data_screen.dart';
 import 'manage_categories_topics_screen.dart';
 import 'manage_learning_content_screen.dart';
 import 'manage_moderators_screen.dart';
+import 'translate_questions_screen.dart';
 import 'manage_questions_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
@@ -78,6 +79,14 @@ class AdminDashboardScreen extends StatelessWidget {
                   icon: Icons.auto_awesome_rounded,
                   onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const GenerateQuestionsScreen())),
+                ),
+                const SizedBox(height: 10),
+                AdminDashboardCard(
+                  title: 'Translate Questions',
+                  subtitle: 'Add a Macedonian copy of every question with AI.',
+                  icon: Icons.translate_rounded,
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const TranslateQuestionsScreen())),
                 ),
                 const SizedBox(height: 10),
                 AdminDashboardCard(

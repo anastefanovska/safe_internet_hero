@@ -80,10 +80,9 @@ class _DraftQuestionEditorScreenState extends State<DraftQuestionEditorScreen> {
       ));
       return;
     }
-    final updated = QuestionModel(
-      id: widget.draft.id,
-      categoryId: widget.draft.categoryId,
-      topicId: widget.draft.topicId,
+    // copyWith, not a fresh QuestionModel: it carries the draft's translations
+    // through so editing one language never drops the other.
+    final updated = widget.draft.copyWith(
       text: _textCtrl.text.trim(),
       type: _type,
       options: _isTrueFalse
@@ -93,8 +92,6 @@ class _DraftQuestionEditorScreenState extends State<DraftQuestionEditorScreen> {
       explanation: _explanationCtrl.text.trim(),
       difficulty: _difficulty,
       points: _points,
-      status: widget.draft.status,
-      authorId: widget.draft.authorId,
     );
     Navigator.pop(context, updated);
   }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/user_model.dart';
@@ -133,7 +134,7 @@ class _AllFriendsScreenState extends State<AllFriendsScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'All friends',
+                          AppLocalizations.of(context).friendsAllFriends,
                           style: GoogleFonts.nunito(
                             color: Colors.white,
                             fontSize: 24,
@@ -142,7 +143,7 @@ class _AllFriendsScreenState extends State<AllFriendsScreen>
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Stay connected and cheer each other on',
+                          AppLocalizations.of(context).friendsSubtitle,
                           style: GoogleFonts.nunito(
                             color: Colors.white.withValues(alpha: 0.85),
                             fontSize: 13,
@@ -180,13 +181,13 @@ class _AllFriendsScreenState extends State<AllFriendsScreen>
                 tabs: [
                   Tab(
                     text: _friends.isEmpty
-                        ? 'FOLLOWING'
-                        : 'FOLLOWING (${_friends.length})',
+                        ? AppLocalizations.of(context).profileFollowing
+                        : AppLocalizations.of(context).profileFollowingCount(_friends.length),
                   ),
                   Tab(
                     text: _requesters.isEmpty
-                        ? 'REQUESTS'
-                        : 'REQUESTS (${_requesters.length})',
+                        ? AppLocalizations.of(context).profileRequests
+                        : AppLocalizations.of(context).profileRequestsCount(_requesters.length),
                   ),
                 ],
               ),
@@ -333,16 +334,16 @@ class _FollowingTab extends StatelessWidget {
                 height: 120,
               ),
               const SizedBox(height: 20),
-              const Text('No friends yet',
-                  style: TextStyle(
+              Text(AppLocalizations.of(context).friendsNoFriends,
+                  style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.w800,
                       fontSize: 16)),
               const SizedBox(height: 8),
-              const Text(
-                'Learning is more fun and effective\nwhen you connect with others',
+              Text(
+                AppLocalizations.of(context).profileFollowingEmpty,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                     height: 1.5),
@@ -391,7 +392,7 @@ class _FollowingTab extends StatelessWidget {
                                       color: AppColors.textPrimary,
                                       fontWeight: FontWeight.w800,
                                       fontSize: 14)),
-                              Text('${friend.totalStars} XP',
+                              Text(AppLocalizations.of(context).profileXp(friend.totalStars),
                                   style: const TextStyle(
                                       color: AppColors.textSecondary,
                                       fontSize: 12,
@@ -408,8 +409,8 @@ class _FollowingTab extends StatelessWidget {
                               color: AppColors.redLight,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Text('Remove',
-                                style: TextStyle(
+                            child: Text(AppLocalizations.of(context).friendsRemove,
+                                style: const TextStyle(
                                     color: AppColors.red,
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700)),
@@ -434,6 +435,7 @@ class _FollowingTab extends StatelessWidget {
   }
 
   Future<void> _confirmRemove(BuildContext context, UserModel friend) async {
+    final l10n = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => Dialog(
@@ -454,17 +456,17 @@ class _FollowingTab extends StatelessWidget {
                     color: AppColors.red, size: 26),
               ),
               const SizedBox(height: 12),
-              Text('Remove ${friend.username}?',
+              Text(l10n.friendsRemoveConfirm(friend.username),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 17,
                       fontWeight: FontWeight.w900)),
               const SizedBox(height: 8),
-              const Text(
-                'They will no longer be on your friends list.',
+              Text(
+                l10n.friendsRemoveBody,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                     color: AppColors.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: 20),
@@ -481,9 +483,9 @@ class _FollowingTab extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: AppColors.border),
                         ),
-                        child: const Text('Cancel',
+                        child: Text(l10n.commonCancel,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: AppColors.textSecondary,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 14)),
@@ -501,9 +503,9 @@ class _FollowingTab extends StatelessWidget {
                           color: AppColors.red,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text('Remove',
+                        child: Text(l10n.friendsRemove,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 14)),
@@ -555,16 +557,16 @@ class _RequestsTab extends StatelessWidget {
                 height: 120,
               ),
               const SizedBox(height: 20),
-              const Text('No pending requests',
-                  style: TextStyle(
+              Text(AppLocalizations.of(context).profileNoRequests,
+                  style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.w800,
                       fontSize: 16)),
               const SizedBox(height: 8),
-              const Text(
-                'When someone sends you a friend request\nit will appear here',
+              Text(
+                AppLocalizations.of(context).friendsNoRequestsBody,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                     height: 1.5),
@@ -651,7 +653,7 @@ class _FriendRequestRow extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                         color: AppColors.textPrimary)),
-                Text('${requester.totalStars} XP',
+                Text(AppLocalizations.of(context).profileXp(requester.totalStars),
                     style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,
@@ -671,7 +673,7 @@ class _FriendRequestRow extends StatelessWidget {
               decoration: BoxDecoration(
                   color: AppColors.green,
                   borderRadius: BorderRadius.circular(10)),
-              child: const Text('Accept',
+              child: Text(AppLocalizations.of(context).commonAccept,
                   style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
@@ -693,8 +695,8 @@ class _FriendRequestRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: AppColors.border),
               ),
-              child: const Text('Decline',
-                  style: TextStyle(
+              child: Text(AppLocalizations.of(context).commonDecline,
+                  style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontWeight: FontWeight.w700,
                       fontSize: 12)),

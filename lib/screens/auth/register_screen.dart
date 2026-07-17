@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../models/enums.dart';
 import '../../providers/auth_provider.dart';
@@ -32,12 +33,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _register() async {
+    final l10n = AppLocalizations.of(context);
     final username = _usernameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     if (username.isEmpty || email.isEmpty || password.isEmpty) {
-      _snack('Please fill in all fields');
+      _snack(l10n.authFillAllFields);
       return;
     }
 
@@ -45,7 +47,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final taken = await FriendService().isUsernameTaken(username);
     if (!mounted) return;
     if (taken) {
-      _snack('That username is already taken — try another');
+      _snack(l10n.registerUsernameTaken);
       return;
     }
 
@@ -61,7 +63,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => const PostLoginSplash()));
     } else {
-      _snack(auth.errorMessage ?? 'Registration failed');
+      _snack(auth.errorMessage ?? l10n.registerFailed);
     }
   }
 
@@ -78,6 +80,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final l10n = AppLocalizations.of(context);
     final desktop = isDesktop(context);
 
     Widget content = Column(
@@ -108,7 +111,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Create account',
+                          l10n.registerTitle,
                           style: GoogleFonts.nunito(
                             color: Colors.white,
                             fontSize: 28,
@@ -117,7 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Join thousands of internet heroes',
+                          l10n.registerSubtitle,
                           style: GoogleFonts.nunito(
                             color: Colors.white.withValues(alpha: 0.85),
                             fontSize: 14,
@@ -147,7 +150,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     AppTextField(
                       controller: _usernameController,
-                      hint: 'Username',
+                      hint: l10n.registerUsernameHint,
                       icon: Icons.person_outline_rounded,
                     ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.1, end: 0),
 
@@ -155,7 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     AppTextField(
                       controller: _emailController,
-                      hint: 'Email address',
+                      hint: l10n.authEmailHint,
                       icon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                     )
@@ -167,7 +170,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     AppTextField(
                       controller: _passwordController,
-                      hint: 'Password',
+                      hint: l10n.authPasswordHint,
                       icon: Icons.lock_outline_rounded,
                       obscure: _obscurePassword,
                       suffixIcon: IconButton(
@@ -189,7 +192,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 32),
 
                     AppButton(
-                      label: auth.isLoading ? 'Creating…' : 'CREATE ACCOUNT',
+                      label: auth.isLoading ? l10n.registerCreating : l10n.registerButton,
                       variant: AppButtonVariant.success,
                       icon: Icons.check_rounded,
                       onTap: auth.isLoading ? null : _register,
@@ -212,9 +215,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600),
                               children: [
-                                const TextSpan(text: 'Already have an account? '),
+                                TextSpan(text: l10n.registerHaveAccount),
                                 TextSpan(
-                                  text: 'Log in',
+                                  text: l10n.registerLogIn,
                                   style: GoogleFonts.nunito(
                                     color: AppColors.blue,
                                     fontWeight: FontWeight.w900,

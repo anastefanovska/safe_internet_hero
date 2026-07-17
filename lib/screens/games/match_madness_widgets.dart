@@ -298,14 +298,15 @@ class _MatchResultState extends State<_MatchResult>
     super.dispose();
   }
 
-  String get _headline => switch (widget.stars) {
-        3 => 'Match master!',
-        2 => 'Great matching!',
-        1 => 'Nice effort!',
-        _ => 'Keep practising!',
+  String _headline(AppLocalizations l10n) => switch (widget.stars) {
+        3 => l10n.matchHeadline3,
+        2 => l10n.matchHeadline2,
+        1 => l10n.matchHeadline1,
+        _ => l10n.matchHeadline0,
       };
 
   Widget _coinLine() {
+    final l10n = AppLocalizations.of(context);
     if (widget.awarding) {
       return const SizedBox(
         height: 20,
@@ -314,11 +315,11 @@ class _MatchResultState extends State<_MatchResult>
       );
     }
     if (widget.awardedCoins > 0) {
-      return _MatchCoinChip(text: '+${widget.awardedCoins} coins earned');
+      return _MatchCoinChip(text: l10n.miniGameCoinsEarned(widget.awardedCoins));
     }
     final msg = widget.coinsPossible > 0
-        ? 'Coins already earned today — play on for fun!'
-        : 'Match more pairs to earn coins!';
+        ? l10n.miniGameCoinsAlready
+        : l10n.matchCoinsMore;
     return Text(
       msg,
       textAlign: TextAlign.center,
@@ -332,9 +333,10 @@ class _MatchResultState extends State<_MatchResult>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final subtitle = widget.cleared
-        ? 'All ${widget.total} pairs matched in ${_fmtTime(widget.elapsed)}'
-        : 'You matched ${widget.score} of ${widget.total} pairs';
+        ? l10n.matchAllPairs(widget.total, _fmtTime(widget.elapsed))
+        : l10n.matchSomePairs(widget.score, widget.total);
     return Stack(
       alignment: Alignment.topCenter,
       children: [
@@ -365,7 +367,7 @@ class _MatchResultState extends State<_MatchResult>
               ),
               const SizedBox(height: 18),
               Text(
-                _headline,
+                _headline(l10n),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.nunito(
                   color: AppColors.textPrimary,
@@ -388,14 +390,14 @@ class _MatchResultState extends State<_MatchResult>
               _coinLine(),
               const SizedBox(height: 28),
               AppButton(
-                label: 'Play again',
+                label: l10n.miniGamePlayAgain,
                 icon: Icons.refresh_rounded,
                 variant: AppButtonVariant.primary,
                 onTap: widget.onPlayAgain,
               ),
               const SizedBox(height: 12),
               AppButton(
-                label: 'Done',
+                label: l10n.commonDone,
                 variant: AppButtonVariant.secondary,
                 onTap: widget.onDone,
               ),

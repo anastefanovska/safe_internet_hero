@@ -1,9 +1,32 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/app_locale.dart';
 import '../models/category_model.dart';
 import '../models/topic_model.dart';
 
 class TopicsService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  /// Every topic, for the admin translation tool.
+  Future<List<TopicModel>> getAllTopicsForTranslation() async {
+    final snap = await _db.collection('topics').get();
+    return snap.docs
+        .map((d) => TopicModel.fromMap({'id': d.id, ...d.data()}))
+        .toList();
+  }
+
+  /// Files a translation under [lang] on a topic's name/desc, keeping any
+  /// language already present.
+  Future<void> saveTopicTranslation(
+    TopicModel topic, {
+    required String lang,
+    required String name,
+    required String desc,
+  }) async {
+    await _db.collection('topics').doc(topic.id).update({
+      'name': mergeLocalized(topic.nameRaw, name, lang),
+      'desc': mergeLocalized(topic.descRaw, desc, lang),
+    });
+  }
 
 
   Stream<List<CategoryModel>> watchCategories() {

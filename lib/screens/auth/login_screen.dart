@@ -2,6 +2,7 @@
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
@@ -30,10 +31,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
+    final l10n = AppLocalizations.of(context);
     if (_emailController.text.trim().isEmpty ||
         _passwordController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Please fill in all fields'),
+        content: Text(l10n.authFillAllFields),
         backgroundColor: AppColors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -54,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(auth.errorMessage ?? 'Login failed'),
+        content: Text(auth.errorMessage ?? l10n.loginFailed),
         backgroundColor: AppColors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -65,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final l10n = AppLocalizations.of(context);
     final desktop = isDesktop(context);
 
     Widget content = Column(
@@ -96,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Welcome back!',
+                          l10n.loginWelcomeBack,
                           style: GoogleFonts.nunito(
                             color: Colors.white,
                             fontSize: 30,
@@ -108,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             .slideY(begin: 0.1, end: 0),
                         const SizedBox(height: 4),
                         Text(
-                          'Login to continue your journey',
+                          l10n.loginSubtitle,
                           style: GoogleFonts.nunito(
                             color: Colors.white.withValues(alpha: 0.85),
                             fontSize: 14,
@@ -142,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Email
                     AppTextField(
                       controller: _emailController,
-                      hint: 'Email address',
+                      hint: l10n.authEmailHint,
                       icon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                     )
@@ -155,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Password
                     AppTextField(
                       controller: _passwordController,
-                      hint: 'Password',
+                      hint: l10n.authPasswordHint,
                       icon: Icons.lock_outline_rounded,
                       obscure: _obscurePassword,
                       suffixIcon: IconButton(
@@ -177,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 32),
 
                     AppButton(
-                      label: auth.isLoading ? 'Logging in…' : 'LOG IN',
+                      label: auth.isLoading ? l10n.loginLoggingIn : l10n.loginButton,
                       variant: AppButtonVariant.primary,
                       onTap: auth.isLoading ? null : _login,
                     )
@@ -195,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 thickness: 1.5)),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Text('OR',
+                          child: Text(l10n.commonOr,
                               style: GoogleFonts.nunito(
                                   color: AppColors.textLight,
                                   fontSize: 12,
@@ -211,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
 
                     AppButton(
-                      label: 'Continue as Guest',
+                      label: l10n.loginContinueGuest,
                       variant: AppButtonVariant.secondary,
                       icon: Icons.person_outline_rounded,
                       onTap: () {
@@ -242,10 +245,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600),
                               children: [
-                                const TextSpan(
-                                    text: "Don't have an account? "),
                                 TextSpan(
-                                  text: 'Create one',
+                                    text: l10n.loginNoAccount),
+                                TextSpan(
+                                  text: l10n.loginCreateOne,
                                   style: GoogleFonts.nunito(
                                     color: AppColors.blue,
                                     fontWeight: FontWeight.w900,

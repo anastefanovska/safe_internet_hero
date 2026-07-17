@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../core/theme.dart';
 
 // ─── AppAvatar ─────────────────────────────────────────────────────────────────
@@ -179,6 +180,25 @@ class AppCategoryIcon extends StatelessWidget {
     if (t.contains('social')) return Icons.smartphone_rounded;
     if (t.contains('phish')) return Icons.phishing_rounded;
     return Icons.school_rounded;
+  }
+
+  /// Localized display name for the fixed safety-curriculum categories, matched
+  /// on the same stable keywords as [colorFor] (works for a category id slug or
+  /// its English title). Unknown/custom categories keep their stored title.
+  ///
+  /// Resolved at display time from [l10n] (context), so it updates the moment
+  /// the language is switched — and it never touches the stored value, so the
+  /// admin editor and Firestore keep the original English source.
+  static String localizedTitle(String idOrTitle, AppLocalizations l10n) {
+    final t = idOrTitle.toLowerCase();
+    if (t.contains('privacy')) return l10n.categoryPrivacyName;
+    if (t.contains('password')) return l10n.categoryPasswordsName;
+    if (t.contains('bully') || t.contains('cyber')) {
+      return l10n.categoryCyberbullyingName;
+    }
+    if (t.contains('social')) return l10n.categorySocialMediaName;
+    if (t.contains('phish')) return l10n.categoryPhishingName;
+    return idOrTitle;
   }
 
   static bool isLightColor(Color c) => c.computeLuminance() > 0.45;

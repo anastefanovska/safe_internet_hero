@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/question_model.dart';
@@ -332,6 +333,7 @@ class _QuizScreenState extends State<QuizScreen> {
   // ── All questions answered — show trophy ────────────────────────────────────
 
   Widget _buildTopicComplete() {
+    final l10n = AppLocalizations.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(28, 40, 28, 48),
       child: Column(
@@ -368,7 +370,7 @@ class _QuizScreenState extends State<QuizScreen> {
           const SizedBox(height: 20),
 
           Text(
-            'Topic Complete!',
+            l10n.quizTopicComplete,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
               color: AppColors.textPrimary,
@@ -383,7 +385,7 @@ class _QuizScreenState extends State<QuizScreen> {
           const SizedBox(height: 10),
 
           Text(
-            'You\'ve answered all questions\nin ${widget.topicName}.',
+            l10n.quizTopicCompleteBody(widget.topicName),
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
               color: AppColors.textSecondary,
@@ -413,7 +415,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     color: AppColors.green, size: 26),
                 const SizedBox(width: 10),
                 Text(
-                  '${_topicQuestionCount!} question${_topicQuestionCount! == 1 ? '' : 's'} mastered',
+                  l10n.quizQuestionsMastered(_topicQuestionCount!),
                   style: GoogleFonts.nunito(
                     color: AppColors.greenDark,
                     fontWeight: FontWeight.w800,
@@ -430,7 +432,7 @@ class _QuizScreenState extends State<QuizScreen> {
           const SizedBox(height: 28),
 
           AppButton(
-            label: 'Practice Again',
+            label: l10n.quizPracticeAgain,
             variant: AppButtonVariant.primary,
             icon: Icons.replay_rounded,
             onTap: () => Navigator.pushReplacement(
@@ -451,7 +453,7 @@ class _QuizScreenState extends State<QuizScreen> {
           const SizedBox(height: 12),
 
           AppButton(
-            label: 'Go Back',
+            label: l10n.quizGoBack,
             variant: AppButtonVariant.secondary,
             onTap: () => Navigator.pop(context),
           ).animate(delay: 700.ms).fadeIn(duration: 300.ms),
@@ -463,6 +465,7 @@ class _QuizScreenState extends State<QuizScreen> {
   // ── No questions in the database yet ───────────────────────────────────────
 
   Widget _buildNoQuestions() {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(36),
@@ -483,7 +486,7 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Coming Soon',
+              l10n.quizComingSoon,
               style: GoogleFonts.nunito(
                 color: AppColors.textPrimary,
                 fontSize: 22,
@@ -492,7 +495,7 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Questions for this topic are\nbeing prepared. Check back soon!',
+              l10n.quizComingSoonBody,
               textAlign: TextAlign.center,
               style: GoogleFonts.nunito(
                 color: AppColors.textSecondary,
@@ -503,7 +506,7 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
             const SizedBox(height: 32),
             AppButton(
-              label: 'Go Back',
+              label: l10n.quizGoBack,
               variant: AppButtonVariant.secondary,
               onTap: () => Navigator.pop(context),
             ),
@@ -516,6 +519,7 @@ class _QuizScreenState extends State<QuizScreen> {
   // ── Generic fallback (practice mode with nothing to review) ────────────────
 
   Widget _buildGenericEmpty() {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -534,7 +538,7 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'All caught up!',
+              l10n.quizAllCaughtUp,
               style: GoogleFonts.nunito(
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
@@ -542,7 +546,7 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Nothing left to review right now.\nKeep playing to build your streak!',
+              l10n.quizAllCaughtUpBody,
               textAlign: TextAlign.center,
               style: GoogleFonts.nunito(
                   color: AppColors.textSecondary,
@@ -552,7 +556,7 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
             const SizedBox(height: 28),
             AppButton(
-              label: 'Go Back',
+              label: l10n.quizGoBack,
               variant: AppButtonVariant.secondary,
               onTap: () => Navigator.pop(context),
             ),
@@ -563,6 +567,7 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Widget _buildQuiz() {
+    final l10n = AppLocalizations.of(context);
     final question = _questions[_currentIndex];
     final letters = ['A', 'B', 'C', 'D'];
     final progress = (_currentIndex + 1) / _questions.length;
@@ -587,7 +592,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       children: [
                         Text(
                           widget.isPractice
-                              ? '⚡ Practice Mode'
+                              ? l10n.quizPracticeMode
                               : widget.topicName,
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
@@ -596,7 +601,7 @@ class _QuizScreenState extends State<QuizScreen> {
                           ),
                         ),
                         Text(
-                          'Question ${_currentIndex + 1} of ${_questions.length}',
+                          l10n.quizQuestionProgress(_currentIndex + 1, _questions.length),
                           style: const TextStyle(
                               color: AppColors.textSecondary, fontSize: 12),
                         ),
@@ -877,6 +882,7 @@ class _QuitSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final bottomPad = MediaQuery.of(context).padding.bottom;
 
     // The mascot is 110 px tall. We centre it on the sheet's top edge:
@@ -903,7 +909,7 @@ class _QuitSheet extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "Wait, don't go!",
+                l10n.quizQuitTitle,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.nunito(
                   color: AppColors.textPrimary,
@@ -913,7 +919,7 @@ class _QuitSheet extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                "You'll lose your progress\nif you quit now",
+                l10n.quizQuitBody,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.nunito(
                   color: AppColors.textSecondary,
@@ -924,7 +930,7 @@ class _QuitSheet extends StatelessWidget {
               ),
               const SizedBox(height: 28),
               AppButton(
-                label: 'KEEP LEARNING',
+                label: l10n.quizKeepLearning,
                 variant: AppButtonVariant.primary,
                 onTap: onKeepGoing,
               ),
@@ -932,7 +938,7 @@ class _QuitSheet extends StatelessWidget {
               GestureDetector(
                 onTap: onQuit,
                 child: Text(
-                  'END SESSION',
+                  l10n.quizEndSession,
                   style: GoogleFonts.nunito(
                     color: AppColors.textSecondary,
                     fontSize: 14,
@@ -1006,8 +1012,9 @@ class _ExplanationSheet extends StatelessWidget {
     final darkColor = isCorrect ? AppColors.greenDark : AppColors.redDark;
     final icon =
         isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded;
-    final title = isCorrect ? 'Correct!' : 'Not quite...';
-    final continueLabel = isLast ? 'See Results' : 'Continue';
+    final l10n = AppLocalizations.of(context);
+    final title = isCorrect ? l10n.quizCorrect : l10n.quizNotQuite;
+    final continueLabel = isLast ? l10n.quizSeeResults : l10n.homeContinue;
 
     return Container(
       padding: EdgeInsets.fromLTRB(

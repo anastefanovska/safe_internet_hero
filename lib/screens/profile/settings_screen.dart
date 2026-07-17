@@ -125,10 +125,10 @@ class SettingsScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     _SettingsGroup(
                       items: [
-                        _SettingsItem(label: 'Preferences', onTap: () {}),
-                        _SettingsItem(label: 'Profile', onTap: () {}),
-                        _SettingsItem(label: 'Notifications', onTap: () {}),
-                        _SettingsItem(label: 'Privacy settings', onTap: () {}),
+                        _SettingsItem(label: l10n.settingsPreferences, onTap: () {}),
+                        _SettingsItem(label: l10n.settingsProfile, onTap: () {}),
+                        _SettingsItem(label: l10n.settingsNotifications, onTap: () {}),
+                        _SettingsItem(label: l10n.settingsPrivacy, onTap: () {}),
                       ],
                     ),
 
@@ -139,7 +139,7 @@ class SettingsScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     _SettingsGroup(
                       items: [
-                        _SettingsItem(label: 'Help Center', onTap: () {}),
+                        _SettingsItem(label: l10n.settingsHelpCenter, onTap: () {}),
                       ],
                     ),
 
@@ -165,10 +165,10 @@ class SettingsScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: const Text(
-                            'LOG OUT',
+                          child: Text(
+                            l10n.settingsLogOut,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: AppColors.blue,
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
@@ -191,6 +191,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _confirmLogOut(BuildContext context, AuthProvider auth) async {
+    final l10n = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => Dialog(
@@ -212,19 +213,19 @@ class SettingsScreen extends StatelessWidget {
                       color: AppColors.blue, size: 28),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Log Out?',
-                  style: TextStyle(
+                Text(
+                  l10n.settingsLogOutConfirmTitle,
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Are you sure you want to log out?',
+                Text(
+                  l10n.settingsLogOutConfirmBody,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                       color: AppColors.textSecondary, fontSize: 14),
                 ),
                 const SizedBox(height: 24),
@@ -232,7 +233,7 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _DialogButton(
-                        label: 'Cancel',
+                        label: l10n.commonCancel,
                         onTap: () => Navigator.pop(context, false),
                         primary: false,
                       ),
@@ -240,7 +241,7 @@ class SettingsScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _DialogButton(
-                        label: 'Log Out',
+                        label: l10n.settingsLogOut,
                         onTap: () => Navigator.pop(context, true),
                         primary: true,
                       ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
@@ -73,9 +74,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               children: [
                 AppTopBar(stars: stars, streak: streak, coins: coins),
                 if (!desktop) Container(height: 1, color: AppColors.border),
-                const TabHeader(
-                  title: 'Leaderboard',
-                  subtitle: 'See how you rank against other heroes',
+                TabHeader(
+                  title: AppLocalizations.of(context).navLeaderboard,
+                  subtitle: AppLocalizations.of(context).leaderboardSubtitle,
                 ),
                 Container(height: 1, color: AppColors.border),
               ],
@@ -86,8 +87,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             Expanded(
               child: GuestLockedState(
                 svgAsset: 'assets/images/leaderboard.svg',
-                title: 'Compete with heroes worldwide',
-                subtitle: 'Create a free account to appear on the leaderboard and track your rank.',
+                title: AppLocalizations.of(context).leaderboardGuestTitle,
+                subtitle: AppLocalizations.of(context).leaderboardGuestSubtitle,
                 onGetStarted: () => Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const LandingScreen()),
                   (route) => false,
@@ -176,7 +177,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Top 50',
+                        AppLocalizations.of(context).leaderboardTop50,
                         style: GoogleFonts.nunito(
                           color: AppColors.textPrimary,
                           fontSize: 18,
@@ -213,7 +214,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
                             return _LeaderboardRow(
                               rank: index + 1,
-                              username: data['username'] ?? 'Unknown',
+                              username: data['username'] ?? AppLocalizations.of(context).leaderboardUnknown,
                               stars: data['totalStars'] ?? 0,
                               isMe: isMe,
                               hasGoldFrame: (data['hasGoldFrame'] as bool?) ?? false,
@@ -351,7 +352,7 @@ class _YourRankCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Your Rank',
+                        AppLocalizations.of(context).leaderboardYourRank,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 10,
@@ -405,7 +406,7 @@ class _Podium extends StatelessWidget {
                   color: AppColors.gold, size: 16),
               const SizedBox(width: 6),
               Text(
-                'Top Heroes',
+                AppLocalizations.of(context).leaderboardTopHeroes,
                 style: GoogleFonts.nunito(
                   color: AppColors.textPrimary,
                   fontSize: 16,
@@ -818,12 +819,22 @@ _League _leagueFor(int stars) {
   );
 }
 
+/// Localised league name for a star count (mirrors [_leagueFor]).
+String _leagueName(int stars, AppLocalizations l10n) {
+  if (stars >= 60) return l10n.leagueCyberLegend;
+  if (stars >= 30) return l10n.leagueGuardian;
+  if (stars >= 15) return l10n.leagueHero;
+  if (stars >= 5) return l10n.leagueApprentice;
+  return l10n.leagueRookie;
+}
+
 class _LeagueBanner extends StatelessWidget {
   final int stars;
   const _LeagueBanner({required this.stars});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final league = _leagueFor(stars);
     final color = league.color;
     final lighter = Color.lerp(color, Colors.white, 0.22)!;
@@ -873,7 +884,7 @@ class _LeagueBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      league.name,
+                      _leagueName(stars, l10n),
                       style: GoogleFonts.nunito(
                         color: Colors.white,
                         fontSize: 18,
@@ -883,8 +894,8 @@ class _LeagueBanner extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       hasNext
-                          ? '$stars stars earned'
-                          : 'You reached the top league! 🎉',
+                          ? l10n.leagueStarsEarned(stars)
+                          : l10n.leagueTopReached,
                       style: GoogleFonts.nunito(
                         color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 12.5,
@@ -913,7 +924,7 @@ class _LeagueBanner extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '$remaining more ${remaining == 1 ? 'star' : 'stars'} to level up!',
+              l10n.leagueLevelUp(remaining),
               style: GoogleFonts.nunito(
                 color: Colors.white,
                 fontSize: 12.5,

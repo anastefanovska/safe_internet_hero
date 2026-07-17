@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../data/red_flag_messages.dart';
 import '../../models/red_flag_message_model.dart';
@@ -180,13 +181,13 @@ class _RedFlagScreenState extends State<RedFlagScreen> {
                       ? MiniGameResult(
                           stars: stars,
                           headline: switch (stars) {
-                            3 => 'Eagle eyes!',
-                            2 => 'Sharp spotting!',
-                            1 => 'Keep looking',
-                            _ => 'Keep practising!',
+                            3 => AppLocalizations.of(context).redFlagHeadline3,
+                            2 => AppLocalizations.of(context).redFlagHeadline2,
+                            1 => AppLocalizations.of(context).redFlagHeadline1,
+                            _ => AppLocalizations.of(context).redFlagHeadline0,
                           },
                           subtitle:
-                              'You caught $_score of $_totalFlags red flags',
+                              AppLocalizations.of(context).redFlagCaught(_score, _totalFlags),
                           awarding: _awarding,
                           awardedCoins: _awardedCoins,
                           coinsPossible: _coinsPossible,
@@ -215,7 +216,7 @@ class _RedFlagScreenState extends State<RedFlagScreen> {
               Icon(Icons.search_rounded, color: _accent, size: 18),
               const SizedBox(width: 6),
               Text(
-                'Tap everything suspicious',
+                AppLocalizations.of(context).redFlagTapSuspicious,
                 style: GoogleFonts.nunito(
                   color: AppColors.textPrimary,
                   fontSize: 15,
@@ -241,8 +242,8 @@ class _RedFlagScreenState extends State<RedFlagScreen> {
           if (_found.isNotEmpty) const SizedBox(height: 6),
           AppButton(
             label: _lastMessage
-                ? 'See results'
-                : (_allFound ? 'Next message' : 'Skip — I\'m done'),
+                ? AppLocalizations.of(context).redFlagSeeResults
+                : (_allFound ? AppLocalizations.of(context).scamNextMessage : AppLocalizations.of(context).redFlagSkip),
             variant:
                 _allFound ? AppButtonVariant.success : AppButtonVariant.secondary,
             icon: _allFound ? Icons.arrow_forward_rounded : null,

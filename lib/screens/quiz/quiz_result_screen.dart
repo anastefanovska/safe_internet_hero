@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../models/quiz_result_model.dart';
 import '../../models/topic_model.dart';
@@ -180,6 +181,7 @@ class _QuizResultScreenState extends State<QuizResultScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final result = widget.result;
     final isPractice = result.isPractice;
     final isGuest = context.watch<AuthProvider>().isGuest;
@@ -196,31 +198,31 @@ class _QuizResultScreenState extends State<QuizResultScreen>
 
     final String titleText = isReplay
         ? (result.starsEarned == 3
-            ? 'Perfect Replay!'
+            ? l10n.quizResultPerfectReplay
             : result.starsEarned >= 1
-                ? 'Good Replay!'
-                : 'Keep Trying!')
+                ? l10n.quizResultGoodReplay
+                : l10n.quizResultKeepTrying)
         : isPractice
             ? (result.starsEarned == 3
-                ? 'Perfect Practice!'
+                ? l10n.quizResultPerfectPractice
                 : result.starsEarned >= 1
-                    ? 'Good Practice!'
-                    : 'Keep Practicing!')
+                    ? l10n.quizResultGoodPractice
+                    : l10n.quizResultKeepPracticing)
             : result.starsEarned == 0
-                ? 'Keep Trying!'
+                ? l10n.quizResultKeepTrying
                 : result.starsEarned == 1
-                    ? 'Good Job!'
+                    ? l10n.quizResultGoodJob
                     : result.starsEarned == 2
-                        ? 'Great Work!'
-                        : 'Perfect Score!';
+                        ? l10n.quizResultGreatWork
+                        : l10n.quizResultPerfectScore;
 
     final String motivationText = isReplay
-        ? 'Practice makes perfect!'
+        ? l10n.quizResultMotivReplay
         : isPractice
-            ? 'Reviewing weak spots makes you stronger.'
+            ? l10n.quizResultMotivPractice
             : result.starsEarned >= 2
-                ? "You're becoming a true internet safety hero!"
-                : 'Every question makes you safer online!';
+                ? l10n.quizResultMotivHero
+                : l10n.quizResultMotivDefault;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -298,10 +300,10 @@ class _QuizResultScreenState extends State<QuizResultScreen>
 
                   Text(
                     isReplay
-                        ? 'Replay · ${result.categoryName}'
+                        ? l10n.quizResultReplaySubtitle(AppCategoryIcon.localizedTitle(result.categoryName, l10n))
                         : isPractice
-                            ? 'Practice Session'
-                            : result.categoryName,
+                            ? l10n.quizResultPracticeSession
+                            : AppCategoryIcon.localizedTitle(result.categoryName, l10n),
                     style: GoogleFonts.nunito(
                       color: AppColors.textSecondary,
                       fontSize: 14,
@@ -343,12 +345,12 @@ class _QuizResultScreenState extends State<QuizResultScreen>
                   // ── Rewards — single line ────────────────────────────────
                   Text(
                     isReplay
-                        ? 'Replay mode · no rewards earned'
+                        ? l10n.quizResultReplayNoRewards
                         : isPractice
-                            ? '+3 coins earned'
+                            ? l10n.quizResultPracticeCoins
                             : _boostedStars > 0
-                                ? '+$_boostedStars XP ⚡  ·  +${result.coinsEarned} coins'
-                                : '+${result.starsEarned} XP  ·  +${result.coinsEarned} coins',
+                                ? l10n.quizResultRewardsBoosted(_boostedStars, result.coinsEarned)
+                                : l10n.quizResultRewards(result.starsEarned, result.coinsEarned),
                     style: GoogleFonts.nunito(
                       color: isReplay
                           ? AppColors.textSecondary
@@ -376,7 +378,7 @@ class _QuizResultScreenState extends State<QuizResultScreen>
                         _StatCell(
                           value:
                               '${result.score}/${result.totalQuestions}',
-                          label: 'Correct',
+                          label: l10n.quizResultCorrect,
                         ),
                         Container(
                             width: 1,
@@ -384,7 +386,7 @@ class _QuizResultScreenState extends State<QuizResultScreen>
                             color: AppColors.border),
                         _StatCell(
                           value: '${result.percentage}%',
-                          label: 'Score',
+                          label: l10n.quizResultScore,
                           valueColor: accent,
                         ),
                         Container(
@@ -393,7 +395,7 @@ class _QuizResultScreenState extends State<QuizResultScreen>
                             color: AppColors.border),
                         _StatCell(
                           value: '${result.pointsEarned}',
-                          label: 'Points',
+                          label: l10n.quizResultPoints,
                         ),
                       ],
                     ),
@@ -422,7 +424,7 @@ class _QuizResultScreenState extends State<QuizResultScreen>
                               style: TextStyle(fontSize: 15)),
                           const SizedBox(width: 6),
                           Text(
-                            '$_newStreak day streak!',
+                            l10n.homeStreakBadge(_newStreak),
                             style: GoogleFonts.nunito(
                               color: AppColors.orangeDark,
                               fontWeight: FontWeight.w800,
@@ -491,7 +493,7 @@ class _QuizResultScreenState extends State<QuizResultScreen>
                     // back to a secondary style when the "Up next" card above is
                     // the main call-to-action, so moving forward stays highlighted.
                     AppButton(
-                      label: isPractice ? 'Done' : 'Back to Topics',
+                      label: isPractice ? l10n.commonDone : l10n.quizResultBackToTopics,
                       variant: (!isPractice && _nextTopic != null)
                           ? AppButtonVariant.secondary
                           : AppButtonVariant.primary,
@@ -515,7 +517,7 @@ class _QuizResultScreenState extends State<QuizResultScreen>
                                 size: 16, color: AppColors.textSecondary),
                             const SizedBox(width: 6),
                             Text(
-                              'Replay this topic',
+                              l10n.quizResultReplayTopic,
                               style: GoogleFonts.nunito(
                                 color: AppColors.textSecondary,
                                 fontSize: 14,
@@ -638,7 +640,7 @@ class _NextTopicCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'UP NEXT',
+                  AppLocalizations.of(context).quizResultUpNext,
                   style: GoogleFonts.nunito(
                     color: AppColors.textSecondary,
                     fontSize: 10,
@@ -670,7 +672,7 @@ class _NextTopicCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'Start',
+                AppLocalizations.of(context).homeStart,
                 style: GoogleFonts.nunito(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
@@ -700,10 +702,11 @@ class _GuestSaveCTA extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       children: [
         Text(
-          'Save your progress!',
+          l10n.quizResultSaveProgress,
           textAlign: TextAlign.center,
           style: GoogleFonts.nunito(
             color: AppColors.textPrimary,
@@ -714,8 +717,8 @@ class _GuestSaveCTA extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           starsEarned > 0
-              ? 'You earned $starsEarned star${starsEarned > 1 ? 's' : ''} — create a free account to keep them!'
-              : 'Create a free account to track your learning and climb the leaderboard.',
+              ? l10n.quizResultSaveWithStars(starsEarned)
+              : l10n.quizResultSaveNoStars,
           textAlign: TextAlign.center,
           style: GoogleFonts.nunito(
             color: AppColors.textSecondary,
@@ -726,7 +729,7 @@ class _GuestSaveCTA extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         AppButton(
-          label: 'Create Free Account',
+          label: l10n.quizResultCreateAccount,
           variant: AppButtonVariant.success,
           icon: Icons.person_add_rounded,
           onTap: onCreateAccount,
@@ -735,7 +738,7 @@ class _GuestSaveCTA extends StatelessWidget {
         GestureDetector(
           onTap: onSkip,
           child: Text(
-            'Skip for now',
+            l10n.quizResultSkip,
             style: GoogleFonts.nunito(
               color: AppColors.textSecondary,
               fontSize: 14,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../l10n/app_localizations.dart';
 import '../core/theme.dart';
 import '../models/enums.dart';
 import '../models/question_model.dart';
@@ -71,7 +72,7 @@ class _DraftQuestionEditorScreenState extends State<DraftQuestionEditorScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (!_isTrueFalse && _optCtrls.any((c) => c.text.trim().isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Fill in all 4 options',
+        content: Text(AppLocalizations.of(context).formFillOptions,
             style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
         backgroundColor: AppColors.red,
         behavior: SnackBarBehavior.floating,
@@ -98,11 +99,12 @@ class _DraftQuestionEditorScreenState extends State<DraftQuestionEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          const AdminHeader(title: 'Edit Draft'),
+          AdminHeader(title: l10n.formEditDraft),
           Expanded(
             child: Align(
               alignment: Alignment.topCenter,
@@ -115,11 +117,11 @@ class _DraftQuestionEditorScreenState extends State<DraftQuestionEditorScreen> {
                     children: [
                       // ── Difficulty ─────────────────────────────────────────
                       AdminCard(
-                        title: 'Difficulty',
+                        title: l10n.formDifficulty,
                         child: Row(children: [
                           Expanded(
                             child: AdminDifficultyTile(
-                              label: 'Beginner',
+                              label: l10n.formBeginner,
                               color: AppColors.green,
                               selected:
                                   _difficulty == DifficultyLevel.beginner,
@@ -130,7 +132,7 @@ class _DraftQuestionEditorScreenState extends State<DraftQuestionEditorScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: AdminDifficultyTile(
-                              label: 'Intermediate',
+                              label: l10n.formIntermediate,
                               color: AppColors.orange,
                               selected:
                                   _difficulty == DifficultyLevel.intermediate,
@@ -141,7 +143,7 @@ class _DraftQuestionEditorScreenState extends State<DraftQuestionEditorScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: AdminDifficultyTile(
-                              label: 'Advanced',
+                              label: l10n.formAdvanced,
                               color: AppColors.red,
                               selected:
                                   _difficulty == DifficultyLevel.advanced,
@@ -155,11 +157,11 @@ class _DraftQuestionEditorScreenState extends State<DraftQuestionEditorScreen> {
 
                       // ── Question & answers ─────────────────────────────────
                       AdminCard(
-                        title: 'Question & Answers',
+                        title: l10n.formQuestionAnswers,
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const AdminLabel('Question text'),
+                              AdminLabel(l10n.formQuestionText),
                               const SizedBox(height: 8),
                               TextFormField(
                                 controller: _textCtrl,
@@ -168,15 +170,15 @@ class _DraftQuestionEditorScreenState extends State<DraftQuestionEditorScreen> {
                                     fontSize: 14,
                                     color: AppColors.textPrimary),
                                 decoration: AdminField.decoration(
-                                    'Type your question here...'),
+                                    l10n.formQuestionHint),
                                 validator: (v) =>
                                     v == null || v.trim().isEmpty
-                                        ? 'Required'
+                                        ? l10n.formRequired
                                         : null,
                               ),
                               const SizedBox(height: 14),
                               if (_isTrueFalse) ...[
-                                const AdminLabel('Correct answer'),
+                                AdminLabel(l10n.formCorrectAnswer),
                                 const SizedBox(height: 8),
                                 Row(children: [
                                   Expanded(
@@ -200,8 +202,7 @@ class _DraftQuestionEditorScreenState extends State<DraftQuestionEditorScreen> {
                                   ),
                                 ]),
                               ] else ...[
-                                const AdminLabel(
-                                    'Options - tap letter to mark correct'),
+                                AdminLabel(l10n.formOptionsHint),
                                 const SizedBox(height: 8),
                                 for (var i = 0; i < 4; i++) ...[
                                   AdminOptionField(
@@ -217,7 +218,7 @@ class _DraftQuestionEditorScreenState extends State<DraftQuestionEditorScreen> {
                                 ],
                               ],
                               const SizedBox(height: 14),
-                              const AdminLabel('Explanation'),
+                              AdminLabel(l10n.formExplanation),
                               const SizedBox(height: 8),
                               TextFormField(
                                 controller: _explanationCtrl,
@@ -226,16 +227,16 @@ class _DraftQuestionEditorScreenState extends State<DraftQuestionEditorScreen> {
                                     fontSize: 14,
                                     color: AppColors.textPrimary),
                                 decoration: AdminField.decoration(
-                                    'Why is this the correct answer?'),
+                                    l10n.formExplanationHint),
                                 validator: (v) =>
                                     v == null || v.trim().isEmpty
-                                        ? 'Required'
+                                        ? l10n.formRequired
                                         : null,
                               ),
                             ]),
                       ),
                       const SizedBox(height: 16),
-                      AdminPrimaryButton(label: 'Done', onTap: _save),
+                      AdminPrimaryButton(label: l10n.commonDone, onTap: _save),
                     ],
                   ),
                 ),

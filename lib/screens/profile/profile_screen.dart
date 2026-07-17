@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/user_model.dart';
@@ -20,37 +21,54 @@ import 'settings_screen.dart';
 // ─── Tier helpers ─────────────────────────────────────────────────────────────
 
 typedef _TierInfo = ({
-  String label,
   IconData icon,
   Color iconColor,
   int nextThreshold
 });
 
 _TierInfo _tierInfo(int stars) {
-  if (stars >= 60) return (label: 'Cyber Legend', icon: Icons.emoji_events_rounded, iconColor: AppColors.gold, nextThreshold: 0);
-  if (stars >= 30) return (label: 'Guardian', icon: Icons.bolt_rounded, iconColor: AppColors.orange, nextThreshold: 60);
-  if (stars >= 15) return (label: 'Hero', icon: Icons.shield_rounded, iconColor: AppColors.blue, nextThreshold: 30);
-  if (stars >= 5) return (label: 'Apprentice', icon: Icons.school_rounded, iconColor: AppColors.green, nextThreshold: 15);
-  return (label: 'Rookie', icon: Icons.eco_rounded, iconColor: AppColors.greenDark, nextThreshold: 5);
+  if (stars >= 60) return (icon: Icons.emoji_events_rounded, iconColor: AppColors.gold, nextThreshold: 0);
+  if (stars >= 30) return (icon: Icons.bolt_rounded, iconColor: AppColors.orange, nextThreshold: 60);
+  if (stars >= 15) return (icon: Icons.shield_rounded, iconColor: AppColors.blue, nextThreshold: 30);
+  if (stars >= 5) return (icon: Icons.school_rounded, iconColor: AppColors.green, nextThreshold: 15);
+  return (icon: Icons.eco_rounded, iconColor: AppColors.greenDark, nextThreshold: 5);
+}
+
+/// Localised league/tier name for a star count.
+String _tierLabel(int stars, AppLocalizations l10n) {
+  if (stars >= 60) return l10n.tierCyberLegend;
+  if (stars >= 30) return l10n.tierGuardian;
+  if (stars >= 15) return l10n.tierHero;
+  if (stars >= 5) return l10n.tierApprentice;
+  return l10n.tierRookie;
 }
 
 // ─── Badge / achievement definitions ─────────────────────────────────────────
 
 const _badges = [
-  (icon: Icons.lock_rounded, color: AppColors.categoryPrivacy, label: 'Privacy Pro', threshold: 1),
-  (icon: Icons.vpn_key_rounded, color: AppColors.categoryPasswords, label: 'Key Master', threshold: 5),
-  (icon: Icons.shield_rounded, color: AppColors.categoryCyberbullying, label: 'Defender', threshold: 10),
-  (icon: Icons.smartphone_rounded, color: AppColors.categorySocialMedia, label: 'Social Safe', threshold: 20),
-  (icon: Icons.phishing_rounded, color: AppColors.categoryPhishing, label: 'Phish Fighter', threshold: 30),
-  (icon: Icons.emoji_events_rounded, color: AppColors.gold, label: 'Legend', threshold: 60),
+  (icon: Icons.lock_rounded, color: AppColors.categoryPrivacy, threshold: 1),
+  (icon: Icons.vpn_key_rounded, color: AppColors.categoryPasswords, threshold: 5),
+  (icon: Icons.shield_rounded, color: AppColors.categoryCyberbullying, threshold: 10),
+  (icon: Icons.smartphone_rounded, color: AppColors.categorySocialMedia, threshold: 20),
+  (icon: Icons.phishing_rounded, color: AppColors.categoryPhishing, threshold: 30),
+  (icon: Icons.emoji_events_rounded, color: AppColors.gold, threshold: 60),
 ];
+
+/// Localised badge labels, in the same order as [_badges].
+List<String> _badgeLabels(AppLocalizations l10n) => [
+      l10n.badgePrivacyPro,
+      l10n.badgeKeyMaster,
+      l10n.badgeDefender,
+      l10n.badgeSocialSafe,
+      l10n.badgePhishFighter,
+      l10n.badgeLegend,
+    ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-String _joinedDate(DateTime d) {
-  const m = ['January', 'February', 'March', 'April', 'May', 'June',
-              'July', 'August', 'September', 'October', 'November', 'December'];
-  return 'Joined ${m[d.month - 1]} ${d.year}';
+String _joinedDate(DateTime d, AppLocalizations l10n) {
+  final months = l10n.profileMonths.split(',');
+  return l10n.profileJoined(months[d.month - 1], d.year.toString());
 }
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -177,10 +195,10 @@ class _ProfileNavBar extends StatelessWidget {
           Expanded(
             child: isDesktop(context)
                 ? const SizedBox()
-                : const Text(
-                    'Profile',
+                : Text(
+                    AppLocalizations.of(context).navProfile,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
@@ -219,6 +237,7 @@ class _ProfileInfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final tier = _tierInfo(user.totalStars);
     return Container(
       color: Colors.white,
@@ -270,7 +289,7 @@ class _ProfileInfoSection extends StatelessWidget {
                           size: 12, color: AppColors.textLight),
                       const SizedBox(width: 4),
                       Text(
-                        _joinedDate(user.createdAt),
+                        _joinedDate(user.createdAt, l10n),
                         style: const TextStyle(
                           color: AppColors.textLight,
                           fontSize: 12,
@@ -296,7 +315,7 @@ class _ProfileInfoSection extends StatelessWidget {
                         Icon(tier.icon, color: tier.iconColor, size: 12),
                         const SizedBox(width: 4),
                         Text(
-                          tier.label,
+                          _tierLabel(user.totalStars, l10n),
                           style: const TextStyle(
                             color: AppColors.blue,
                             fontWeight: FontWeight.w800,
@@ -310,7 +329,7 @@ class _ProfileInfoSection extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   Text(
-                    '${user.friends.length} ${user.friends.length == 1 ? 'Friend' : 'Friends'}',
+                    l10n.profileFriendsCount(user.friends.length),
                     style: const TextStyle(
                       color: AppColors.blue,
                       fontSize: 13,
@@ -452,6 +471,7 @@ class _GuestProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
@@ -527,17 +547,17 @@ class _GuestProfileScreen extends StatelessWidget {
                             _GhostStatBox(
                                 icon: Icons.star_rounded,
                                 color: AppColors.gold,
-                                label: 'Stars'),
+                                label: l10n.profileGhostStars),
                             const SizedBox(width: 10),
                             _GhostStatBox(
                                 icon: Icons.local_fire_department_rounded,
                                 color: AppColors.orange,
-                                label: 'Streak'),
+                                label: l10n.profileGhostStreak),
                             const SizedBox(width: 10),
                             _GhostStatBox(
                                 icon: Icons.quiz_rounded,
                                 color: AppColors.blue,
-                                label: 'Quizzes'),
+                                label: l10n.profileGhostQuizzes),
                           ]),
                         ),
                         const SizedBox(height: 12),
@@ -603,7 +623,7 @@ class _GuestProfileScreen extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('Build your profile',
+                        Text(l10n.profileGuestTitle,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.nunito(
                               color: AppColors.textPrimary,
@@ -612,7 +632,7 @@ class _GuestProfileScreen extends StatelessWidget {
                             )),
                         const SizedBox(height: 8),
                         Text(
-                          'Track your progress, earn badges\nand climb the leaderboard.',
+                          l10n.profileGuestSubtitle,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.nunito(
                             color: AppColors.textSecondary,
@@ -731,14 +751,15 @@ class _StatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final tier = _tierInfo(user.totalStars);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _ProfileSectionTitle(
+        _ProfileSectionTitle(
           icon: Icons.insights_rounded,
           color: AppColors.blue,
-          text: 'Statistics',
+          text: l10n.profileStatistics,
         ),
         const SizedBox(height: 14),
         Row(
@@ -748,7 +769,7 @@ class _StatsGrid extends StatelessWidget {
                 icon: Icons.local_fire_department_rounded,
                 iconColor: AppColors.orange,
                 value: '${user.currentStreak}',
-                label: 'Day streak',
+                label: l10n.profileDayStreak,
               ),
             ),
             const SizedBox(width: 10),
@@ -757,7 +778,7 @@ class _StatsGrid extends StatelessWidget {
                 icon: Icons.star_rounded,
                 iconColor: AppColors.gold,
                 value: '${user.totalStars}',
-                label: 'Total XP',
+                label: l10n.profileTotalXp,
               ),
             ),
           ],
@@ -769,8 +790,8 @@ class _StatsGrid extends StatelessWidget {
               child: _StatCard(
                 icon: tier.icon,
                 iconColor: tier.iconColor,
-                value: tier.label,
-                label: 'League',
+                value: _tierLabel(user.totalStars, l10n),
+                label: l10n.profileLeague,
                 smallValue: true,
               ),
             ),
@@ -780,7 +801,7 @@ class _StatsGrid extends StatelessWidget {
                 icon: Icons.check_circle_rounded,
                 iconColor: AppColors.green,
                 value: '${user.answeredQuestions.length}',
-                label: 'Quizzes done',
+                label: l10n.profileQuizzesDone,
               ),
             ),
           ],
@@ -880,6 +901,8 @@ class _AchievementsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final badgeLabels = _badgeLabels(l10n);
     final unlockedCount =
         _badges.where((b) => stars >= b.threshold).length;
     return Column(
@@ -888,7 +911,7 @@ class _AchievementsSection extends StatelessWidget {
         _ProfileSectionTitle(
           icon: Icons.military_tech_rounded,
           color: AppColors.gold,
-          text: 'Achievements',
+          text: l10n.profileAchievements,
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
@@ -919,7 +942,7 @@ class _AchievementsSection extends StatelessWidget {
             return _BadgeCell(
               icon: badge.icon,
               color: badge.color,
-              label: badge.label,
+              label: badgeLabels[e.key],
               unlocked: unlocked,
             )
                 .animate(delay: Duration(milliseconds: e.key * 80))
@@ -1144,6 +1167,7 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1151,7 +1175,7 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
         _ProfileSectionTitle(
           icon: Icons.people_alt_rounded,
           color: AppColors.green,
-          text: 'Friends',
+          text: l10n.commonFriends,
           trailing: GestureDetector(
             onTap: _openAddFriends,
             child: Container(
@@ -1160,15 +1184,15 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
                 color: AppColors.blue,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.person_add_alt_1_rounded,
+                  const Icon(Icons.person_add_alt_1_rounded,
                       color: Colors.white, size: 14),
-                  SizedBox(width: 5),
+                  const SizedBox(width: 5),
                   Text(
-                    'Add',
-                    style: TextStyle(
+                    l10n.commonAdd,
+                    style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.w800),
@@ -1197,16 +1221,16 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
           tabs: [
             Tab(
               text: _friends.isEmpty
-                  ? 'FOLLOWING'
-                  : 'FOLLOWING (${_friends.length})',
+                  ? l10n.profileFollowing
+                  : l10n.profileFollowingCount(_friends.length),
             ),
             Tab(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(_requesters.isEmpty
-                      ? 'REQUESTS'
-                      : 'REQUESTS (${_requesters.length})'),
+                      ? l10n.profileRequests
+                      : l10n.profileRequestsCount(_requesters.length)),
                   if (_requesters.isNotEmpty &&
                       _tabController.index != 1) ...[
                     const SizedBox(width: 4),
@@ -1245,6 +1269,7 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
   // ── Following tab content ──────────────────────────────────────────────────
 
   Widget _buildFollowingContent() {
+    final l10n = AppLocalizations.of(context);
     if (_friends.isEmpty) {
       return Center(
         child: Padding(
@@ -1258,8 +1283,8 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
                 height: 120,
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Learning is more fun and effective\nwhen you connect with others',
+              Text(
+                l10n.profileFollowingEmpty,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: AppColors.textSecondary,
@@ -1322,7 +1347,7 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
                                   children: [
                                     Icon(t.icon, color: t.iconColor, size: 12),
                                     const SizedBox(width: 4),
-                                    Text(t.label,
+                                    Text(_tierLabel(friend.totalStars, l10n),
                                         style: const TextStyle(
                                             color: AppColors.textSecondary,
                                             fontSize: 12,
@@ -1378,6 +1403,7 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
   // ── Requests tab content ───────────────────────────────────────────────────
 
   Widget _buildRequestsContent() {
+    final l10n = AppLocalizations.of(context);
     if (_requesters.isEmpty) {
       return Center(
         child: Padding(
@@ -1391,17 +1417,17 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
                 height: 120,
               ),
               const SizedBox(height: 16),
-              const Text(
-                'No pending requests',
+              Text(
+                l10n.profileNoRequests,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w800,
                     fontSize: 15),
               ),
               const SizedBox(height: 6),
-              const Text(
-                'When someone sends you a friend\nrequest it will appear here',
+              Text(
+                l10n.profileNoRequestsBody,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: AppColors.textSecondary,
@@ -1454,7 +1480,7 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
                                       color: AppColors.textPrimary,
                                       fontWeight: FontWeight.w800,
                                       fontSize: 14)),
-                              Text('${requester.totalStars} XP',
+                              Text(l10n.profileXp(requester.totalStars),
                                   style: const TextStyle(
                                       color: AppColors.textSecondary,
                                       fontSize: 12,
@@ -1474,8 +1500,8 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
                             decoration: BoxDecoration(
                                 color: AppColors.green,
                                 borderRadius: BorderRadius.circular(10)),
-                            child: const Text('Accept',
-                                style: TextStyle(
+                            child: Text(l10n.commonAccept,
+                                style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 12)),
@@ -1496,8 +1522,8 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(color: AppColors.border),
                             ),
-                            child: const Text('Decline',
-                                style: TextStyle(
+                            child: Text(l10n.commonDecline,
+                                style: const TextStyle(
                                     color: AppColors.textSecondary,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 12)),
@@ -1524,6 +1550,7 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
   }
 
   Widget _buildShowAllButton(int? total) {
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: _showAll,
       behavior: HitTestBehavior.opaque,
@@ -1536,7 +1563,7 @@ class _ProfileFriendsSectionState extends State<ProfileFriendsSection>
           children: [
             const SizedBox(width: 16),
             Text(
-              total != null ? 'View all ($total)' : 'View all',
+              total != null ? l10n.profileViewAllCount(total) : l10n.profileViewAll,
               style: const TextStyle(
                   color: AppColors.blue,
                   fontWeight: FontWeight.w800,
@@ -1606,6 +1633,7 @@ class _AddFriendsSheetState extends State<_AddFriendsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final filtered =
         _results.where((r) => r.id != widget.currentUser.id).toList();
     final visible = filtered.take(_visibleCount).toList();
@@ -1631,12 +1659,12 @@ class _AddFriendsSheetState extends State<_AddFriendsSheet> {
                   borderRadius: BorderRadius.circular(2)),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 14),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
             child: Text(
-              'Search for friends',
+              l10n.profileSearchFriends,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Color(0xFF1A1A1A),
                 fontSize: 17,
                 fontWeight: FontWeight.w800,
@@ -1659,7 +1687,7 @@ class _AddFriendsSheetState extends State<_AddFriendsSheet> {
                     color: Color(0xFF1A1A1A),
                     fontWeight: FontWeight.w500),
                 decoration: InputDecoration(
-                  hintText: 'Search',
+                  hintText: l10n.commonSearch,
                   hintStyle: const TextStyle(
                       color: Color(0xFFAAAAAA), fontSize: 15),
                   prefixIcon: const Icon(Icons.search_rounded,
@@ -1689,7 +1717,7 @@ class _AddFriendsSheetState extends State<_AddFriendsSheet> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
               child: Text(
-                '${filtered.length} result${filtered.length == 1 ? '' : 's'}',
+                l10n.profileResultsCount(filtered.length),
                 style: const TextStyle(
                   color: Color(0xFF1A1A1A),
                   fontSize: 15,
@@ -1715,24 +1743,25 @@ class _AddFriendsSheetState extends State<_AddFriendsSheet> {
   }
 
   Widget _buildPrompt() {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.person_search_rounded,
+          children: [
+            const Icon(Icons.person_search_rounded,
                 size: 52, color: Color(0xFFCCCCCC)),
-            SizedBox(height: 14),
-            Text('Find people you know',
-                style: TextStyle(
+            const SizedBox(height: 14),
+            Text(l10n.profileFindPeople,
+                style: const TextStyle(
                     color: Color(0xFF1A1A1A),
                     fontSize: 16,
                     fontWeight: FontWeight.w800)),
-            SizedBox(height: 6),
-            Text('Type a username to search',
+            const SizedBox(height: 6),
+            Text(l10n.profileTypeUsername,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFFAAAAAA), fontSize: 13)),
+                style: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 13)),
           ],
         ),
       ),
@@ -1740,6 +1769,7 @@ class _AddFriendsSheetState extends State<_AddFriendsSheet> {
   }
 
   Widget _buildNoResults() {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -1749,15 +1779,15 @@ class _AddFriendsSheetState extends State<_AddFriendsSheet> {
             const Icon(Icons.search_off_rounded,
                 color: Color(0xFFCCCCCC), size: 48),
             const SizedBox(height: 14),
-            Text('No results for "${_controller.text}"',
+            Text(l10n.profileNoResultsFor(_controller.text),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     color: Color(0xFF1A1A1A),
                     fontWeight: FontWeight.w700,
                     fontSize: 15)),
             const SizedBox(height: 6),
-            const Text('Try a different username',
-                style: TextStyle(color: Color(0xFFAAAAAA), fontSize: 13)),
+            Text(l10n.profileTryDifferent,
+                style: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 13)),
           ],
         ),
       ),
@@ -1765,6 +1795,7 @@ class _AddFriendsSheetState extends State<_AddFriendsSheet> {
   }
 
   Widget _buildList(List<UserModel> visible, bool hasMore) {
+    final l10n = AppLocalizations.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
       child: Container(
@@ -1816,7 +1847,7 @@ class _AddFriendsSheetState extends State<_AddFriendsSheet> {
                         if (isFriend)
                           _ActionChip(
                             icon: Icons.check_rounded,
-                            label: 'Friends',
+                            label: l10n.commonFriends,
                             bg: const Color(0xFFE8F5E9),
                             fg: const Color(0xFF388E3C),
                             onTap: null,
@@ -1824,7 +1855,7 @@ class _AddFriendsSheetState extends State<_AddFriendsSheet> {
                         else if (isRequested)
                           _ActionChip(
                             icon: Icons.person_remove_outlined,
-                            label: 'Requested',
+                            label: l10n.profileRequested,
                             bg: const Color(0xFFE3F2FD),
                             fg: AppColors.blue,
                             onTap: () async {
@@ -1839,7 +1870,7 @@ class _AddFriendsSheetState extends State<_AddFriendsSheet> {
                         else
                           _ActionChip(
                             icon: Icons.person_add_outlined,
-                            label: 'Add',
+                            label: l10n.commonAdd,
                             bg: AppColors.blue,
                             fg: Colors.white,
                             onTap: () async {
@@ -1876,14 +1907,14 @@ class _AddFriendsSheetState extends State<_AddFriendsSheet> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Text('Load more',
-                          style: TextStyle(
+                    children: [
+                      Text(l10n.commonLoadMore,
+                          style: const TextStyle(
                               color: Color(0xFF555555),
                               fontSize: 14,
                               fontWeight: FontWeight.w600)),
-                      SizedBox(width: 6),
-                      Icon(Icons.keyboard_arrow_down_rounded,
+                      const SizedBox(width: 6),
+                      const Icon(Icons.keyboard_arrow_down_rounded,
                           color: Color(0xFF555555), size: 18),
                     ],
                   ),

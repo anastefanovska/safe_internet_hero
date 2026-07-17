@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/enums.dart';
@@ -17,7 +18,6 @@ class ModeratorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final desktop = isDesktop(context);
     final user = context.watch<AuthProvider>().user;
 
     return Scaffold(
@@ -27,7 +27,9 @@ class ModeratorScreen extends StatelessWidget {
           SafeArea(
             bottom: false,
             child: Row(children: [
-              if (!desktop)
+              // Always offer a way back when there's a route to return to — on a
+              // native desktop window there is no browser back button to rely on.
+              if (Navigator.of(context).canPop())
                 IconButton(
                   icon: const Icon(Icons.arrow_back_ios_rounded,
                       color: AppColors.textPrimary, size: 20),
@@ -36,9 +38,9 @@ class ModeratorScreen extends StatelessWidget {
               const SizedBox(width: 4),
             ]),
           ),
-          const TabHeader(
-            title: 'Moderator Tools',
-            subtitle: 'Submit questions for admin review',
+          TabHeader(
+            title: AppLocalizations.of(context).homeModeratorTools,
+            subtitle: AppLocalizations.of(context).modSubtitle,
             icon: Icons.shield_rounded,
             color: AppColors.green,
           ),
@@ -53,7 +55,7 @@ class ModeratorScreen extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
                         children: [
                           AppButton(
-                            label: 'Submit a new question',
+                            label: AppLocalizations.of(context).modSubmitNew,
                             variant: AppButtonVariant.success,
                             icon: Icons.add_rounded,
                             onTap: () => Navigator.push(
@@ -79,34 +81,26 @@ class ModeratorScreen extends StatelessWidget {
 
 /// Visual identity for a question status — one source of truth for the badge
 /// label, colour and icon shown to the moderator.
-({String label, Color color, IconData icon}) _statusStyle(QuestionStatus s) {
+({Color color, IconData icon}) _statusStyle(QuestionStatus s) {
   switch (s) {
     case QuestionStatus.approved:
-      return (
-        label: 'Approved',
-        color: AppColors.green,
-        icon: Icons.check_circle_rounded
-      );
+      return (color: AppColors.green, icon: Icons.check_circle_rounded);
     case QuestionStatus.rejected:
-      return (
-        label: 'Rejected',
-        color: AppColors.red,
-        icon: Icons.cancel_rounded
-      );
+      return (color: AppColors.red, icon: Icons.cancel_rounded);
     case QuestionStatus.pending:
-      return (
-        label: 'Pending review',
-        color: AppColors.orange,
-        icon: Icons.hourglass_top_rounded
-      );
+      return (color: AppColors.orange, icon: Icons.hourglass_top_rounded);
     case QuestionStatus.needsRevision:
-      return (
-        label: 'Needs changes',
-        color: AppColors.blue,
-        icon: Icons.rate_review_rounded
-      );
+      return (color: AppColors.blue, icon: Icons.rate_review_rounded);
   }
 }
+
+/// Localised label for a question status.
+String _statusLabel(QuestionStatus s, AppLocalizations l10n) => switch (s) {
+      QuestionStatus.approved => l10n.statusApproved,
+      QuestionStatus.rejected => l10n.statusRejected,
+      QuestionStatus.pending => l10n.statusPendingReview,
+      QuestionStatus.needsRevision => l10n.statusNeedsChanges,
+    };
 
 /// Ordering for the "All" view: actionable items first, history last.
 int _statusRank(QuestionStatus s) => switch (s) {
@@ -140,7 +134,7 @@ class _SubmissionsSectionState extends State<_SubmissionsSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              Text('MY SUBMISSIONS',
+              Text(AppLocalizations.of(context).modMySubmissions,
                   style: GoogleFonts.nunito(
                       color: AppColors.textSecondary,
                       fontSize: 11,
@@ -148,7 +142,7 @@ class _SubmissionsSectionState extends State<_SubmissionsSection> {
                       letterSpacing: 0.8)),
               const Spacer(),
               if (all != null && all.isNotEmpty)
-                Text('${all.length} total',
+                Text(AppLocalizations.of(context).modTotalCount(all.length),
                     style: GoogleFonts.nunito(
                         color: AppColors.textLight,
                         fontSize: 11,
@@ -162,8 +156,7 @@ class _SubmissionsSectionState extends State<_SubmissionsSection> {
                     child: CircularProgressIndicator(color: AppColors.blue)),
               )
             else if (all.isEmpty)
-              _emptyCard('No submissions yet. Tap "Submit a new question" to '
-                  'add one.')
+              _emptyCard(AppLocalizations.of(context).modNoSubmissions)
             else ...[
               _FilterBar(
                 all: all,
@@ -188,7 +181,7 @@ class _SubmissionsSectionState extends State<_SubmissionsSection> {
         return r != 0 ? r : b.id.compareTo(a.id);
       });
     if (items.isEmpty) {
-      return [_emptyCard('Nothing here in this filter.')];
+      return [_emptyCard(AppLocalizations.of(context).modNothingFilter)];
     }
     return items.map((q) => _SubmissionTile(question: q)).toList();
   }
@@ -220,12 +213,13 @@ class _FilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final options = <(String, QuestionStatus?)>[
-      ('All', null),
-      ('Needs changes', QuestionStatus.needsRevision),
-      ('Pending', QuestionStatus.pending),
-      ('Approved', QuestionStatus.approved),
-      ('Rejected', QuestionStatus.rejected),
+      (l10n.modFilterAll, null),
+      (l10n.statusNeedsChanges, QuestionStatus.needsRevision),
+      (l10n.modFilterPending, QuestionStatus.pending),
+      (l10n.statusApproved, QuestionStatus.approved),
+      (l10n.statusRejected, QuestionStatus.rejected),
     ];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -281,6 +275,7 @@ class _SubmissionTile extends StatelessWidget {
     // Live (approved) questions are protected; everything else the author can
     // clear out to keep the list tidy.
     final canDelete = question.status != QuestionStatus.approved;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -302,7 +297,7 @@ class _SubmissionTile extends StatelessWidget {
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               Icon(s.icon, color: s.color, size: 14),
               const SizedBox(width: 5),
-              Text(s.label.toUpperCase(),
+              Text(_statusLabel(question.status, l10n).toUpperCase(),
                   style: GoogleFonts.nunito(
                       color: s.color,
                       fontWeight: FontWeight.w800,
@@ -313,7 +308,7 @@ class _SubmissionTile extends StatelessWidget {
           const Spacer(),
           if (canDelete)
             IconButton(
-              tooltip: 'Delete',
+              tooltip: l10n.commonDelete,
               icon: const Icon(Icons.delete_outline_rounded,
                   color: AppColors.textLight, size: 20),
               padding: EdgeInsets.zero,
@@ -354,7 +349,7 @@ class _SubmissionTile extends StatelessWidget {
               Row(children: [
                 Icon(Icons.feedback_outlined, color: s.color, size: 14),
                 const SizedBox(width: 6),
-                Text('Reviewer feedback',
+                Text(l10n.modReviewerFeedback,
                     style: GoogleFonts.nunito(
                         color: s.color,
                         fontWeight: FontWeight.w800,
@@ -372,7 +367,7 @@ class _SubmissionTile extends StatelessWidget {
         if (canEdit) ...[
           const SizedBox(height: 12),
           AppButton(
-            label: 'Edit & resubmit',
+            label: l10n.modEditResubmit,
             variant: AppButtonVariant.primary,
             icon: Icons.edit_rounded,
             onTap: () => Navigator.push(
@@ -388,24 +383,25 @@ class _SubmissionTile extends StatelessWidget {
   }
 
   Future<void> _confirmAndDelete(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete submission?',
+        title: Text(l10n.modDeleteTitle,
             style: GoogleFonts.nunito(fontWeight: FontWeight.w800)),
         content: Text(
-            'This permanently removes your submission. This can\'t be undone.',
+            l10n.modDeleteBody,
             style: GoogleFonts.nunito(
                 color: AppColors.textSecondary, fontSize: 13)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text('Cancel',
+              child: Text(l10n.commonCancel,
                   style: GoogleFonts.nunito(color: AppColors.textSecondary))),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text('Delete',
+              child: Text(l10n.commonDelete,
                   style: GoogleFonts.nunito(
                       color: AppColors.red, fontWeight: FontWeight.w700))),
         ],
@@ -416,7 +412,7 @@ class _SubmissionTile extends StatelessWidget {
       await QuestionService().deleteQuestion(question.id);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Submission deleted',
+        content: Text(l10n.modSubmissionDeleted,
             style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
         backgroundColor: AppColors.blue,
         behavior: SnackBarBehavior.floating,
@@ -426,7 +422,7 @@ class _SubmissionTile extends StatelessWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Could not delete: $e',
+        content: Text(l10n.modDeleteError('$e'),
             style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
         backgroundColor: AppColors.red,
         behavior: SnackBarBehavior.floating,
@@ -445,7 +441,6 @@ class _EditSubmissionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final desktop = isDesktop(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
@@ -453,7 +448,7 @@ class _EditSubmissionScreen extends StatelessWidget {
           SafeArea(
             bottom: false,
             child: Row(children: [
-              if (!desktop)
+              if (Navigator.of(context).canPop())
                 IconButton(
                   icon: const Icon(Icons.arrow_back_ios_rounded,
                       color: AppColors.textPrimary, size: 20),
@@ -462,9 +457,9 @@ class _EditSubmissionScreen extends StatelessWidget {
               const SizedBox(width: 4),
             ]),
           ),
-          const TabHeader(
-            title: 'Revise & Resubmit',
-            subtitle: 'Address the feedback, then send it back for review',
+          TabHeader(
+            title: AppLocalizations.of(context).modReviseTitle,
+            subtitle: AppLocalizations.of(context).modReviseSubtitle,
             icon: Icons.edit_rounded,
             color: AppColors.blue,
           ),
@@ -495,7 +490,6 @@ class _SubmitQuestionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final desktop = isDesktop(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
@@ -503,7 +497,7 @@ class _SubmitQuestionScreen extends StatelessWidget {
           SafeArea(
             bottom: false,
             child: Row(children: [
-              if (!desktop)
+              if (Navigator.of(context).canPop())
                 IconButton(
                   icon: const Icon(Icons.arrow_back_ios_rounded,
                       color: AppColors.textPrimary, size: 20),
@@ -512,9 +506,9 @@ class _SubmitQuestionScreen extends StatelessWidget {
               const SizedBox(width: 4),
             ]),
           ),
-          const TabHeader(
-            title: 'Submit a Question',
-            subtitle: 'An admin will review it before it goes live',
+          TabHeader(
+            title: AppLocalizations.of(context).modSubmitTitle,
+            subtitle: AppLocalizations.of(context).modSubmitSubtitle,
             icon: Icons.add_circle_outline_rounded,
             color: AppColors.green,
           ),

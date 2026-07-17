@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/learning_content_model.dart';
@@ -347,13 +348,13 @@ class _HeroCard extends StatelessWidget {
           Row(children: [
             _HeroBadge(
               icon: Icons.menu_book_rounded,
-              label: 'article',
+              label: AppLocalizations.of(context).articleTypeBadge,
             ),
             if (readTimeMinutes > 0) ...[
               const SizedBox(width: 8),
               _HeroBadge(
                 icon: Icons.access_time_rounded,
-                label: '$readTimeMinutes MIN READ',
+                label: AppLocalizations.of(context).articleMinRead(readTimeMinutes),
               ),
             ],
           ]),
@@ -438,7 +439,7 @@ class _KeyTakeawaysCard extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Text(
-              'Key Takeaways',
+              AppLocalizations.of(context).articleKeyTakeaways,
               style: GoogleFonts.nunito(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w900,
@@ -688,14 +689,14 @@ class _ErrorCard extends StatelessWidget {
       child: Column(children: [
         const Icon(Icons.wifi_off_rounded, color: AppColors.red, size: 32),
         const SizedBox(height: 10),
-        Text("Couldn't save your progress",
+        Text(AppLocalizations.of(context).contentSaveError,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 color: AppColors.red,
                 fontWeight: FontWeight.w900,
                 fontSize: 16)),
         const SizedBox(height: 4),
-        Text('Check your connection and try again.',
+        Text(AppLocalizations.of(context).contentSaveErrorBody,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 color: AppColors.red.withValues(alpha: 0.8),
@@ -714,7 +715,7 @@ class _ErrorCard extends StatelessWidget {
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               const Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
               const SizedBox(width: 8),
-              Text('Try again',
+              Text(AppLocalizations.of(context).contentTryAgain,
                   style: GoogleFonts.nunito(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
@@ -755,13 +756,13 @@ class _EarnedCard extends StatelessWidget {
       child: Column(children: [
         const Text('🎉', style: TextStyle(fontSize: 40)),
         const SizedBox(height: 8),
-        Text('Article Complete!',
+        Text(AppLocalizations.of(context).articleComplete,
             style: GoogleFonts.nunito(
                 color: Colors.white,
                 fontSize: 22,
                 fontWeight: FontWeight.w900)),
         const SizedBox(height: 4),
-        Text('Great job! Keep exploring to level up.',
+        Text(AppLocalizations.of(context).contentCompleteBody,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 color: Colors.white.withValues(alpha: 0.88),
@@ -782,7 +783,7 @@ class _EarnedCard extends StatelessWidget {
             const Icon(Icons.star_rounded,
                 color: Colors.white, size: 20),
             const SizedBox(width: 8),
-            Text('+$xp XP earned',
+            Text(AppLocalizations.of(context).contentXpEarned(xp),
                 style: GoogleFonts.nunito(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
@@ -822,12 +823,12 @@ class _AlreadyReadCard extends StatelessWidget {
         const SizedBox(width: 14),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Already completed',
+            Text(AppLocalizations.of(context).contentAlreadyCompleted,
                 style: GoogleFonts.nunito(
                     color: AppColors.blue,
                     fontWeight: FontWeight.w900,
                     fontSize: 15)),
-            Text('You already earned XP for this article.',
+            Text(AppLocalizations.of(context).articleAlreadyEarned,
                 style: GoogleFonts.nunito(
                     color: AppColors.blue.withValues(alpha: 0.75),
                     fontSize: 13,
@@ -890,7 +891,7 @@ class _GuestCard extends StatelessWidget {
       child: Column(children: [
         const Icon(Icons.lock_open_rounded, color: Colors.white, size: 32),
         const SizedBox(height: 10),
-        Text('Want to earn XP for reading?',
+        Text(AppLocalizations.of(context).articleGuestTitle,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 color: Colors.white,
@@ -898,7 +899,7 @@ class _GuestCard extends StatelessWidget {
                 fontWeight: FontWeight.w900)),
         const SizedBox(height: 6),
         Text(
-            'Create a free account to save your progress\nand earn XP for every article you read.',
+            AppLocalizations.of(context).articleGuestBody,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 color: Colors.white.withValues(alpha: 0.88),
@@ -922,7 +923,7 @@ class _GuestCard extends StatelessWidget {
                 ),
               ],
             ),
-            child: Text('Create Free Account',
+            child: Text(AppLocalizations.of(context).quizResultCreateAccount,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.nunito(
                     color: AppColors.blue,

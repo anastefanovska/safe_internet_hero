@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/category_model.dart';
@@ -97,6 +98,7 @@ class _TopicsScreenState extends State<TopicsScreen> {
 
   void _showCompletedDialog(
       BuildContext context, CategoryModel category, TopicModel topic) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (_) => Dialog(
@@ -114,7 +116,7 @@ class _TopicsScreenState extends State<TopicsScreen> {
                     width: 100, height: 100, repeat: false),
                 const SizedBox(height: 4),
                 Text(
-                  'Topic Complete!',
+                  l10n.quizTopicComplete,
                   style: GoogleFonts.nunito(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
@@ -123,7 +125,7 @@ class _TopicsScreenState extends State<TopicsScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'You\'ve answered all questions in "${topic.name}"!',
+                  l10n.topicsCompletedBody(topic.name),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.nunito(
                     color: AppColors.textSecondary,
@@ -133,7 +135,7 @@ class _TopicsScreenState extends State<TopicsScreen> {
                 ),
                 const SizedBox(height: 20),
                 AppButton(
-                  label: 'Play Again',
+                  label: l10n.topicsPlayAgain,
                   variant: AppButtonVariant.primary,
                   icon: Icons.replay_rounded,
                   onTap: () {
@@ -155,7 +157,7 @@ class _TopicsScreenState extends State<TopicsScreen> {
                 ),
                 const SizedBox(height: 10),
                 AppButton(
-                  label: 'Back to Topics',
+                  label: l10n.quizResultBackToTopics,
                   variant: AppButtonVariant.secondary,
                   onTap: () => Navigator.pop(context),
                 ),
@@ -176,16 +178,16 @@ class _TopicsScreenState extends State<TopicsScreen> {
               const Icon(Icons.wifi_off_rounded,
                   color: AppColors.textLight, size: 40),
               const SizedBox(height: 12),
-              const Text(
-                'Could not load topics',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).topicsCouldNotLoad,
+                style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => setState(() {}),
-                child: const Text('Retry'),
+                child: Text(AppLocalizations.of(context).commonRetry),
               ),
             ],
           ),
@@ -230,11 +232,12 @@ class _TopicsScreenState extends State<TopicsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
     final isGuest = auth.isGuest;
 
-    final headerTitle = widget.filterCategoryTitle ?? 'All Topics';
+    final headerTitle = widget.filterCategoryTitle ?? l10n.topicsAllTopics;
     final desktop = isDesktop(context);
 
     return Scaffold(
@@ -290,7 +293,7 @@ class _TopicsScreenState extends State<TopicsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          headerTitle,
+                          AppCategoryIcon.localizedTitle(headerTitle, l10n),
                           style: GoogleFonts.nunito(
                             color: Colors.white,
                             fontSize: 26,
@@ -300,7 +303,7 @@ class _TopicsScreenState extends State<TopicsScreen> {
                         if (widget.filterCategoryId == null) ...[
                           const SizedBox(height: 4),
                           Text(
-                            'All learning topics',
+                            l10n.topicsSubtitle,
                             style: GoogleFonts.nunito(
                               color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 13,
@@ -381,7 +384,7 @@ class _TopicsScreenState extends State<TopicsScreen> {
                               horizontal: 16),
                           children: [
                             _Chip(
-                              label: 'All',
+                              label: l10n.topicsFilterAll,
                               selected: _activeCategoryId == null,
                               color: AppColors.blue,
                               onTap: () => setState(
@@ -389,7 +392,7 @@ class _TopicsScreenState extends State<TopicsScreen> {
                             ),
                             ...allCategories.map(
                               (cat) => _Chip(
-                                label: cat.title,
+                                label: AppCategoryIcon.localizedTitle(cat.title, l10n),
                                 selected: _activeCategoryId == cat.id,
                                 color: AppCategoryIcon.colorFor(
                                     cat.title),
@@ -512,7 +515,7 @@ class _DesktopTopicsHeader extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        title,
+                        AppCategoryIcon.localizedTitle(title, AppLocalizations.of(context)),
                         style: GoogleFonts.nunito(
                           color: AppColors.textPrimary,
                           fontSize: 26,
@@ -522,7 +525,7 @@ class _DesktopTopicsHeader extends StatelessWidget {
                       if (showSubtitle) ...[
                         const SizedBox(height: 2),
                         Text(
-                          'All learning topics',
+                          AppLocalizations.of(context).topicsSubtitle,
                           style: GoogleFonts.nunito(
                             color: AppColors.textSecondary,
                             fontSize: 13,
@@ -568,7 +571,7 @@ class _SectionHeader extends StatelessWidget {
           AppCategoryIcon(title: category.title, size: 24),
           const SizedBox(width: 8),
           Text(
-            category.title,
+            AppCategoryIcon.localizedTitle(category.title, AppLocalizations.of(context)),
             style: GoogleFonts.nunito(
               color: color,
               fontSize: 13,
@@ -667,9 +670,9 @@ class _TopicCardState extends State<_TopicCard> {
                         ),
                       ),
                       if (topic.isNew)
-                        _Badge(label: 'NEW', color: AppColors.pink),
+                        _Badge(label: AppLocalizations.of(context).topicsBadgeNew, color: AppColors.pink),
                       if (topic.isUpdated)
-                        _Badge(label: 'UPD', color: AppColors.amber),
+                        _Badge(label: AppLocalizations.of(context).topicsBadgeUpd, color: AppColors.amber),
                     ],
                   ),
                   const SizedBox(height: 3),
@@ -788,7 +791,7 @@ class _SearchBar extends StatelessWidget {
         onChanged: onChanged,
         style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
         decoration: InputDecoration(
-          hintText: 'Search topics...',
+          hintText: AppLocalizations.of(context).topicsSearchHint,
           hintStyle: GoogleFonts.nunito(color: AppColors.textLight),
           prefixIcon: const Icon(Icons.search_rounded,
               color: AppColors.blue, size: 20),
@@ -871,8 +874,8 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               query.isNotEmpty
-                  ? 'No topics match "$query"'
-                  : 'No topics available',
+                  ? AppLocalizations.of(context).topicsNoMatch(query)
+                  : AppLocalizations.of(context).topicsNoneAvailable,
               textAlign: TextAlign.center,
               style: GoogleFonts.nunito(
                 color: AppColors.textSecondary,

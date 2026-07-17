@@ -9,6 +9,14 @@ class AppNotificationModel {
   final String type; // e.g. mod_request_approved, submission_rejected
   final String title;
   final String body;
+
+  /// The variable part of a notification (e.g. a reviewer's reason), stored
+  /// separately so the UI can render a localized template around it at read
+  /// time — the reader always sees their own language regardless of the
+  /// admin's. Empty when the type has no variable content. [title]/[body] stay
+  /// as an English fallback for legacy/unknown types.
+  final String reason;
+
   final bool read;
   final DateTime createdAt;
 
@@ -18,6 +26,7 @@ class AppNotificationModel {
     required this.type,
     required this.title,
     required this.body,
+    this.reason = '',
     this.read = false,
     required this.createdAt,
   });
@@ -29,6 +38,7 @@ class AppNotificationModel {
       type: map['type'] ?? '',
       title: map['title'] ?? '',
       body: map['body'] ?? '',
+      reason: map['reason'] ?? '',
       read: map['read'] ?? false,
       createdAt: _toDateTime(map['createdAt']),
     );
@@ -41,6 +51,7 @@ class AppNotificationModel {
       'type': type,
       'title': title,
       'body': body,
+      'reason': reason,
       'read': read,
       'createdAt': Timestamp.fromDate(createdAt),
     };

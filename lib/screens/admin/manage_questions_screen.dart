@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/category_model.dart';
@@ -41,9 +42,9 @@ class _ManageQuestionsScreenState extends State<ManageQuestionsScreen>
       body: Column(
         children: [
           AdminHeader(
-            title: 'Questions',
+            title: AppLocalizations.of(context).adminQuestions,
             tabController: _tabs,
-            tabs: const ['Add Question', 'All Questions'],
+            tabs: [AppLocalizations.of(context).adminAddQuestion, AppLocalizations.of(context).adminAllQuestions],
           ),
           Expanded(
             child: Align(
@@ -137,11 +138,12 @@ class _QuestionsBrowserState extends State<_QuestionsBrowser> {
       : _allTopics.where((t) => t.categoryId == _categoryId).toList();
 
   Future<void> _delete(BuildContext context, QuestionModel q) async {
+    final l10n = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete question?',
+        title: Text(l10n.adminDeleteQuestion,
             style: GoogleFonts.nunito(fontWeight: FontWeight.w800)),
         content: Text(q.text,
             style: GoogleFonts.nunito(
@@ -149,11 +151,11 @@ class _QuestionsBrowserState extends State<_QuestionsBrowser> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text('Cancel',
+              child: Text(l10n.commonCancel,
                   style: GoogleFonts.nunito(color: AppColors.textSecondary))),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text('Delete',
+              child: Text(l10n.commonDelete,
                   style: GoogleFonts.nunito(
                       color: AppColors.red, fontWeight: FontWeight.w700))),
         ],
@@ -163,7 +165,7 @@ class _QuestionsBrowserState extends State<_QuestionsBrowser> {
     await QuestionService().deleteQuestion(q.id);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Deleted',
+      content: Text(l10n.adminDeleted,
           style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
       backgroundColor: AppColors.blue,
       behavior: SnackBarBehavior.floating,
@@ -194,6 +196,7 @@ class _QuestionsBrowserState extends State<_QuestionsBrowser> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       children: [
         // ── Search ────────────────────────────────────────────────────────
@@ -201,7 +204,7 @@ class _QuestionsBrowserState extends State<_QuestionsBrowser> {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: AdminSearchField(
             controller: _searchCtrl,
-            hint: 'Search questions...',
+            hint: l10n.adminSearchQuestions,
             onChanged: (v) => setState(() => _search = v),
           ),
         ),
@@ -215,7 +218,7 @@ class _QuestionsBrowserState extends State<_QuestionsBrowser> {
                   icon: Icons.category_outlined,
                   value: _categoryId ?? 'all',
                   options: [
-                    (value: 'all', label: 'All categories'),
+                    (value: 'all', label: l10n.adminAllCategories),
                     for (final c in _categories) (value: c.id, label: c.title),
                   ],
                   onChanged: (v) => setState(() {
@@ -232,7 +235,7 @@ class _QuestionsBrowserState extends State<_QuestionsBrowser> {
                     icon: Icons.tag_rounded,
                     value: _topicId ?? 'all',
                     options: [
-                      (value: 'all', label: 'All topics'),
+                      (value: 'all', label: l10n.adminAllTopics),
                       for (final t in _topicsForCategory)
                         (value: t.id, label: t.name),
                     ],
@@ -253,18 +256,18 @@ class _QuestionsBrowserState extends State<_QuestionsBrowser> {
                     child: CircularProgressIndicator(color: AppColors.blue));
               }
               if (snap.data!.isEmpty) {
-                return const AdminEmptyState(
+                return AdminEmptyState(
                   icon: Icons.quiz_rounded,
-                  title: 'No questions yet',
-                  subtitle: 'Add some from the "Add Question" tab',
+                  title: l10n.adminNoQuestions,
+                  subtitle: l10n.adminNoQuestionsSub,
                 );
               }
               final items = _applyFilters(snap.data!);
               if (items.isEmpty) {
-                return const AdminEmptyState(
+                return AdminEmptyState(
                   icon: Icons.search_off_rounded,
-                  title: 'No matches',
-                  subtitle: 'Try a different search or filter',
+                  title: l10n.adminNoMatches,
+                  subtitle: l10n.adminNoMatchesSub,
                 );
               }
               return Column(
@@ -320,14 +323,18 @@ class _QuestionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final q = question;
     final diffColor = q.difficulty == DifficultyLevel.beginner
         ? AppColors.green
         : q.difficulty == DifficultyLevel.intermediate
             ? AppColors.orange
             : AppColors.red;
-    final diffLabel =
-        q.difficulty.name[0].toUpperCase() + q.difficulty.name.substring(1);
+    final diffLabel = switch (q.difficulty) {
+      DifficultyLevel.beginner => l10n.formBeginner,
+      DifficultyLevel.intermediate => l10n.formIntermediate,
+      DifficultyLevel.advanced => l10n.formAdvanced,
+    };
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -344,10 +351,10 @@ class _QuestionRow extends StatelessWidget {
             Row(children: [
               AdminBadge(text: diffLabel, color: diffColor),
               AdminBadge(
-                  text: q.type == QuestionType.trueFalse ? 'T/F' : 'MCQ',
+                  text: q.type == QuestionType.trueFalse ? l10n.badgeTF : l10n.badgeMCQ,
                   color: AppColors.blue),
               if (q.status == QuestionStatus.rejected)
-                const AdminBadge(text: 'REJECTED', color: AppColors.red),
+                AdminBadge(text: l10n.statusRejected.toUpperCase(), color: AppColors.red),
             ]),
             const SizedBox(height: 6),
             Text(q.text,
@@ -375,14 +382,14 @@ class _QuestionRow extends StatelessWidget {
         ),
         // Inline actions — edit and delete in one tap each.
         IconButton(
-          tooltip: 'Edit',
+          tooltip: l10n.commonEdit,
           icon:
               const Icon(Icons.edit_outlined, color: AppColors.blue, size: 19),
           visualDensity: VisualDensity.compact,
           onPressed: onEdit,
         ),
         IconButton(
-          tooltip: 'Delete',
+          tooltip: l10n.commonDelete,
           icon: const Icon(Icons.delete_outline_rounded,
               color: AppColors.red, size: 19),
           visualDensity: VisualDensity.compact,
@@ -405,7 +412,7 @@ class _EditQuestionScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          const AdminHeader(title: 'Edit Question'),
+          AdminHeader(title: AppLocalizations.of(context).adminEditQuestion),
           Expanded(
             child: Align(
               alignment: Alignment.topCenter,

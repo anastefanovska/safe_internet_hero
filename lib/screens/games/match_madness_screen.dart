@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../data/term_pairs.dart';
 import '../../models/term_pair_model.dart';

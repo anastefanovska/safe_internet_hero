@@ -176,7 +176,8 @@ class ModeratorService {
         type: 'mod_request_rejected',
         title: 'Moderator request update',
         body: 'Your moderator request wasn\'t approved this time.$note Keep '
-            'learning and you can apply again later.');
+            'learning and you can apply again later.',
+        reason: reason?.trim() ?? '');
     await batch.commit();
   }
 
@@ -235,7 +236,8 @@ class ModeratorService {
           type: 'submission_changes',
           title: 'Changes requested on your question ✏️',
           body: 'A reviewer asked for changes: ${reason.trim()} '
-              'Open Moderator Tools to edit and resubmit it.');
+              'Open Moderator Tools to edit and resubmit it.',
+          reason: reason.trim());
     }
     await batch.commit();
   }
@@ -258,7 +260,8 @@ class ModeratorService {
           type: 'submission_rejected',
           title: 'Question submission update',
           body: 'A question you submitted wasn\'t approved.$note Thanks for '
-              'helping keep the quiz great!');
+              'helping keep the quiz great!',
+          reason: reason?.trim() ?? '');
     }
     await batch.commit();
   }
@@ -271,6 +274,7 @@ class ModeratorService {
     required String type,
     required String title,
     required String body,
+    String reason = '',
   }) {
     final ref = _db.collection('notifications').doc();
     batch.set(
@@ -281,6 +285,7 @@ class ModeratorService {
         type: type,
         title: title,
         body: body,
+        reason: reason,
         createdAt: DateTime.now(),
       ).toMap(),
     );

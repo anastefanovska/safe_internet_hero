@@ -1,6 +1,7 @@
 ﻿import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../models/category_model.dart';
 import '../../models/topic_model.dart';
@@ -70,6 +71,7 @@ class _CategoryTopicManagerScreenState
   // â”€â”€ Sheets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _showCategorySheet({CategoryModel? cat}) async {
+    final l10n = AppLocalizations.of(context);
     final titleCtrl = TextEditingController(text: cat?.title ?? '');
     var order = cat?.order ?? (_categories.length + 1);
 
@@ -79,18 +81,18 @@ class _CategoryTopicManagerScreenState
       backgroundColor: Colors.transparent,
       builder: (_) => StatefulBuilder(
         builder: (ctx, setS) => AdminBottomSheet(
-          title: cat == null ? 'Add Category' : 'Edit Category',
+          title: cat == null ? l10n.ctAddCategory : l10n.ctEditCategory,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const AdminLabel('Category Name'),
+            AdminLabel(l10n.ctCategoryName),
             const SizedBox(height: 8),
             StatefulBuilder(builder: (_, ss) {
               final slug = _slugify(titleCtrl.text);
               titleCtrl.addListener(() => ss(() {}));
               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                AdminField(controller: titleCtrl, hint: 'Enter category name'),
+                AdminField(controller: titleCtrl, hint: l10n.ctEnterCategoryName),
                 if (cat == null && slug.isNotEmpty) ...[
                   const SizedBox(height: 6),
-                  Text('ID: $slug',
+                  Text(l10n.ctIdLabel(slug),
                       style: GoogleFonts.nunito(
                           color: AppColors.blue, fontSize: 11,
                           fontWeight: FontWeight.w700)),
@@ -98,7 +100,7 @@ class _CategoryTopicManagerScreenState
               ]);
             }),
             const SizedBox(height: 14),
-            const AdminLabel('Display order'),
+            AdminLabel(l10n.ctDisplayOrder),
             const SizedBox(height: 8),
             _OrderStepper(
                 value: order, onChanged: (v) => setS(() => order = v)),
@@ -106,12 +108,12 @@ class _CategoryTopicManagerScreenState
             Row(children: [
               Expanded(
                   child: AdminSecondaryButton(
-                      label: 'Cancel',
+                      label: l10n.commonCancel,
                       onTap: () => Navigator.pop(ctx))),
               const SizedBox(width: 12),
               Expanded(
                 child: AdminPrimaryButton(
-                  label: cat == null ? 'Save' : 'Update',
+                  label: cat == null ? l10n.commonSave : l10n.ctUpdate,
                   onTap: () async {
                     final title = titleCtrl.text.trim();
                     if (title.isEmpty) return;
@@ -136,8 +138,11 @@ class _CategoryTopicManagerScreenState
 
   Future<void> _showTopicSheet(
       {required String categoryId, TopicModel? topic}) async {
-    final nameCtrl = TextEditingController(text: topic?.name ?? '');
-    final descCtrl = TextEditingController(text: topic?.desc ?? '');
+    final l10n = AppLocalizations.of(context);
+    final nameCtrl = TextEditingController(text: topic?.nameEn ?? '');
+    final descCtrl = TextEditingController(text: topic?.descEn ?? '');
+    final nameMkCtrl = TextEditingController(text: topic?.nameMk ?? '');
+    final descMkCtrl = TextEditingController(text: topic?.descMk ?? '');
     var order = topic?.order ?? ((_topicsCache[categoryId]?.length ?? 0) + 1);
     var isNew = topic?.isNew ?? true;
     var isUpdated = topic?.isUpdated ?? false;
@@ -148,18 +153,18 @@ class _CategoryTopicManagerScreenState
       backgroundColor: Colors.transparent,
       builder: (_) => StatefulBuilder(
         builder: (ctx, setS) => AdminBottomSheet(
-          title: topic == null ? 'Add Topic' : 'Edit Topic',
+          title: topic == null ? l10n.ctAddTopic : l10n.ctEditTopic,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const AdminLabel('Topic Name'),
+            AdminLabel(l10n.ctTopicName),
             const SizedBox(height: 8),
             StatefulBuilder(builder: (_, ss) {
               final slug = _slugify(nameCtrl.text);
               nameCtrl.addListener(() => ss(() {}));
               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                AdminField(controller: nameCtrl, hint: 'Enter topic name'),
+                AdminField(controller: nameCtrl, hint: l10n.ctEnterTopicName),
                 if (topic == null && slug.isNotEmpty) ...[
                   const SizedBox(height: 6),
-                  Text('ID: $slug',
+                  Text(l10n.ctIdLabel(slug),
                       style: GoogleFonts.nunito(
                           color: AppColors.blue, fontSize: 11,
                           fontWeight: FontWeight.w700)),
@@ -167,17 +172,28 @@ class _CategoryTopicManagerScreenState
               ]);
             }),
             const SizedBox(height: 12),
-            const AdminLabel('Description'),
+            AdminLabel(l10n.lcDescription),
             const SizedBox(height: 8),
             AdminField(
                 controller: descCtrl,
-                hint: 'Short description',
+                hint: l10n.ctShortDescription,
+                maxLines: 2),
+            const SizedBox(height: 12),
+            AdminLabel(l10n.ctNameMkLabel),
+            const SizedBox(height: 8),
+            AdminField(controller: nameMkCtrl, hint: l10n.ctEnterTopicName),
+            const SizedBox(height: 12),
+            AdminLabel(l10n.ctDescMkLabel),
+            const SizedBox(height: 8),
+            AdminField(
+                controller: descMkCtrl,
+                hint: l10n.ctShortDescription,
                 maxLines: 2),
             const SizedBox(height: 12),
             Row(children: [
               Expanded(
                 child: AdminToggle(
-                  label: 'New',
+                  label: l10n.ctToggleNew,
                   value: isNew,
                   color: AppColors.pink,
                   onChanged: (v) => setS(() => isNew = v),
@@ -186,7 +202,7 @@ class _CategoryTopicManagerScreenState
               const SizedBox(width: 12),
               Expanded(
                 child: AdminToggle(
-                  label: 'Updated',
+                  label: l10n.ctToggleUpdated,
                   value: isUpdated,
                   color: AppColors.orange,
                   onChanged: (v) => setS(() => isUpdated = v),
@@ -194,7 +210,7 @@ class _CategoryTopicManagerScreenState
               ),
             ]),
             const SizedBox(height: 12),
-            const AdminLabel('Display order'),
+            AdminLabel(l10n.ctDisplayOrder),
             const SizedBox(height: 8),
             _OrderStepper(
                 value: order, onChanged: (v) => setS(() => order = v)),
@@ -202,21 +218,25 @@ class _CategoryTopicManagerScreenState
             Row(children: [
               Expanded(
                   child: AdminSecondaryButton(
-                      label: 'Cancel',
+                      label: l10n.commonCancel,
                       onTap: () => Navigator.pop(ctx))),
               const SizedBox(width: 12),
               Expanded(
                 child: AdminPrimaryButton(
-                  label: topic == null ? 'Save' : 'Update',
+                  label: topic == null ? l10n.commonSave : l10n.ctUpdate,
                   onTap: () async {
                     final name = nameCtrl.text.trim();
                     final desc = descCtrl.text.trim();
+                    final nameMk = nameMkCtrl.text.trim();
+                    final descMk = descMkCtrl.text.trim();
                     if (name.isEmpty || desc.isEmpty) return;
                     await _topicsService.saveTopic(TopicModel(
                       id: topic?.id ?? _slugify(name),
                       categoryId: categoryId,
-                      name: name,
-                      desc: desc,
+                      // Store an {en, mk} map when a Macedonian copy is given,
+                      // otherwise a plain English string.
+                      name: nameMk.isEmpty ? name : {'en': name, 'mk': nameMk},
+                      desc: descMk.isEmpty ? desc : {'en': desc, 'mk': descMk},
                       isNew: isNew,
                       isUpdated: isUpdated,
                       order: order,
@@ -240,9 +260,10 @@ class _CategoryTopicManagerScreenState
   // â”€â”€ Delete â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _deleteTopic(TopicModel topic) async {
+    final l10n = AppLocalizations.of(context);
     if (!await _confirm(
-        'Delete "${topic.name}"?',
-        'Questions and content linked to this topic will also be deleted.')) {
+        l10n.ctDeleteTopicTitle(topic.name),
+        l10n.ctDeleteTopicBody)) {
       return;
     }
     final db = FirebaseFirestore.instance;
@@ -261,8 +282,9 @@ class _CategoryTopicManagerScreenState
   }
 
   Future<void> _deleteCategory(CategoryModel cat) async {
-    if (!await _confirm('Delete "${cat.title}"?',
-        'All topics, questions, and content will be permanently deleted.')) {
+    final l10n = AppLocalizations.of(context);
+    if (!await _confirm(l10n.ctDeleteCategoryTitle(cat.title),
+        l10n.ctDeleteCategoryBody)) {
       return;
     }
     final db = FirebaseFirestore.instance;
@@ -299,12 +321,12 @@ class _CategoryTopicManagerScreenState
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text('Cancel',
+              child: Text(AppLocalizations.of(context).commonCancel,
                   style:
                       GoogleFonts.nunito(color: AppColors.textSecondary))),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text('Delete',
+              child: Text(AppLocalizations.of(context).commonDelete,
                   style: GoogleFonts.nunito(
                       color: AppColors.red, fontWeight: FontWeight.w700))),
         ],
@@ -321,7 +343,7 @@ class _CategoryTopicManagerScreenState
       backgroundColor: AppColors.background,
       body: Column(children: [
         AdminHeader(
-          title: 'Categories & Topics',
+          title: AppLocalizations.of(context).adminCategoriesTopics,
           trailing: IconButton(
             icon: Container(
               width: 34,
@@ -334,7 +356,7 @@ class _CategoryTopicManagerScreenState
                   color: Colors.white, size: 20),
             ),
             onPressed: _showCategorySheet,
-            tooltip: 'Add category',
+            tooltip: AppLocalizations.of(context).ctAddCategoryTooltip,
           ),
         ),
         Expanded(
@@ -346,10 +368,10 @@ class _CategoryTopicManagerScreenState
                   ? const Center(
                       child: CircularProgressIndicator(color: AppColors.blue))
                   : _categories.isEmpty
-                      ? const AdminEmptyState(
+                      ? AdminEmptyState(
                           icon: Icons.category_rounded,
-                          title: 'No categories yet',
-                          subtitle: 'Tap + to add your first category',
+                          title: AppLocalizations.of(context).ctNoCategories,
+                          subtitle: AppLocalizations.of(context).ctNoCategoriesSub,
                         )
                       : ListView.builder(
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
@@ -463,7 +485,7 @@ class _CategoryTileState extends State<_CategoryTile> {
                           color: AppColors.textPrimary)),
                   if (topicCount != null)
                     Text(
-                      '$topicCount topic${topicCount == 1 ? '' : 's'}',
+                      AppLocalizations.of(context).ctTopicCount(topicCount),
                       style: GoogleFonts.nunito(
                           color: AppColors.textSecondary, fontSize: 11),
                     ),
@@ -475,7 +497,7 @@ class _CategoryTileState extends State<_CategoryTile> {
                 onPressed: widget.onEditCategory,
                 padding: const EdgeInsets.all(6),
                 constraints: const BoxConstraints(),
-                tooltip: 'Edit category',
+                tooltip: AppLocalizations.of(context).ctEditCategory,
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline_rounded,
@@ -483,7 +505,7 @@ class _CategoryTileState extends State<_CategoryTile> {
                 onPressed: widget.onDeleteCategory,
                 padding: const EdgeInsets.all(6),
                 constraints: const BoxConstraints(),
-                tooltip: 'Delete category',
+                tooltip: AppLocalizations.of(context).ctDeleteCategory,
               ),
             ]),
           ),
@@ -512,7 +534,7 @@ class _CategoryTileState extends State<_CategoryTile> {
                           padding:
                               const EdgeInsets.symmetric(vertical: 12),
                           child: Text(
-                            'No topics yet. Tap Add Topic to create one.',
+                            AppLocalizations.of(context).ctNoTopics,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.nunito(
                                 color: AppColors.textSecondary,
@@ -548,7 +570,7 @@ class _CategoryTileState extends State<_CategoryTile> {
                                 const Icon(Icons.add_rounded,
                                     color: AppColors.blue, size: 16),
                                 const SizedBox(width: 6),
-                                Text('Add Topic',
+                                Text(AppLocalizations.of(context).ctAddTopic,
                                     style: GoogleFonts.nunito(
                                         color: AppColors.blue,
                                         fontWeight: FontWeight.w700,
@@ -602,11 +624,11 @@ class _TopicRow extends StatelessWidget {
               ),
               if (topic.isNew) ...[
                 const SizedBox(width: 4),
-                AdminBadge(text: 'NEW', color: AppColors.pink),
+                AdminBadge(text: AppLocalizations.of(context).topicsBadgeNew, color: AppColors.pink),
               ],
               if (topic.isUpdated) ...[
                 const SizedBox(width: 4),
-                AdminBadge(text: 'UPD', color: AppColors.orange),
+                AdminBadge(text: AppLocalizations.of(context).topicsBadgeUpd, color: AppColors.orange),
               ],
             ]),
             if (topic.desc.isNotEmpty)

@@ -1,9 +1,16 @@
+import '../core/app_locale.dart';
 import '../models/term_pair_model.dart';
 
 /// Seed pairs for the "Match Madness" mini-game — core internet-safety terms
 /// with short, kid-friendly definitions. Keep each definition to a phrase that
 /// fits comfortably on a tile.
-const List<TermPairModel> termPairs = [
+///
+/// Resolved to the app's content language ([AppLocale.code]); ids stay stable
+/// across languages so game logic never changes.
+List<TermPairModel> get termPairs =>
+    AppLocale.code == 'mk' ? _termPairsMk : _termPairsEn;
+
+const List<TermPairModel> _termPairsEn = [
   TermPairModel(
     id: 'phishing',
     term: 'Phishing',
@@ -63,5 +70,68 @@ const List<TermPairModel> termPairs = [
     id: 'oversharing',
     term: 'Oversharing',
     definition: 'Posting too much private info that others could misuse.',
+  ),
+];
+
+const List<TermPairModel> _termPairsMk = [
+  TermPairModel(
+    id: 'phishing',
+    term: 'Фишинг',
+    definition: 'Лажна порака што те измамува да откриеш приватни податоци.',
+  ),
+  TermPairModel(
+    id: 'malware',
+    term: 'Малвер',
+    definition: 'Штетен софтвер што може да го оштети уредот или да украде податоци.',
+  ),
+  TermPairModel(
+    id: 'two_factor',
+    term: 'Двофакторска (2FA)',
+    definition: 'Втора проверка, како код, што докажува дека навистина си ти.',
+  ),
+  TermPairModel(
+    id: 'password',
+    term: 'Силна лозинка',
+    definition: 'Долга тајна мешавина од букви, бројки и симболи.',
+  ),
+  TermPairModel(
+    id: 'personal_data',
+    term: 'Лични податоци',
+    definition: 'Приватни факти за тебе, како адресата или роденденот.',
+  ),
+  TermPairModel(
+    id: 'cyberbullying',
+    term: 'Сајбер-малтретирање',
+    definition: 'Да бидеш злобен или повредувачки кон некого онлајн.',
+  ),
+  TermPairModel(
+    id: 'privacy_settings',
+    term: 'Поставки за приватност',
+    definition: 'Контроли што одлучуваат кој може да види што споделуваш.',
+  ),
+  TermPairModel(
+    id: 'scam',
+    term: 'Измама',
+    definition: 'Трик за да ти ги украде парите или информациите.',
+  ),
+  TermPairModel(
+    id: 'antivirus',
+    term: 'Антивирус',
+    definition: 'Програма што наоѓа и отстранува штетен софтвер.',
+  ),
+  TermPairModel(
+    id: 'popup',
+    term: 'Скокачки прозорец',
+    definition: 'Прозорец што се појавува одненадеж, понекогаш со лажни понуди.',
+  ),
+  TermPairModel(
+    id: 'digital_footprint',
+    term: 'Дигитален отпечаток',
+    definition: 'Трагата од информации што ја оставаш зад себе онлајн.',
+  ),
+  TermPairModel(
+    id: 'oversharing',
+    term: 'Прекумерно споделување',
+    definition: 'Објавување премногу приватни податоци што други можат да ги злоупотребат.',
   ),
 ];

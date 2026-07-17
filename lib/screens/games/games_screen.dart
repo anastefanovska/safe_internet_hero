@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/daily_challenge_model.dart';
@@ -25,6 +26,27 @@ import 'password_power_screen.dart';
 import 'privacy_setup_screen.dart';
 import 'red_flag_screen.dart';
 import 'spot_the_scam_screen.dart';
+
+/// Localised display title for a daily-challenge template, keyed by its stable
+/// [DailyChallengeTemplate.id] (the English `title` field stays as a fallback).
+String _challengeTitle(DailyChallengeTemplate t, AppLocalizations l10n) {
+  switch (t.id) {
+    case 'answer_5':
+      return l10n.gamesChallengeAnswer5;
+    case 'answer_10':
+      return l10n.gamesChallengeAnswer10;
+    case 'three_star':
+      return l10n.gamesChallengeThreeStar;
+    case 'category_privacy':
+      return l10n.gamesChallengePrivacy;
+    case 'category_passwords':
+      return l10n.gamesChallengePasswords;
+    case 'practice_weak':
+      return l10n.gamesChallengeWeak;
+    default:
+      return t.title;
+  }
+}
 
 /// The "Games" tab: two sub-sections — Daily Challenges and Mini Games —
 /// under a shared Duolingo-style header (mirrors the Quests screen design).
@@ -161,6 +183,7 @@ class _GamesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Guests (no tabs) always see the challenges framing.
     final onChallenges = !showTabs || activeTab == 0;
     return Container(
@@ -181,7 +204,7 @@ class _GamesHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    onChallenges ? 'Daily Challenges' : 'Mini Games',
+                    onChallenges ? l10n.gamesDailyChallenges : l10n.gamesMiniGames,
                     style: GoogleFonts.nunito(
                       color: AppColors.textPrimary,
                       fontSize: 22,
@@ -192,8 +215,8 @@ class _GamesHeader extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     onChallenges
-                        ? 'Complete challenges to earn coins'
-                        : 'Quick games to sharpen your safety skills',
+                        ? l10n.gamesChallengesSubtitle
+                        : l10n.gamesMiniGamesSubtitle,
                     style: GoogleFonts.nunito(
                       color: AppColors.textSecondary,
                       fontSize: 12.5,
@@ -209,12 +232,12 @@ class _GamesHeader extends StatelessWidget {
               Row(
                 children: [
                   _HeaderTab(
-                    label: 'Challenges',
+                    label: l10n.gamesTabChallenges,
                     selected: activeTab == 0,
                     onTap: () => onTab(0),
                   ),
                   _HeaderTab(
-                    label: 'Mini Games',
+                    label: l10n.gamesMiniGames,
                     selected: activeTab == 1,
                     onTap: () => onTab(1),
                   ),
@@ -288,6 +311,7 @@ class _DailyChallengesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -295,7 +319,7 @@ class _DailyChallengesTab extends StatelessWidget {
         Row(
           children: [
             Text(
-              'Today\'s Challenge',
+              l10n.gamesTodaysChallenge,
               style: GoogleFonts.nunito(
                 color: AppColors.textPrimary,
                 fontSize: 18,
@@ -327,9 +351,9 @@ class _DailyChallengesTab extends StatelessWidget {
         const SizedBox(height: 14),
 
         // Locked "more coming" card, mirroring the reference design.
-        const _LockedCard(
-          title: 'More challenges unlock soon',
-          subtitle: 'Keep playing to reveal weekly goals.',
+        _LockedCard(
+          title: l10n.gamesMoreChallengesTitle,
+          subtitle: l10n.gamesMoreChallengesSubtitle,
         ),
       ],
     );
@@ -345,11 +369,12 @@ class _MiniGamesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Mini Games',
+          l10n.gamesMiniGames,
           style: GoogleFonts.nunito(
             color: AppColors.textPrimary,
             fontSize: 18,
@@ -359,48 +384,48 @@ class _MiniGamesTab extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         _PlayableGameCard(
-          title: 'Spot the Scam',
-          subtitle: 'Judge real messages and climb the detective ranks.',
+          title: l10n.gameSpotScamTitle,
+          subtitle: l10n.gameSpotScamSubtitle,
           icon: Icons.local_police_rounded,
           accent: AppColors.blue,
           onTap: () => onPlay(SpotTheScamScreen(userId: user.id)),
         ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
         const SizedBox(height: 12),
         _PlayableGameCard(
-          title: 'Tap the Red Flag',
-          subtitle: 'Hunt down every suspicious clue hidden in a message.',
+          title: l10n.gameRedFlagTitle,
+          subtitle: l10n.gameRedFlagSubtitle,
           icon: Icons.flag_rounded,
           accent: AppColors.red,
           onTap: () => onPlay(RedFlagScreen(userId: user.id)),
         ).animate(delay: 70.ms).fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
         const SizedBox(height: 12),
         _PlayableGameCard(
-          title: 'Privacy Setup',
-          subtitle: 'Set who sees each field: public, friends or private.',
+          title: l10n.gamePrivacySetupTitle,
+          subtitle: l10n.gamePrivacySetupSubtitle,
           icon: Icons.tune_rounded,
           accent: AppColors.categoryPrivacy,
           onTap: () => onPlay(PrivacySetupScreen(userId: user.id)),
         ).animate(delay: 140.ms).fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
         const SizedBox(height: 12),
         _PlayableGameCard(
-          title: 'Password Power',
-          subtitle: 'Pick the changes that turn a weak password strong.',
+          title: l10n.gamePasswordPowerTitle,
+          subtitle: l10n.gamePasswordPowerSubtitle,
           icon: Icons.lock_rounded,
           accent: AppColors.categoryPasswords,
           onTap: () => onPlay(PasswordPowerScreen(userId: user.id)),
         ).animate(delay: 210.ms).fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
         const SizedBox(height: 12),
         _PlayableGameCard(
-          title: 'Match Madness',
-          subtitle: 'Match safety terms to their meaning against the clock.',
+          title: l10n.gameMatchMadnessTitle,
+          subtitle: l10n.gameMatchMadnessSubtitle,
           icon: Icons.extension_rounded,
           accent: AppColors.green,
           onTap: () => onPlay(MatchMadnessScreen(userId: user.id)),
         ).animate(delay: 280.ms).fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
         const SizedBox(height: 12),
-        const _LockedCard(
-          title: 'More games on the way',
-          subtitle: 'New challenges are in the works.',
+        _LockedCard(
+          title: l10n.gamesMoreGamesTitle,
+          subtitle: l10n.gamesMoreGamesSubtitle,
         ).animate(delay: 350.ms).fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
       ],
     );
@@ -501,7 +526,7 @@ class _PlayableGameCard extends StatelessWidget {
                     const Icon(Icons.play_arrow_rounded,
                         color: Colors.white, size: 16),
                     Text(
-                      'Play',
+                      AppLocalizations.of(context).gamesPlay,
                       style: GoogleFonts.nunito(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -585,7 +610,7 @@ class _LockedCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'SOON',
+              AppLocalizations.of(context).gamesSoon,
               style: GoogleFonts.nunito(
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w900,
@@ -607,18 +632,18 @@ class _GamesGuestState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const preview = [
-      _PreviewChallengeCard(),
-      SizedBox(height: 14),
+    final l10n = AppLocalizations.of(context);
+    final preview = [
+      const _PreviewChallengeCard(),
+      const SizedBox(height: 14),
       _LockedCard(
-        title: 'More challenges unlock soon',
-        subtitle: 'Keep playing to reveal weekly goals.',
+        title: l10n.gamesMoreChallengesTitle,
+        subtitle: l10n.gamesMoreChallengesSubtitle,
       ),
     ];
 
-    const title = 'Unlock daily challenges';
-    const subtitle =
-        'Create a free account to earn coins\nfrom daily challenges and mini games.';
+    final title = l10n.gamesGuestTitle;
+    final subtitle = l10n.gamesGuestSubtitle;
 
     // Same structure as the Shop / Leaderboard guest states: an illustration on
     // top, a faded + blurred preview of the real content, then the CTA.
@@ -754,7 +779,7 @@ class _PreviewChallengeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Answer 5 questions',
+                      AppLocalizations.of(context).gamesAnswer5,
                       style: GoogleFonts.nunito(
                         color: AppColors.textPrimary,
                         fontSize: 16,
@@ -803,7 +828,7 @@ class _PreviewChallengeCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
-              'Start challenge',
+              AppLocalizations.of(context).gamesStartChallenge,
               textAlign: TextAlign.center,
               style: GoogleFonts.nunito(
                 color: Colors.white,
@@ -887,23 +912,24 @@ class _DailyChallengePanelState extends State<DailyChallengePanel>
   /// carry the real category so category challenges still count.
   Future<void> _start(DailyChallengeTemplate template, UserModel? user) async {
     if (_starting) return;
+    final l10n = AppLocalizations.of(context);
     setState(() => _starting = true);
     try {
       final count = _questionCount(template);
       List<String> ids;
       String categoryId = 'practice';
-      String categoryName = 'Daily Challenge';
+      String categoryName = l10n.gamesDailyChallengeName;
       Color color = AppColors.gold;
 
       switch (template.type) {
         case DailyChallengeType.practiceWeakSpots:
           final weak = user?.incorrectlyAnsweredIds ?? const [];
           if (weak.isEmpty) {
-            _snack('Play a few quizzes first to build weak spots!');
+            _snack(l10n.gamesNoWeakSpots);
             return;
           }
           ids = weak.take(count).toList();
-          categoryName = 'Weak Spots';
+          categoryName = l10n.homeWeakSpots;
           color = AppColors.orange;
           break;
         case DailyChallengeType.answerInCategory:
@@ -911,7 +937,7 @@ class _DailyChallengePanelState extends State<DailyChallengePanel>
               categoryId: template.categoryId, limit: count);
           ids = qs.map((q) => q.id).toList();
           categoryId = template.categoryId!;
-          categoryName = template.categoryName ?? 'Daily Challenge';
+          categoryName = template.categoryName ?? l10n.gamesDailyChallengeName;
           color = AppCategoryIcon.colorFor(categoryName);
           break;
         case DailyChallengeType.answerQuestions:
@@ -924,7 +950,7 @@ class _DailyChallengePanelState extends State<DailyChallengePanel>
 
       if (!mounted) return;
       if (ids.isEmpty) {
-        _snack('No questions available yet — check back soon!');
+        _snack(l10n.gamesNoQuestions);
         return;
       }
 
@@ -935,7 +961,7 @@ class _DailyChallengePanelState extends State<DailyChallengePanel>
             categoryId: categoryId,
             categoryName: categoryName,
             topicId: '',
-            topicName: template.title,
+            topicName: _challengeTitle(template, l10n),
             color: color,
             specificIds: ids,
           ),
@@ -1045,7 +1071,7 @@ class _DailyChallengePanelState extends State<DailyChallengePanel>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              template.title,
+                              _challengeTitle(template, AppLocalizations.of(context)),
                               style: GoogleFonts.nunito(
                                 color: AppColors.textPrimary,
                                 fontSize: 16,
@@ -1178,7 +1204,7 @@ class _ClaimPill extends StatelessWidget {
               color: Colors.white, size: 15),
           const SizedBox(width: 5),
           Text(
-            'Claim',
+            AppLocalizations.of(context).gamesClaim,
             style: GoogleFonts.nunito(
               color: Colors.white,
               fontWeight: FontWeight.w900,

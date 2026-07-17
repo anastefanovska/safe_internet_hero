@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/category_model.dart';
@@ -106,10 +107,11 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
   }
 
   Future<void> _generate() async {
+    final l10n = AppLocalizations.of(context);
     final category = _category;
     final topic = _topic;
     if (category == null || topic == null) {
-      _snack('Select a category and topic first', isError: true);
+      _snack(l10n.genSelectCategoryTopic, isError: true);
       return;
     }
     setState(() => _generating = true);
@@ -146,7 +148,7 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _generating = false);
-      _snack('Something went wrong. Please try again.', isError: true);
+      _snack(AppLocalizations.of(context).genSomethingWrong, isError: true);
     }
   }
 
@@ -170,13 +172,12 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
     try {
       await QuestionService().seedQuestions(drafts);
       if (!mounted) return;
-      _snack('Saved ${drafts.length} '
-          'question${drafts.length == 1 ? '' : 's'}!');
+      _snack(AppLocalizations.of(context).genSaved(drafts.length));
       Navigator.pop(context);
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
-      _snack('Could not save. Please try again.', isError: true);
+      _snack(AppLocalizations.of(context).genCouldNotSave, isError: true);
     }
   }
 
@@ -196,7 +197,7 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          AdminHeader(title: _drafts == null ? 'Generate with AI' : 'Review'),
+          AdminHeader(title: _drafts == null ? AppLocalizations.of(context).adminGenerateAi : AppLocalizations.of(context).genReview),
           Expanded(
             child: Align(
               alignment: Alignment.topCenter,
@@ -215,28 +216,29 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
 
   // ── Step 1: configuration ──────────────────────────────────────────────────
   Widget _buildConfig() {
+    final l10n = AppLocalizations.of(context);
     if (_loadingFilters) {
       return const Center(
           child: CircularProgressIndicator(color: AppColors.blue));
     }
     if (_categories.isEmpty) {
-      return const AdminEmptyState(
+      return AdminEmptyState(
         icon: Icons.category_outlined,
-        title: 'No categories yet',
-        subtitle: 'Create a category and topic before generating questions.',
+        title: l10n.ctNoCategories,
+        subtitle: l10n.genNoCategoriesSub,
       );
     }
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
       children: [
         AdminCard(
-          title: 'Topic',
+          title: l10n.formTopic,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const AdminLabel('Category'),
+            AdminLabel(l10n.formCategory),
             const SizedBox(height: 8),
             AdminDropdown<String>(
               value: _categoryId,
-              hint: 'Select category',
+              hint: l10n.formSelectCategory,
               items: _categories
                   .map((c) =>
                       DropdownMenuItem(value: c.id, child: Text(c.title)))
@@ -251,35 +253,35 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
               },
             ),
             const SizedBox(height: 12),
-            const AdminLabel('Topic'),
+            AdminLabel(l10n.formTopic),
             const SizedBox(height: 8),
             AdminDropdown<String>(
               value: _topicId,
-              hint: 'Select topic',
+              hint: l10n.formSelectTopic,
               items: _topics
                   .map((t) => DropdownMenuItem(value: t.id, child: Text(t.name)))
                   .toList(),
               onChanged: (val) => setState(() => _topicId = val),
             ),
             const SizedBox(height: 12),
-            const AdminLabel('Focus (optional)'),
+            AdminLabel(l10n.genFocus),
             const SizedBox(height: 8),
             AdminField(
               controller: _focusCtrl,
-              hint: 'e.g. spotting fake giveaways',
+              hint: l10n.genFocusHint,
             ),
           ]),
         ),
         const SizedBox(height: 12),
         AdminCard(
-          title: 'Question type',
+          title: l10n.genQuestionType,
           child: IntrinsicHeight(
             child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
                     child: AdminSelectTile(
-                      label: 'Multiple choice',
+                      label: l10n.formMultipleChoice,
                       selected: _type == QuestionType.multipleChoice,
                       onTap: () => setState(
                           () => _type = QuestionType.multipleChoice),
@@ -288,7 +290,7 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: AdminSelectTile(
-                      label: 'True / False',
+                      label: l10n.formTrueFalse,
                       selected: _type == QuestionType.trueFalse,
                       onTap: () =>
                           setState(() => _type = QuestionType.trueFalse),
@@ -297,7 +299,7 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: AdminSelectTile(
-                      label: 'Mixed',
+                      label: l10n.genMixed,
                       selected: _type == null,
                       onTap: () => setState(() => _type = null),
                     ),
@@ -307,14 +309,14 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
         ),
         const SizedBox(height: 12),
         AdminCard(
-          title: 'Difficulty',
+          title: l10n.formDifficulty,
           child: IntrinsicHeight(
             child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
                     child: AdminDifficultyTile(
-                      label: 'Beginner',
+                      label: l10n.formBeginner,
                       color: AppColors.green,
                       selected: _difficulty == DifficultyLevel.beginner,
                       onTap: () => setState(
@@ -324,7 +326,7 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: AdminDifficultyTile(
-                      label: 'Intermediate',
+                      label: l10n.formIntermediate,
                       color: AppColors.orange,
                       selected: _difficulty == DifficultyLevel.intermediate,
                       onTap: () => setState(
@@ -334,7 +336,7 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: AdminDifficultyTile(
-                      label: 'Advanced',
+                      label: l10n.formAdvanced,
                       color: AppColors.red,
                       selected: _difficulty == DifficultyLevel.advanced,
                       onTap: () => setState(
@@ -344,7 +346,7 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: AdminDifficultyTile(
-                      label: 'Mixed',
+                      label: l10n.genMixed,
                       color: AppColors.blue,
                       selected: _difficulty == null,
                       onTap: () => setState(() => _difficulty = null),
@@ -355,7 +357,7 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
         ),
         const SizedBox(height: 12),
         AdminCard(
-          title: 'How many',
+          title: l10n.genHowMany,
           child: Row(children: [
             for (final n in _countOptions) ...[
               Expanded(
@@ -370,7 +372,7 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
           ]),
         ),
         const SizedBox(height: 20),
-        AdminPrimaryButton(label: 'Generate questions', onTap: _generate),
+        AdminPrimaryButton(label: l10n.genGenerateButton, onTap: _generate),
         const SizedBox(height: 12),
         _AiDisclaimer(),
       ],
@@ -379,20 +381,21 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
 
   // ── Step 2: preview / review ────────────────────────────────────────────────
   Widget _buildPreview() {
+    final l10n = AppLocalizations.of(context);
     final drafts = _drafts!;
     if (drafts.isEmpty) {
       return Column(children: [
-        const Expanded(
+        Expanded(
           child: AdminEmptyState(
             icon: Icons.inbox_rounded,
-            title: 'Nothing left to save',
-            subtitle: 'You deleted every generated question.',
+            title: l10n.genNothingLeft,
+            subtitle: l10n.genNothingLeftSub,
           ),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
           child: AdminSecondaryButton(
-            label: 'Start over',
+            label: l10n.genStartOver,
             onTap: () => setState(() => _drafts = null),
           ),
         ),
@@ -422,14 +425,14 @@ class _GenerateQuestionsScreenState extends State<GenerateQuestionsScreen> {
           child: Row(children: [
             Expanded(
               child: AdminSecondaryButton(
-                label: 'Discard',
+                label: l10n.genDiscard,
                 onTap: _saving ? () {} : () => setState(() => _drafts = null),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: AdminPrimaryButton(
-                label: _saving ? 'Saving...' : 'Save ${drafts.length}',
+                label: _saving ? l10n.formSaving : l10n.genSaveCount(drafts.length),
                 onTap: _saving ? () {} : _saveAll,
               ),
             ),
@@ -455,14 +458,18 @@ class _DraftCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final q = question;
     final diffColor = q.difficulty == DifficultyLevel.beginner
         ? AppColors.green
         : q.difficulty == DifficultyLevel.intermediate
             ? AppColors.orange
             : AppColors.red;
-    final diffLabel =
-        q.difficulty.name[0].toUpperCase() + q.difficulty.name.substring(1);
+    final diffLabel = switch (q.difficulty) {
+      DifficultyLevel.beginner => l10n.formBeginner,
+      DifficultyLevel.intermediate => l10n.formIntermediate,
+      DifficultyLevel.advanced => l10n.formAdvanced,
+    };
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -480,7 +487,7 @@ class _DraftCard extends StatelessWidget {
               AdminBadge(text: 'Q${index + 1}', color: AppColors.blue),
               AdminBadge(text: diffLabel, color: diffColor),
               AdminBadge(
-                  text: q.type == QuestionType.trueFalse ? 'T/F' : 'MCQ',
+                  text: q.type == QuestionType.trueFalse ? l10n.badgeTF : l10n.badgeMCQ,
                   color: AppColors.textSecondary),
             ]),
             const SizedBox(height: 8),
@@ -532,14 +539,14 @@ class _DraftCard extends StatelessWidget {
         ),
         Column(children: [
           IconButton(
-            tooltip: 'Edit',
+            tooltip: l10n.commonEdit,
             icon: const Icon(Icons.edit_outlined,
                 color: AppColors.blue, size: 19),
             visualDensity: VisualDensity.compact,
             onPressed: onEdit,
           ),
           IconButton(
-            tooltip: 'Delete',
+            tooltip: l10n.commonDelete,
             icon: const Icon(Icons.delete_outline_rounded,
                 color: AppColors.red, size: 19),
             visualDensity: VisualDensity.compact,
@@ -560,13 +567,13 @@ class _GeneratingState extends StatelessWidget {
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           const CircularProgressIndicator(color: AppColors.blue),
           const SizedBox(height: 20),
-          Text('Generating questions...',
+          Text(AppLocalizations.of(context).genGenerating,
               style: GoogleFonts.nunito(
                   fontWeight: FontWeight.w800,
                   fontSize: 16,
                   color: AppColors.textSecondary)),
           const SizedBox(height: 6),
-          Text('This usually takes a few seconds',
+          Text(AppLocalizations.of(context).genGeneratingSub,
               style: GoogleFonts.nunito(
                   fontSize: 13, color: AppColors.textLight)),
         ]),
@@ -590,8 +597,7 @@ class _AiDisclaimer extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'AI can make mistakes. Review every question before saving — '
-              'nothing is stored until you tap Save.',
+              AppLocalizations.of(context).genDisclaimer,
               style: GoogleFonts.nunito(
                 color: AppColors.blue,
                 fontSize: 12,

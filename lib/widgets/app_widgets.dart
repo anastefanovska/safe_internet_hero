@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../l10n/app_localizations.dart';
 import '../core/theme.dart';
 import '../services/haptic_service.dart';
 import 'app_avatar.dart';
@@ -467,7 +468,7 @@ class _GuestCTAButtonState extends State<GuestCTAButton> {
                     color: Colors.white, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  'Create Free Account',
+                  AppLocalizations.of(context).quizResultCreateAccount,
                   style: GoogleFonts.nunito(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../l10n/app_localizations.dart';
 import '../core/theme.dart';
 
 // AdminColors — delegates to AppColors.
@@ -184,7 +185,7 @@ class AdminEditBanner extends StatelessWidget {
           const Icon(Icons.edit_rounded, color: AppColors.goldDark, size: 18),
           const SizedBox(width: 8),
           Expanded(
-              child: Text('Editing: $title',
+              child: Text(AppLocalizations.of(context).adminEditing(title),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.nunito(
@@ -670,7 +671,7 @@ class AdminOptionField extends StatelessWidget {
             style: GoogleFonts.nunito(
                 fontSize: 13, color: AppColors.textPrimary),
             decoration: InputDecoration(
-                hintText: 'Option $letter',
+                hintText: AppLocalizations.of(context).formOptionHint(letter),
                 hintStyle: GoogleFonts.nunito(
                     color: AppColors.textLight, fontSize: 13),
                 border: InputBorder.none,

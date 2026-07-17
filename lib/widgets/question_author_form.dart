@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../l10n/app_localizations.dart';
 import '../core/theme.dart';
 import '../models/category_model.dart';
 import '../models/enums.dart';
@@ -170,15 +171,16 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
         ];
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context);
     if (_categoryId == null || _topicId == null) {
-      _snack('Select category and topic', isError: true);
+      _snack(l10n.formSelectCategoryTopic, isError: true);
       return;
     }
     if (!_formKey.currentState!.validate()) return;
     if (_type == QuestionType.multipleChoice) {
       if ([_opt0Ctrl, _opt1Ctrl, _opt2Ctrl, _opt3Ctrl]
           .any((c) => c.text.trim().isEmpty)) {
-        _snack('Fill in all 4 options', isError: true);
+        _snack(l10n.formFillOptions, isError: true);
         return;
       }
     }
@@ -232,16 +234,16 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
       if (!mounted) return;
       setState(() => _saving = false);
       if (_isEdit) {
-        _snack(_pending ? 'Resubmitted for review!' : 'Question updated!');
+        _snack(_pending ? l10n.formResubmitted : l10n.formQuestionUpdated);
         widget.onSubmitted?.call();
       } else {
         _clearForm();
-        _snack(_pending ? 'Question submitted for review!' : 'Question saved!');
+        _snack(_pending ? l10n.formSubmittedReview : l10n.formQuestionSaved);
       }
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      _snack('Error: $e', isError: true);
+      _snack(l10n.formError('$e'), isError: true);
     }
   }
 
@@ -257,6 +259,7 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_loading) {
       return const Center(
           child: CircularProgressIndicator(color: AppColors.blue));
@@ -286,7 +289,7 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Reviewer asked for changes',
+                        Text(l10n.formReviewerAskedChanges,
                             style: GoogleFonts.nunito(
                                 color: AppColors.orangeDark,
                                 fontWeight: FontWeight.w800,
@@ -306,14 +309,14 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
 
           // ── Location ──────────────────────────────────────────────────────
           AdminCard(
-            title: 'Location',
+            title: l10n.formLocation,
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const AdminLabel('Category'),
+              AdminLabel(l10n.formCategory),
               const SizedBox(height: 8),
               AdminDropdown<String>(
                 value: _categoryId,
-                hint: 'Select category',
+                hint: l10n.formSelectCategory,
                 items: _categories
                     .map((c) =>
                         DropdownMenuItem(value: c.id, child: Text(c.title)))
@@ -328,11 +331,11 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
                 },
               ),
               const SizedBox(height: 12),
-              const AdminLabel('Topic'),
+              AdminLabel(l10n.formTopic),
               const SizedBox(height: 8),
               AdminDropdown<String>(
                 value: _topicId,
-                hint: 'Select topic',
+                hint: l10n.formSelectTopic,
                 items: _topics
                     .map((t) =>
                         DropdownMenuItem(value: t.id, child: Text(t.name)))
@@ -345,15 +348,15 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
 
           // ── Setup ─────────────────────────────────────────────────────────
           AdminCard(
-            title: 'Setup',
+            title: l10n.formSetup,
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const AdminLabel('Type'),
+              AdminLabel(l10n.formType),
               const SizedBox(height: 8),
               Row(children: [
                 Expanded(
                   child: AdminSelectTile(
-                    label: 'Multiple Choice',
+                    label: l10n.formMultipleChoice,
                     selected: _type == QuestionType.multipleChoice,
                     onTap: () => setState(() {
                       _type = QuestionType.multipleChoice;
@@ -364,7 +367,7 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: AdminSelectTile(
-                    label: 'True / False',
+                    label: l10n.formTrueFalse,
                     selected: _type == QuestionType.trueFalse,
                     onTap: () => setState(() {
                       _type = QuestionType.trueFalse;
@@ -374,12 +377,12 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
                 ),
               ]),
               const SizedBox(height: 12),
-              const AdminLabel('Difficulty'),
+              AdminLabel(l10n.formDifficulty),
               const SizedBox(height: 8),
               Row(children: [
                 Expanded(
                   child: AdminDifficultyTile(
-                    label: 'Beginner',
+                    label: l10n.formBeginner,
                     color: AppColors.green,
                     selected: _difficulty == DifficultyLevel.beginner,
                     onTap: () =>
@@ -389,7 +392,7 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: AdminDifficultyTile(
-                    label: 'Intermediate',
+                    label: l10n.formIntermediate,
                     color: AppColors.orange,
                     selected: _difficulty == DifficultyLevel.intermediate,
                     onTap: () => setState(
@@ -399,7 +402,7 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: AdminDifficultyTile(
-                    label: 'Advanced',
+                    label: l10n.formAdvanced,
                     color: AppColors.red,
                     selected: _difficulty == DifficultyLevel.advanced,
                     onTap: () =>
@@ -413,22 +416,22 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
 
           // ── Content ───────────────────────────────────────────────────────
           AdminCard(
-            title: 'Question & Answers',
+            title: l10n.formQuestionAnswers,
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const AdminLabel('Question text'),
+              AdminLabel(l10n.formQuestionText),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _textCtrl,
                 maxLines: 3,
                 style: GoogleFonts.nunito(
                     fontSize: 14, color: AppColors.textPrimary),
-                decoration: AdminField.decoration('Type your question here...'),
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                decoration: AdminField.decoration(l10n.formQuestionHint),
+                validator: (v) => v == null || v.isEmpty ? l10n.formRequired : null,
               ),
               const SizedBox(height: 14),
               if (_type == QuestionType.multipleChoice) ...[
-                const AdminLabel('Options - tap letter to mark correct'),
+                AdminLabel(l10n.formOptionsHint),
                 const SizedBox(height: 8),
                 AdminOptionField(
                     controller: _opt0Ctrl,
@@ -459,7 +462,7 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
                     onTap: () => setState(() => _correctIndex = 3)),
               ],
               if (_type == QuestionType.trueFalse) ...[
-                const AdminLabel('Correct answer'),
+                AdminLabel(l10n.formCorrectAnswer),
                 const SizedBox(height: 8),
                 Row(children: [
                   Expanded(
@@ -482,7 +485,7 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
                 ]),
               ],
               const SizedBox(height: 14),
-              const AdminLabel('Explanation'),
+              AdminLabel(l10n.formExplanation),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _explanationCtrl,
@@ -490,8 +493,8 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
                 style: GoogleFonts.nunito(
                     fontSize: 14, color: AppColors.textPrimary),
                 decoration:
-                    AdminField.decoration('Why is this the correct answer?'),
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    AdminField.decoration(l10n.formExplanationHint),
+                validator: (v) => v == null || v.isEmpty ? l10n.formRequired : null,
               ),
             ]),
           ),
@@ -506,7 +509,7 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
               border: Border.all(color: AppColors.border, width: 1.5),
             ),
             child: Text(
-              'This question awards $_points points',
+              l10n.formAwardsPoints(_points),
               textAlign: TextAlign.center,
               style: GoogleFonts.nunito(
                   color: AppColors.textSecondary,
@@ -518,11 +521,11 @@ class _QuestionAuthorFormState extends State<QuestionAuthorForm> {
           AdminPrimaryButton(
             label: _saving
                 ? (_isEdit
-                    ? 'Resubmitting...'
-                    : (_pending ? 'Submitting...' : 'Saving...'))
+                    ? l10n.formResubmitting
+                    : (_pending ? l10n.formSubmitting : l10n.formSaving))
                 : (_isEdit
-                    ? 'Resubmit for review'
-                    : (_pending ? 'Submit for review' : 'Save Question')),
+                    ? l10n.formResubmitButton
+                    : (_pending ? l10n.formSubmitReview : l10n.formSaveQuestion)),
             onTap: _saving ? () {} : _save,
           ),
         ],

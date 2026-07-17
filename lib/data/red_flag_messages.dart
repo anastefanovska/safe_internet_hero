@@ -1,9 +1,17 @@
+import '../core/app_locale.dart';
 import '../models/red_flag_message_model.dart';
 
 /// Seed messages for "Tap the Red Flag". Each message reads as one flowing text
 /// made of small [RedFlagPart]s; the flagged parts are the tell-tale scam signs.
 /// Fragments are kept short so any single part wraps cleanly on a phone.
-const List<RedFlagMessageModel> redFlagMessages = [
+///
+/// Resolved to the app's content language ([AppLocale.code]); ids and the set
+/// of flagged parts stay identical across languages so the game logic (flag
+/// count, scoring) never changes.
+List<RedFlagMessageModel> get redFlagMessages =>
+    AppLocale.code == 'mk' ? _redFlagMessagesMk : _redFlagMessagesEn;
+
+const List<RedFlagMessageModel> _redFlagMessagesEn = [
   RedFlagMessageModel(
     id: 'account_suspended',
     sender: 'Netflix Support',
@@ -152,6 +160,159 @@ const List<RedFlagMessageModel> redFlagMessages = [
       RedFlagPart('yourbank-alerts.com',
           isFlag: true,
           reason: 'This is not the bank\'s real address — check the official site.'),
+    ],
+  ),
+];
+
+const List<RedFlagMessageModel> _redFlagMessagesMk = [
+  RedFlagMessageModel(
+    id: 'account_suspended',
+    sender: 'Netflix Support',
+    context: 'Е-пошта',
+    parts: [
+      RedFlagPart('Твојата сметка ќе биде '),
+      RedFlagPart('суспендирана за 24 часа',
+          isFlag: true,
+          reason: 'Страшен рок те притиска да дејствуваш без размислување.'),
+      RedFlagPart(' освен ако не ја '),
+      RedFlagPart('потврдиш лозинката',
+          isFlag: true,
+          reason: 'Вистинските компании никогаш не бараат лозинка преку порака.'),
+      RedFlagPart(' на '),
+      RedFlagPart('netfl1x-verify.com',
+          isFlag: true,
+          reason: 'Веб-адресата е погрешно напишана — не е вистинската страница.'),
+    ],
+  ),
+  RedFlagMessageModel(
+    id: 'prize_text',
+    sender: '+44 7700 900321',
+    context: 'Текстуална порака',
+    parts: [
+      RedFlagPart('Ти '),
+      RedFlagPart('ОСВОИ подарок-картичка од £500',
+          isFlag: true,
+          reason: 'Не можеш да освоиш награда за која никогаш не си се пријавил.'),
+      RedFlagPart('! Земи ја во '),
+      RedFlagPart('следните 2 часа',
+          isFlag: true,
+          reason: 'Одбројувањето е тука за да те натера да згрешиш во брзање.'),
+      RedFlagPart(' тука: '),
+      RedFlagPart('bit.ly/free-cash',
+          isFlag: true,
+          reason: 'Скратениот линк крие каде навистина те носи.'),
+    ],
+  ),
+  RedFlagMessageModel(
+    id: 'stranger_dm',
+    sender: '@gamer_friend_99',
+    context: 'Директна порака',
+    parts: [
+      RedFlagPart('еј! во кое '),
+      RedFlagPart('училиште одиш',
+          isFlag: true,
+          reason: 'Опасно е кога странец те прашува во кое училиште одиш.'),
+      RedFlagPart(' и '),
+      RedFlagPart('кога завршуваш',
+          isFlag: true,
+          reason: 'Никогаш не кажувај некому каде ќе бидеш и кога.'),
+      RedFlagPart('? можеби можеме да се '),
+      RedFlagPart('сретнеме во живо',
+          isFlag: true,
+          reason: 'Понудата да се сретнете е сериозен предупредувачки знак од странец.'),
+      RedFlagPart(' :)'),
+    ],
+  ),
+  RedFlagMessageModel(
+    id: 'mum_new_number',
+    sender: 'Непознат број',
+    context: 'Текстуална порака',
+    parts: [
+      RedFlagPart('Здраво, мама е, го '),
+      RedFlagPart('изгубив телефонот',
+          isFlag: true,
+          reason: 'Преправањето дека си член на семејството што го изгубил телефонот е чест трик.'),
+      RedFlagPart(', ова е мојот нов број. Брзо, '),
+      RedFlagPart('испрати ми го кодот',
+          isFlag: true,
+          reason: 'Еднократниот безбедносен код е тајна — никогаш не го испраќај никому.'),
+      RedFlagPart(' што штотуку пристигна!'),
+    ],
+  ),
+  RedFlagMessageModel(
+    id: 'free_robux',
+    sender: '@free_robux_now',
+    context: 'Директна порака',
+    parts: [
+      RedFlagPart('БЕСПЛАТЕН генератор на ROBUX! само '),
+      RedFlagPart('најави се со твојата лозинка',
+          isFlag: true,
+          reason: 'Ниту една вистинска страница не бара лозинка за да ти даде бесплатни работи — таа ти го краде профилот.'),
+      RedFlagPart(' на '),
+      RedFlagPart('robux-gen.xyz',
+          isFlag: true,
+          reason: 'Ваква чудна веб-адреса е лажна страница.'),
+      RedFlagPart('. '),
+      RedFlagPart('Работи 100%',
+          isFlag: true,
+          reason: 'Ветувањата дека нешто „работи 100%“ се знак за измама.'),
+    ],
+  ),
+  RedFlagMessageModel(
+    id: 'parcel_fee',
+    sender: 'ROYAL-MAIL',
+    context: 'Текстуална порака',
+    parts: [
+      RedFlagPart('Твојот пакет е задржан. '),
+      RedFlagPart('Мала такса не е платена',
+          isFlag: true,
+          reason: 'Лажни пораки за достава измислуваат ситна такса за да ти ги земат податоците од картичката.'),
+      RedFlagPart('. Плати сега или ќе биде '),
+      RedFlagPart('вратен денес',
+          isFlag: true,
+          reason: 'Брзањето да „платиш денес“ е тука за да те спречи да размислуваш.'),
+      RedFlagPart(': '),
+      RedFlagPart('rml-redelivery.info',
+          isFlag: true,
+          reason: 'Тоа не е вистинската веб-страница на курирот — чудната адреса го открива тоа.'),
+    ],
+  ),
+  RedFlagMessageModel(
+    id: 'giveaway_dm',
+    sender: '@giveaway_king',
+    context: 'Директна порака',
+    parts: [
+      RedFlagPart('Ти си победник! За да ја земеш, '),
+      RedFlagPart('испрати £5 за да ја отклучиш',
+          isFlag: true,
+          reason: 'Вистинска награда никогаш не бара прво да платиш пари.'),
+      RedFlagPart(' наградата и '),
+      RedFlagPart('сподели ја твојата адреса',
+          isFlag: true,
+          reason: 'Давањето на твојата адреса на странец онлајн е опасно.'),
+      RedFlagPart('. Понудата завршува '),
+      RedFlagPart('за 10 минути',
+          isFlag: true,
+          reason: 'Часовникот што отчукува е трик со притисок за да те избрза.'),
+    ],
+  ),
+  RedFlagMessageModel(
+    id: 'bank_email',
+    sender: 'security@yourbank-alerts.com',
+    context: 'Е-пошта',
+    parts: [
+      RedFlagPart('Забележавме '),
+      RedFlagPart('невообичаена активност',
+          isFlag: true,
+          reason: 'Страшните предупредувања за „невообичаена активност“ се чест начин да те вознемират.'),
+      RedFlagPart('. Потврди со внесување на твојот '),
+      RedFlagPart('целосен PIN и лозинка',
+          isFlag: true,
+          reason: 'Вистинска банка никогаш нема да го побара твојот целосен PIN или лозинка.'),
+      RedFlagPart(' на '),
+      RedFlagPart('yourbank-alerts.com',
+          isFlag: true,
+          reason: 'Ова не е вистинската адреса на банката — провери ја официјалната страница.'),
     ],
   ),
 ];

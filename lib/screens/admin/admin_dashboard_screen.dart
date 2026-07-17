@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../models/moderator_request_model.dart';
 import '../../models/question_model.dart';
@@ -19,12 +20,13 @@ class AdminDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
         children: [
           AdminHeader(
-            title: 'Admin',
+            title: l10n.adminTitle,
             trailing: Container(
               margin: const EdgeInsets.only(right: 4),
               padding:
@@ -37,7 +39,7 @@ class AdminDashboardScreen extends StatelessWidget {
                     width: 1.5),
               ),
               child: Text(
-                'ADMIN',
+                l10n.adminBadge,
                 style: GoogleFonts.nunito(
                   color: AppColors.blue,
                   fontWeight: FontWeight.w800,
@@ -56,7 +58,7 @@ class AdminDashboardScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
               children: [
                 Text(
-                  'Content',
+                  l10n.adminSectionContent,
                   style: GoogleFonts.nunito(
                     color: AppColors.textSecondary,
                     fontSize: 11,
@@ -66,39 +68,39 @@ class AdminDashboardScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 AdminDashboardCard(
-                  title: 'Questions',
-                  subtitle: 'Create quiz questions, set difficulty and correct answers.',
+                  title: l10n.adminQuestions,
+                  subtitle: l10n.adminQuestionsSub,
                   icon: Icons.quiz_rounded,
                   onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const ManageQuestionsScreen())),
                 ),
                 const SizedBox(height: 10),
                 AdminDashboardCard(
-                  title: 'Generate with AI',
-                  subtitle: 'Draft quiz questions with AI, then review and save.',
+                  title: l10n.adminGenerateAi,
+                  subtitle: l10n.adminGenerateAiSub,
                   icon: Icons.auto_awesome_rounded,
                   onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const GenerateQuestionsScreen())),
                 ),
                 const SizedBox(height: 10),
                 AdminDashboardCard(
-                  title: 'Translate Questions',
-                  subtitle: 'Add a Macedonian copy of every question with AI.',
+                  title: l10n.adminTranslate,
+                  subtitle: l10n.adminTranslateSub,
                   icon: Icons.translate_rounded,
                   onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const TranslateQuestionsScreen())),
                 ),
                 const SizedBox(height: 10),
                 AdminDashboardCard(
-                  title: 'Learning Content',
-                  subtitle: 'Create and edit articles and video resources.',
+                  title: l10n.adminLearningContent,
+                  subtitle: l10n.adminLearningContentSub,
                   icon: Icons.library_books_rounded,
                   onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const ManageLearningContentScreen())),
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Structure',
+                  l10n.adminSectionStructure,
                   style: GoogleFonts.nunito(
                     color: AppColors.textSecondary,
                     fontSize: 11,
@@ -108,15 +110,15 @@ class AdminDashboardScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 AdminDashboardCard(
-                  title: 'Categories & Topics',
-                  subtitle: 'Organise categories and their topics.',
+                  title: l10n.adminCategoriesTopics,
+                  subtitle: l10n.adminCategoriesTopicsSub,
                   icon: Icons.account_tree_rounded,
                   onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const CategoryTopicManagerScreen())),
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Community',
+                  l10n.adminSectionCommunity,
                   style: GoogleFonts.nunito(
                     color: AppColors.textSecondary,
                     fontSize: 11,
@@ -128,7 +130,7 @@ class AdminDashboardScreen extends StatelessWidget {
                 const _ModeratorsCard(),
                 const SizedBox(height: 24),
                 Text(
-                  'Tools',
+                  l10n.adminSectionTools,
                   style: GoogleFonts.nunito(
                     color: AppColors.textSecondary,
                     fontSize: 11,
@@ -138,8 +140,8 @@ class AdminDashboardScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 AdminDashboardCard(
-                  title: 'Import JSON',
-                  subtitle: 'Bulk-upload questions or articles from a JSON file.',
+                  title: l10n.adminImportJson,
+                  subtitle: l10n.adminImportJsonSub,
                   icon: Icons.upload_file_rounded,
                   onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const ImportDataScreen())),
@@ -160,7 +162,7 @@ class AdminDashboardScreen extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Admin accounts are excluded from the leaderboard and public rankings.',
+                        l10n.adminExcludedNote,
                         style: GoogleFonts.nunito(
                           color: AppColors.blue,
                           fontSize: 12,
@@ -199,9 +201,8 @@ class _ModeratorsCard extends StatelessWidget {
           builder: (context, reqSnap) {
             final pendingReqs = reqSnap.data?.length ?? 0;
             return AdminDashboardCard(
-              title: 'Moderators',
-              subtitle:
-                  'Review moderator requests and approve submitted questions.',
+              title: AppLocalizations.of(context).adminModerators,
+              subtitle: AppLocalizations.of(context).adminModeratorsSub,
               icon: Icons.shield_rounded,
               badgeCount: pendingSubs + pendingReqs,
               onTap: () => Navigator.push(

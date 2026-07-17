@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/user_model.dart';
@@ -121,17 +122,26 @@ class _DesktopRail extends StatelessWidget {
     required this.onMore,
   });
 
-  static const _items = [
-    (svg: 'assets/images/home.svg', label: 'Home'),
-    (svg: 'assets/images/learn.svg', label: 'Learn'),
-    (svg: 'assets/images/games.svg', label: 'Games'),
-    (svg: 'assets/images/store.svg', label: 'Shop'),
-    (svg: 'assets/images/leaderboard.svg', label: 'Leaderboard'),
-    (svg: 'assets/images/profile.svg', label: 'Profile'),
+  static const _svgs = [
+    'assets/images/home.svg',
+    'assets/images/learn.svg',
+    'assets/images/games.svg',
+    'assets/images/store.svg',
+    'assets/images/leaderboard.svg',
+    'assets/images/profile.svg',
   ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final labels = [
+      l10n.navHome,
+      l10n.navLearn,
+      l10n.navGames,
+      l10n.navShop,
+      l10n.navLeaderboard,
+      l10n.navProfile,
+    ];
     return SizedBox(
       width: 216,
       child: Container(
@@ -168,9 +178,9 @@ class _DesktopRail extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 18),
-              ...List.generate(_items.length, (i) => _RailItem(
-                    svgPath: _items[i].svg,
-                    label: _items[i].label,
+              ...List.generate(_svgs.length, (i) => _RailItem(
+                    svgPath: _svgs[i],
+                    label: labels[i],
                     // The active tab keeps its outline even while the More
                     // panel is open — More is just a toggle, not a tab.
                     selected: i == currentIndex,
@@ -181,7 +191,7 @@ class _DesktopRail extends StatelessWidget {
               if (showMoreButton)
                 _RailItem(
                   svgPath: 'assets/images/more.svg',
-                  label: 'More',
+                  label: l10n.navMore,
                   selected: false,
                   onTap: onMore,
                 ),
@@ -191,7 +201,7 @@ class _DesktopRail extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 14),
                   child: _MoreOption(
                     icon: Icons.settings_outlined,
-                    label: 'Settings',
+                    label: l10n.settingsTitle,
                     onTap: () => Navigator.push(
                       context,
                       AppPageRoute(builder: (_) => const SettingsScreen()),
@@ -202,7 +212,7 @@ class _DesktopRail extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 14),
                   child: _MoreOption(
                     icon: Icons.logout_rounded,
-                    label: 'Log out',
+                    label: l10n.navLogOut,
                     onTap: () async {
                       final navigator = Navigator.of(context);
                       await context.read<AuthProvider>().logout();
@@ -457,11 +467,12 @@ class _StatsSidePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return _SidePanelScroll(
       children: [
         // ── Stats box ─────────────────────────────────────────────
         _PanelBox(
-          label: 'YOUR STATS',
+          label: l10n.panelYourStats,
           child: Column(
             children: [
               _StatRow(
@@ -469,21 +480,21 @@ class _StatsSidePanel extends StatelessWidget {
                 color: user.currentStreak > 0
                     ? AppColors.orange
                     : AppColors.textLight,
-                label: 'Day Streak',
+                label: l10n.statDayStreak,
                 value: '${user.currentStreak}',
               ),
               const SizedBox(height: 16),
               _StatRow(
                 icon: Icons.star_rounded,
                 color: AppColors.gold,
-                label: 'Total Stars',
+                label: l10n.statTotalStars,
                 value: '${user.totalStars}',
               ),
               const SizedBox(height: 16),
               _StatRow(
                 icon: Icons.monetization_on_rounded,
                 color: AppColors.orangeDark,
-                label: 'Coins',
+                label: l10n.statCoins,
                 value: '${user.coins}',
               ),
             ],
@@ -494,7 +505,7 @@ class _StatsSidePanel extends StatelessWidget {
         if (user.xpBoostActive || user.streakFreezeCount > 0) ...[
           const SizedBox(height: 14),
           _PanelBox(
-            label: 'ACTIVE BOOSTS',
+            label: l10n.panelActiveBoosts,
             child: Column(
               children: [
                 if (user.xpBoostActive) ...[
@@ -585,6 +596,7 @@ class _GuestSidePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return _SidePanelScroll(
       children: [
             // ── Create-profile CTA ────────────────────────────────────
@@ -592,7 +604,7 @@ class _GuestSidePanel extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Create a profile to save your progress!',
+                    l10n.guestCreateProfilePrompt,
                     style: GoogleFonts.nunito(
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
@@ -602,7 +614,7 @@ class _GuestSidePanel extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   AppButton(
-                    label: 'CREATE A PROFILE',
+                    label: l10n.guestCreateProfileButton,
                     variant: AppButtonVariant.success,
                     onTap: () => Navigator.push(
                       context,
@@ -611,7 +623,7 @@ class _GuestSidePanel extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   AppButton(
-                    label: 'SIGN IN',
+                    label: l10n.guestSignIn,
                     variant: AppButtonVariant.primary,
                     onTap: () => Navigator.push(
                       context,
@@ -685,6 +697,7 @@ class _BoostBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -718,7 +731,7 @@ class _BoostBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'XP Boost Active',
+                  l10n.boostXpTitle,
                   style: GoogleFonts.nunito(
                     color: AppColors.orangeDark,
                     fontSize: 13,
@@ -726,7 +739,7 @@ class _BoostBanner extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '2× stars on quizzes',
+                  l10n.boostXpSubtitle,
                   style: GoogleFonts.nunito(
                     color: AppColors.orange,
                     fontSize: 11,
@@ -748,6 +761,7 @@ class _FreezeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -776,7 +790,7 @@ class _FreezeBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$count Streak Freeze${count > 1 ? 's' : ''}',
+                  l10n.boostFreezeTitle(count),
                   style: GoogleFonts.nunito(
                     color: AppColors.blue,
                     fontSize: 13,
@@ -784,7 +798,7 @@ class _FreezeBanner extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Your streak is protected',
+                  l10n.boostFreezeSubtitle,
                   style: GoogleFonts.nunito(
                     color: AppColors.blueDark,
                     fontSize: 11,

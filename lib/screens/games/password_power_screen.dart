@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
+import '../../core/app_locale.dart';
 import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/haptic_service.dart';
@@ -36,7 +38,13 @@ class _PwRound {
   int get goodCount => options.where((o) => o.good).length;
 }
 
-const List<_PwRound> _rounds = [
+/// Rounds resolved to the app's content language ([AppLocale.code]). The weak
+/// example passwords stay identical across languages; only the option labels and
+/// their explanatory notes are translated. The `good`/trap flags and their order
+/// match across languages so scoring is unchanged.
+List<_PwRound> get _rounds => AppLocale.code == 'mk' ? _roundsMk : _roundsEn;
+
+const List<_PwRound> _roundsEn = [
   _PwRound('kitten', [
     _PwOption('Make it 12+ characters long', true,
         'Longer passwords are dramatically harder to crack.'),
@@ -108,6 +116,81 @@ const List<_PwRound> _rounds = [
         'One symbol on a famous pattern doesn\'t make it safe.'),
     _PwOption('Use your pet\'s name instead', false,
         'Pet names are easy to find on your profiles — avoid them.'),
+  ]),
+];
+
+const List<_PwRound> _roundsMk = [
+  _PwRound('kitten', [
+    _PwOption('Направи ја долга 12+ знаци', true,
+        'Подолгите лозинки се драматично потешки за пробивање.'),
+    _PwOption('Додади бројки и симболи', true,
+        'Мешањето бројки и симболи огромно ги зголемува комбинациите.'),
+    _PwOption('Мешај ГОЛЕМИ и мали букви', true,
+        'Користењето на двата случаи прави секоја буква потешка за погодување.'),
+    _PwOption('Додади ја годината на раѓање на крајот', false,
+        'Годината на раѓање е лесна за другите да ја најдат и погодат.'),
+    _PwOption('Смени ја во „password1“', false,
+        '„password1“ е една од најчестите лозинки во светот.'),
+  ]),
+  _PwRound('john2010', [
+    _PwOption('Отстрани ги името и годината на раѓање', true,
+        'Имињата и годините се лесни за пронаоѓање — изостави ги.'),
+    _PwOption('Користи неколку случајни зборови заедно', true,
+        'Комбинациите од случајни зборови се долги, лесни за помнење и тешки за погодување.'),
+    _PwOption('Додади симболи како ! и #', true,
+        'Симболите додаваат разновидност со која алатките за погодување тешко се справуваат.'),
+    _PwOption('Само додади „123“ на крајот', false,
+        'Додавањето „123“ е првото нешто што напаѓачот го проба.'),
+    _PwOption('Направи ја секоја буква голема', false,
+        'САМО ГОЛЕМИ БУКВИ сепак е лесно — потребна ти е вистинска разновидност.'),
+  ]),
+  _PwRound('qwerty', [
+    _PwOption('Избегнувај шаблони од тастатура', true,
+        '„qwerty“ и „123456“ се првите шаблони што ги тестираат напаѓачите.'),
+    _PwOption('Направи ја многу подолга', true,
+        'Секој дополнителен знак го умножува времето потребно за пробивање.'),
+    _PwOption('Вметни симболи и бројки', true,
+        'Добра мешавина од типови знаци е тоа што ја прави лозинката силна.'),
+    _PwOption('Само додади „!“ за да стане „qwerty!“', false,
+        'Сепак е шаблонот „qwerty“ — еден симбол не го поправа тоа.'),
+    _PwOption('Искористи ја лозинката од е-поштата', false,
+        'Повторното користење лозинки значи дека еден пробив отклучува сѐ.'),
+  ]),
+  _PwRound('sunshine', [
+    _PwOption('Комбинирај неколку случајни зборови', true,
+        'Комбинациите од случајни зборови се долги и тешки за погодување, но лесни за помнење.'),
+    _PwOption('Додади бројки и симболи', true,
+        'Мешавина од типови знаци огромно ги зголемува можностите.'),
+    _PwOption('Направи ја многу подолга', true,
+        'Должината е најголемото нешто што ја прави лозинката силна.'),
+    _PwOption('Додади „2024“ на крајот', false,
+        'Годините се едни од првите нешта што напаѓачите ги пробуваат.'),
+    _PwOption('Напиши ја наопаку', false,
+        '„enihsnus“ е исто толку лесно за компјутер да го погоди.'),
+  ]),
+  _PwRound('iloveyou', [
+    _PwOption('Користи нешто што не е позната фраза', true,
+        '„iloveyou“ е една од најпогодуваните лозинки некогаш.'),
+    _PwOption('Направи ја долга и непредвидлива', true,
+        'Непредвидлива и долга е токму она што ги победува алатките за погодување.'),
+    _PwOption('Вметни симболи и бројки', true,
+        'Симболите и бројките ја додаваат разновидноста што ѝ треба на силна лозинка.'),
+    _PwOption('Смени ја во „iloveyou2“', false,
+        'Додавањето бројка на честа фраза сепак е лесно за пробивање.'),
+    _PwOption('Само направи ја со САМО ГОЛЕМИ БУКВИ', false,
+        'Пишувањето честа фраза со големи букви речиси воопшто не помага.'),
+  ]),
+  _PwRound('abc123', [
+    _PwOption('Избегнувај едноставни низи', true,
+        '„abc“ и „123“ се првите шаблони што ги тестираат напаѓачите.'),
+    _PwOption('Користи неповрзани случајни зборови', true,
+        'Неповрзаните зборови се многу потешки за погодување од низа.'),
+    _PwOption('Додади должина и симболи', true,
+        'Повеќе должина и симболи претвораат слаба основа во силна.'),
+    _PwOption('Додади „!“ за да стане „abc123!“', false,
+        'Еден симбол на познат шаблон не го прави безбеден.'),
+    _PwOption('Наместо тоа користи го името на миленикот', false,
+        'Имињата на миленици се лесни за пронаоѓање на твоите профили — избегнувај ги.'),
   ]),
 ];
 
@@ -265,13 +348,13 @@ class _PasswordPowerScreenState extends State<PasswordPowerScreen> {
                       ? MiniGameResult(
                           stars: stars,
                           headline: switch (stars) {
-                            3 => 'Password wizard!',
-                            2 => 'Strong choices!',
-                            1 => 'Keep practising',
-                            _ => 'Keep practising!',
+                            3 => AppLocalizations.of(context).pwHeadline3,
+                            2 => AppLocalizations.of(context).pwHeadline2,
+                            1 => AppLocalizations.of(context).pwHeadline1,
+                            _ => AppLocalizations.of(context).pwHeadline0,
                           },
                           subtitle:
-                              'You made $_score of $_totalDecisions smart choices',
+                              AppLocalizations.of(context).pwSmartChoices(_score, _totalDecisions),
                           awarding: _awarding,
                           awardedCoins: _awardedCoins,
                           coinsPossible: _coinsPossible,
@@ -296,7 +379,7 @@ class _PasswordPowerScreenState extends State<PasswordPowerScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Make this password stronger',
+            AppLocalizations.of(context).pwMakeStronger,
             style: GoogleFonts.nunito(
               color: AppColors.textPrimary,
               fontSize: 16,
@@ -307,7 +390,7 @@ class _PasswordPowerScreenState extends State<PasswordPowerScreen> {
           _PasswordMeter(password: _r.password, strength: _strength),
           const SizedBox(height: 16),
           Text(
-            'Pick every change that helps:',
+            AppLocalizations.of(context).pwPickChanges,
             style: GoogleFonts.nunito(
               color: AppColors.textSecondary,
               fontSize: 13,
@@ -319,8 +402,8 @@ class _PasswordPowerScreenState extends State<PasswordPowerScreen> {
           const SizedBox(height: 8),
           AppButton(
             label: _checked
-                ? (_lastRound ? 'See results' : 'Next password')
-                : 'Check',
+                ? (_lastRound ? AppLocalizations.of(context).redFlagSeeResults : AppLocalizations.of(context).pwNextPassword)
+                : AppLocalizations.of(context).pwCheck,
             variant: AppButtonVariant.primary,
             icon: _checked ? Icons.arrow_forward_rounded : Icons.check_rounded,
             onTap: _checked ? _next : (_selected.isEmpty ? null : _check),
@@ -434,11 +517,12 @@ class _PasswordMeter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final (label, color) = switch (strength) {
-      >= 0.99 => ('Strong', AppColors.green),
-      >= 0.5 => ('Getting there', AppColors.orange),
-      > 0.0 => ('Weak', AppColors.orangeDark),
-      _ => ('Very weak', AppColors.red),
+      >= 0.99 => (l10n.pwStrong, AppColors.green),
+      >= 0.5 => (l10n.pwGettingThere, AppColors.orange),
+      > 0.0 => (l10n.pwWeak, AppColors.orangeDark),
+      _ => (l10n.pwVeryWeak, AppColors.red),
     };
     return Container(
       padding: const EdgeInsets.all(16),

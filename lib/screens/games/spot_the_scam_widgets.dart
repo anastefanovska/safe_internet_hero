@@ -5,13 +5,13 @@ part of 'spot_the_scam_screen.dart';
 
 // ─── Detective ranks (the persistent mastery track) ───────────────────────────
 
-const _rankNames = [
-  'Rookie',
-  'Junior Detective',
-  'Detective',
-  'Senior Detective',
-  'Master Detective',
-];
+String _rankName(int i, AppLocalizations l10n) => switch (i) {
+      0 => l10n.scamRankRookie,
+      1 => l10n.scamRankJunior,
+      2 => l10n.scamRankDetective,
+      3 => l10n.scamRankSenior,
+      _ => l10n.scamRankMaster,
+    };
 const _rankThresholds = [0, 15, 40, 80, 150];
 
 /// Resolves a total-solved count to (rankIndex, thisRankFloor, nextRankGoal).
@@ -34,10 +34,10 @@ IconData _channelIcon(ScamChannel c) => switch (c) {
       ScamChannel.dm => Icons.chat_bubble_rounded,
     };
 
-String _channelLabel(ScamChannel c) => switch (c) {
-      ScamChannel.sms => 'Text message',
-      ScamChannel.email => 'Email',
-      ScamChannel.dm => 'Direct message',
+String _channelLabel(ScamChannel c, AppLocalizations l10n) => switch (c) {
+      ScamChannel.sms => l10n.scamChannelSms,
+      ScamChannel.email => l10n.scamChannelEmail,
+      ScamChannel.dm => l10n.scamChannelDm,
     };
 
 // ─── The message card (with drag tint + stamp) ────────────────────────────────
@@ -182,7 +182,7 @@ class _CardHeader extends StatelessWidget {
                 ),
               ),
               Text(
-                _channelLabel(card.channel),
+                _channelLabel(card.channel, AppLocalizations.of(context)),
                 style: GoogleFonts.nunito(
                   color: AppColors.textLight,
                   fontSize: 12,
@@ -217,7 +217,7 @@ class _Stamp extends StatelessWidget {
             border: Border.all(color: color, width: 3),
           ),
           child: Text(
-            scam ? 'SCAM' : 'SAFE',
+            scam ? AppLocalizations.of(context).scamStampScam : AppLocalizations.of(context).scamStampSafe,
             style: GoogleFonts.nunito(
               color: color,
               fontSize: 18,
@@ -253,11 +253,12 @@ class _SwipeHint extends StatelessWidget {
             ),
           ],
         );
+    final l10n = AppLocalizations.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        side(Icons.arrow_back_rounded, 'Swipe left · Scam', AppColors.red),
-        side(Icons.arrow_forward_rounded, 'Safe · Swipe right', AppColors.green),
+        side(Icons.arrow_back_rounded, l10n.scamSwipeLeft, AppColors.red),
+        side(Icons.arrow_forward_rounded, l10n.scamSwipeRight, AppColors.green),
       ],
     );
   }
@@ -281,7 +282,7 @@ class _ChoiceButtons extends StatelessWidget {
       children: [
         Expanded(
           child: AppButton(
-            label: 'Scam',
+            label: AppLocalizations.of(context).scamChoiceScam,
             icon: Icons.report_rounded,
             variant: AppButtonVariant.danger,
             onTap: enabled ? onScam : null,
@@ -290,7 +291,7 @@ class _ChoiceButtons extends StatelessWidget {
         const SizedBox(width: 14),
         Expanded(
           child: AppButton(
-            label: 'Safe',
+            label: AppLocalizations.of(context).scamChoiceSafe,
             icon: Icons.verified_user_rounded,
             variant: AppButtonVariant.success,
             onTap: enabled ? onSafe : null,
@@ -357,12 +358,13 @@ class _DetectiveResultState extends State<_DetectiveResult>
         child: CircularProgressIndicator(strokeWidth: 2.5),
       );
     }
+    final l10n = AppLocalizations.of(context);
     if (widget.awardedCoins > 0) {
-      return _CoinChip(text: '+${widget.awardedCoins} coins earned');
+      return _CoinChip(text: l10n.miniGameCoinsEarned(widget.awardedCoins));
     }
     final msg = widget.coinsPossible > 0
-        ? 'Coins already earned today — keep sleuthing for fun!'
-        : 'Spot more scams to earn coins!';
+        ? l10n.scamCoinsAlready
+        : l10n.scamCoinsMore;
     return Text(
       msg,
       textAlign: TextAlign.center,
@@ -376,13 +378,14 @@ class _DetectiveResultState extends State<_DetectiveResult>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final rank = _rankFor(_newTotal);
-    final rankName = _rankNames[rank.index];
+    final rankName = _rankName(rank.index, l10n);
     final headline = switch (_stars) {
-      3 => 'Case cracked!',
-      2 => 'Sharp work, detective',
-      1 => 'Case closed',
-      _ => 'Keep investigating',
+      3 => l10n.scamHeadline3,
+      2 => l10n.scamHeadline2,
+      1 => l10n.scamHeadline1,
+      _ => l10n.scamHeadline0,
     };
 
     return Stack(
@@ -421,7 +424,7 @@ class _DetectiveResultState extends State<_DetectiveResult>
               ),
               const SizedBox(height: 2),
               Text(
-                'You judged ${widget.score} of ${widget.total} correctly',
+                l10n.scamJudged(widget.score, widget.total),
                 style: GoogleFonts.nunito(
                   color: AppColors.textSecondary,
                   fontSize: 14,
@@ -442,13 +445,13 @@ class _DetectiveResultState extends State<_DetectiveResult>
               _coinLine(),
               const SizedBox(height: 22),
               AppButton(
-                label: 'New case',
+                label: l10n.scamNewCase,
                 icon: Icons.refresh_rounded,
                 onTap: widget.onPlayAgain,
               ),
               const SizedBox(height: 10),
               AppButton(
-                label: 'Done',
+                label: l10n.commonDone,
                 variant: AppButtonVariant.secondary,
                 onTap: widget.onDone,
               ),
@@ -539,7 +542,7 @@ class _RankCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      rankedUp ? 'Ranked up!' : 'Detective rank',
+                      rankedUp ? AppLocalizations.of(context).scamRankedUp : AppLocalizations.of(context).scamDetectiveRank,
                       style: GoogleFonts.nunito(
                         color: rankedUp ? AppColors.green : AppColors.textLight,
                         fontSize: 11.5,
@@ -567,7 +570,7 @@ class _RankCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '+$gained solved',
+                    AppLocalizations.of(context).scamSolved(gained),
                     style: GoogleFonts.nunito(
                       color: AppColors.blueDark,
                       fontSize: 12,
@@ -595,8 +598,8 @@ class _RankCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             atMax
-                ? 'Top rank reached — $total scams busted!'
-                : '$remaining more to reach ${_rankNames[rankIndex + 1]}',
+                ? AppLocalizations.of(context).scamTopRank(total)
+                : AppLocalizations.of(context).scamRemaining(remaining, _rankName(rankIndex + 1, AppLocalizations.of(context))),
             style: GoogleFonts.nunito(
               color: AppColors.textSecondary,
               fontSize: 12,

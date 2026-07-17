@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../widgets/app_widgets.dart';
 
@@ -162,6 +163,7 @@ class _MiniGameResultState extends State<MiniGameResult>
   }
 
   Widget _coinLine() {
+    final l10n = AppLocalizations.of(context);
     if (widget.awarding) {
       return const SizedBox(
         height: 20,
@@ -170,11 +172,11 @@ class _MiniGameResultState extends State<MiniGameResult>
       );
     }
     if (widget.awardedCoins > 0) {
-      return _CoinChip(text: '+${widget.awardedCoins} coins earned');
+      return _CoinChip(text: l10n.miniGameCoinsEarned(widget.awardedCoins));
     }
     final msg = widget.coinsPossible > 0
-        ? 'Coins already earned today — play on for fun!'
-        : 'Do better to earn coins!';
+        ? l10n.miniGameCoinsAlready
+        : l10n.miniGameDoBetter;
     return Text(
       msg,
       textAlign: TextAlign.center,
@@ -241,13 +243,13 @@ class _MiniGameResultState extends State<MiniGameResult>
               _coinLine(),
               const SizedBox(height: 28),
               AppButton(
-                label: 'Play again',
+                label: AppLocalizations.of(context).miniGamePlayAgain,
                 icon: Icons.refresh_rounded,
                 onTap: widget.onPlayAgain,
               ),
               const SizedBox(height: 12),
               AppButton(
-                label: 'Done',
+                label: AppLocalizations.of(context).commonDone,
                 variant: AppButtonVariant.secondary,
                 onTap: widget.onDone,
               ),
@@ -348,7 +350,7 @@ class MiniGameReveal extends StatelessWidget {
                   color: color, size: 22),
               const SizedBox(width: 8),
               Text(
-                correct ? 'Correct!' : 'Not quite',
+                correct ? AppLocalizations.of(context).quizCorrect : AppLocalizations.of(context).miniGameNotQuite,
                 style: GoogleFonts.nunito(
                   color: color,
                   fontSize: 17,

@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/learning_content_model.dart';
@@ -305,10 +306,10 @@ class _VideoHero extends StatelessWidget {
           const SizedBox(height: 10),
           Row(children: [
             _HeroBadge(
-                icon: Icons.play_circle_rounded, label: 'video'),
+                icon: Icons.play_circle_rounded, label: AppLocalizations.of(context).videoTypeBadge),
             const SizedBox(width: 8),
             _HeroBadge(
-                icon: Icons.star_rounded, label: '+$_kXp XP'),
+                icon: Icons.star_rounded, label: AppLocalizations.of(context).contentXpBadge(_kXp)),
           ]),
         ],
       ),
@@ -420,7 +421,7 @@ class _ThumbnailCard extends StatelessWidget {
                             color: Colors.white70, size: 12),
                         const SizedBox(width: 5),
                         Text(
-                          'Tap to watch on YouTube',
+                          AppLocalizations.of(context).videoTapToWatch,
                           style: GoogleFonts.nunito(
                             color: Colors.white,
                             fontSize: 11,
@@ -503,12 +504,12 @@ class _XpResultCard extends StatelessWidget {
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-              Text('Already watched',
+              Text(AppLocalizations.of(context).videoAlreadyWatched,
                   style: GoogleFonts.nunito(
                       color: AppColors.blue,
                       fontWeight: FontWeight.w900,
                       fontSize: 15)),
-              Text('You already earned XP for this video.',
+              Text(AppLocalizations.of(context).videoAlreadyEarned,
                   style: GoogleFonts.nunito(
                       color: AppColors.blue.withValues(alpha: 0.75),
                       fontSize: 13,
@@ -539,13 +540,13 @@ class _XpResultCard extends StatelessWidget {
       child: Column(children: [
         const Text('🎉', style: TextStyle(fontSize: 36)),
         const SizedBox(height: 6),
-        Text('Video Complete!',
+        Text(AppLocalizations.of(context).videoComplete,
             style: GoogleFonts.nunito(
                 color: Colors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.w900)),
         const SizedBox(height: 4),
-        Text('Great job! Keep exploring to level up.',
+        Text(AppLocalizations.of(context).contentCompleteBody,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 color: Colors.white.withValues(alpha: 0.88),
@@ -564,7 +565,7 @@ class _XpResultCard extends StatelessWidget {
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             const Icon(Icons.star_rounded, color: Colors.white, size: 20),
             const SizedBox(width: 8),
-            Text('+${xpEarned!} XP earned',
+            Text(AppLocalizations.of(context).contentXpEarned(xpEarned!),
                 style: GoogleFonts.nunito(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
@@ -603,7 +604,7 @@ class _GuestXpCard extends StatelessWidget {
       child: Column(children: [
         const Icon(Icons.lock_open_rounded, color: Colors.white, size: 32),
         const SizedBox(height: 10),
-        Text('Want to earn XP for watching?',
+        Text(AppLocalizations.of(context).videoGuestTitle,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 color: Colors.white,
@@ -611,7 +612,7 @@ class _GuestXpCard extends StatelessWidget {
                 fontWeight: FontWeight.w900)),
         const SizedBox(height: 6),
         Text(
-            'Create a free account to save your progress\nand earn XP for every video you watch.',
+            AppLocalizations.of(context).videoGuestBody,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 color: Colors.white.withValues(alpha: 0.88),
@@ -635,7 +636,7 @@ class _GuestXpCard extends StatelessWidget {
                 ),
               ],
             ),
-            child: Text('Create Free Account',
+            child: Text(AppLocalizations.of(context).quizResultCreateAccount,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.nunito(
                     color: AppColors.blue,

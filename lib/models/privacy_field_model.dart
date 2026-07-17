@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 /// Who can see a given profile field. The three real choices a privacy setting
 /// offers, which is exactly the nuance "Privacy Setup" teaches (it's not just
 /// public-vs-private).
@@ -9,10 +11,10 @@ extension FieldVisibilityX on FieldVisibility {
   static FieldVisibility fromString(String v) => FieldVisibility.values
       .firstWhere((e) => e.name == v, orElse: () => FieldVisibility.public);
 
-  String get label => switch (this) {
-        FieldVisibility.public => 'Public',
-        FieldVisibility.friends => 'Friends',
-        FieldVisibility.private => 'Private',
+  String labelOf(AppLocalizations l10n) => switch (this) {
+        FieldVisibility.public => l10n.privacyPublic,
+        FieldVisibility.friends => l10n.privacyFriends,
+        FieldVisibility.private => l10n.privacyPrivate,
       };
 
   IconData get icon => switch (this) {

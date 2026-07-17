@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../data/scam_cards.dart';
 import '../../models/scam_card_model.dart';
@@ -227,9 +228,9 @@ class _SpotTheScamScreenState extends State<SpotTheScamScreen> {
               ? MiniGameReveal(
                   correct: correct,
                   truthLabel:
-                      _card.isScam ? 'This was a scam' : 'This was safe',
+                      _card.isScam ? AppLocalizations.of(context).scamWasScam : AppLocalizations.of(context).scamWasSafe,
                   explanation: _card.explanation,
-                  buttonLabel: _lastCard ? 'Close the case' : 'Next message',
+                  buttonLabel: _lastCard ? AppLocalizations.of(context).scamCloseCase : AppLocalizations.of(context).scamNextMessage,
                   onContinue: _next,
                 )
               : const _SwipeHint(),

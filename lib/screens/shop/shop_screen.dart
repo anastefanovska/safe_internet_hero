@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
@@ -56,10 +57,11 @@ class _ShopScreenState extends State<ShopScreen> {
       HapticService.instance.error();
     }
 
+    final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Purchased!' : "Not enough coins!",
+          success ? l10n.shopPurchased : l10n.shopNotEnoughCoins,
           style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         backgroundColor: success ? AppColors.green : AppColors.red,
@@ -73,6 +75,7 @@ class _ShopScreenState extends State<ShopScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
     final isGuest = auth.isGuest;
@@ -96,9 +99,9 @@ class _ShopScreenState extends State<ShopScreen> {
                   coins: coins,
                 ),
                 if (!desktop) Container(height: 1, color: AppColors.border),
-                const TabHeader(
-                  title: 'Shop',
-                  subtitle: 'Spend your coins on power-ups',
+                TabHeader(
+                  title: l10n.navShop,
+                  subtitle: l10n.shopSubtitle,
                 ),
                 Container(height: 1, color: AppColors.border),
               ],
@@ -122,15 +125,14 @@ class _ShopScreenState extends State<ShopScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 48),
                       children: [
                         // Power-Ups section
-                        _SectionLabel('Power-Ups'),
+                        _SectionLabel(l10n.shopPowerUps),
                         const SizedBox(height: 12),
 
                         _ShopItemCard(
                           icon: Icons.ac_unit_rounded,
                           iconColor: AppColors.blue,
-                          name: 'Streak Freeze',
-                          description:
-                              'Miss a day without losing your streak. You can hold up to 2.',
+                          name: l10n.shopStreakFreeze,
+                          description: l10n.shopStreakFreezeDesc,
                           price: 10,
                           userCoins: coins,
                           tag: user != null && user.streakFreezeCount > 0
@@ -147,12 +149,11 @@ class _ShopScreenState extends State<ShopScreen> {
                         _ShopItemCard(
                           icon: Icons.electric_bolt_rounded,
                           iconColor: AppColors.gold,
-                          name: 'XP Boost',
-                          description:
-                              'Earn 2× stars on your next quiz. Used automatically.',
+                          name: l10n.shopXpBoost,
+                          description: l10n.shopXpBoostDesc,
                           price: 25,
                           userCoins: coins,
-                          tag: (user?.xpBoostActive ?? false) ? 'ACTIVE' : null,
+                          tag: (user?.xpBoostActive ?? false) ? l10n.shopTagActive : null,
                           tagColor: AppColors.orange,
                           canBuy: !(user?.xpBoostActive ?? false),
                           loading: _loadingIds.contains('xp_boost'),
@@ -162,18 +163,17 @@ class _ShopScreenState extends State<ShopScreen> {
                         const SizedBox(height: 28),
 
                         // Cosmetics section
-                        _SectionLabel('Cosmetics'),
+                        _SectionLabel(l10n.shopCosmetics),
                         const SizedBox(height: 12),
 
                         _ShopItemCard(
                           icon: Icons.circle_rounded,
                           iconColor: AppColors.gold,
-                          name: 'Gold Frame',
-                          description:
-                              'Add a golden ring around your profile picture.',
+                          name: l10n.shopGoldFrame,
+                          description: l10n.shopGoldFrameDesc,
                           price: 50,
                           userCoins: coins,
-                          tag: (user?.hasGoldFrame ?? false) ? 'OWNED' : null,
+                          tag: (user?.hasGoldFrame ?? false) ? l10n.shopTagOwned : null,
                           tagColor: AppColors.green,
                           canBuy: !(user?.hasGoldFrame ?? false),
                           loading: _loadingIds.contains('gold_frame'),
@@ -181,7 +181,7 @@ class _ShopScreenState extends State<ShopScreen> {
                           preview: (user?.hasGoldFrame ?? false)
                               ? null
                               : AppAvatar(
-                                  name: user?.username ?? 'You',
+                                  name: user?.username ?? l10n.commonYou,
                                   size: 42,
                                   goldFrame: true,
                                 ),
@@ -407,7 +407,7 @@ class _BuyButton extends StatelessWidget {
       );
     } else if (owned) {
       content = Text(
-        'OWNED',
+        AppLocalizations.of(context).shopTagOwned,
         style: GoogleFonts.nunito(
           color: contentColor,
           fontWeight: FontWeight.w800,
@@ -459,14 +459,14 @@ class _BuyButton extends StatelessWidget {
 // ─── Guest prompt ─────────────────────────────────────────────────────────────
 
 class _GuestPrompt extends StatelessWidget {
-  static const _ghostItems = [
-    (Icons.ac_unit_rounded, AppColors.blue, 'Streak Freeze', 10),
-    (Icons.electric_bolt_rounded, AppColors.gold, 'XP Boost', 25),
-    (Icons.circle_rounded, AppColors.gold, 'Gold Frame', 50),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final ghostItems = [
+      (Icons.ac_unit_rounded, AppColors.blue, l10n.shopStreakFreeze, 10),
+      (Icons.electric_bolt_rounded, AppColors.gold, l10n.shopXpBoost, 25),
+      (Icons.circle_rounded, AppColors.gold, l10n.shopGoldFrame, 50),
+    ];
     return Column(
       children: [
         // ── SVG on top ────────────────────────────────────────────────
@@ -483,7 +483,7 @@ class _GuestPrompt extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
                   child: Column(
-                    children: _ghostItems.asMap().entries.map((e) {
+                    children: ghostItems.asMap().entries.map((e) {
                       final i = e.key;
                       final item = e.value;
                       return Opacity(
@@ -579,7 +579,7 @@ class _GuestPrompt extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('Unlock the Shop',
+                      Text(l10n.shopGuestTitle,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.nunito(
                             color: AppColors.textPrimary,
@@ -588,7 +588,7 @@ class _GuestPrompt extends StatelessWidget {
                           )),
                       const SizedBox(height: 8),
                       Text(
-                        'Earn coins by completing quizzes.\nSpend them on power-ups and cosmetics.',
+                        l10n.shopGuestSubtitle,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.nunito(
                           color: AppColors.textSecondary,

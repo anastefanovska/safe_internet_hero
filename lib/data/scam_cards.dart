@@ -1,10 +1,17 @@
+import '../core/app_locale.dart';
 import '../models/scam_card_model.dart';
 
 /// Seed deck for the "Spot the Scam" mini-game — age-appropriate messages a kid
 /// might realistically receive. A mix of scams (phishing links, prize/lottery
 /// bait, impersonation, info-harvesting strangers, chain-letter misinformation)
 /// and perfectly safe, genuine messages so the answer is never "always scam".
-const List<ScamCardModel> scamCards = [
+///
+/// Resolved to the app's content language ([AppLocale.code]); ids and [isScam]
+/// stay identical across languages so the game logic never changes.
+List<ScamCardModel> get scamCards =>
+    AppLocale.code == 'mk' ? _scamCardsMk : _scamCardsEn;
+
+const List<ScamCardModel> _scamCardsEn = [
   // ── Scams ───────────────────────────────────────────────────────────────
   ScamCardModel(
     id: 'prize_giftcard',
@@ -160,5 +167,164 @@ const List<ScamCardModel> scamCards = [
     isScam: false,
     explanation:
         'A warm message from a family member you know and have talked to before. Nothing suspicious here — safe.',
+  ),
+];
+
+const List<ScamCardModel> _scamCardsMk = [
+  // ── Измами ──────────────────────────────────────────────────────────────
+  ScamCardModel(
+    id: 'prize_giftcard',
+    channel: ScamChannel.sms,
+    sender: '+44 7700 900123',
+    content:
+        'ЧЕСТИТКИ! Освои подарок-картичка од £1000 🎉 Земи ја во следните 2 часа: bit.ly/claim-now-win',
+    isScam: true,
+    explanation:
+        'Не можеш да освоиш награда за која никогаш не си се пријавил. Изненадувачки „добивки“, брзање и скратен линк се класични знаци за измама.',
+  ),
+  ScamCardModel(
+    id: 'netflix_phish',
+    channel: ScamChannel.email,
+    sender: 'support@netflx-billing.com',
+    subject: 'Твојата сметка е суспендирана',
+    content:
+        'Не можевме да го обработиме твоето плаќање. Твојата сметка ќе биде избришана за 24 часа. Потврди ја лозинката тука: netflx-verify.com',
+    isScam: true,
+    explanation:
+        'Адресата е погрешно напишана (netflx), те заплашува со рок, а вистинските компании никогаш не бараат лозинка преку е-пошта.',
+  ),
+  ScamCardModel(
+    id: 'talent_scout_dm',
+    channel: ScamChannel.dm,
+    sender: '@star_maker_official',
+    content:
+        'Здраво! Јас сум ловец на таленти и ти можеш да станеш познат ⭐ Само испрати ми ја домашната адреса и телефонскиот број за да те потпишеме денес!',
+    isScam: true,
+    explanation:
+        'Странец што бара твоја адреса и телефонски број е предупредувачки знак. Никогаш не споделувај лични податоци со луѓе што не ги познаваш.',
+  ),
+  ScamCardModel(
+    id: 'family_code',
+    channel: ScamChannel.sms,
+    sender: 'Непознат број',
+    content:
+        'Здраво, мама е, го изгубив телефонот па ова е мојот нов број. Брзо — испрати ми го безбедносниот код што штотуку пристигна, ми треба!',
+    isScam: true,
+    explanation:
+        'Измамниците се преправаат дека се член на семејството во паника. Еднократниот безбедносен код е тајна — провери прво со повик на вистинскиот број на лицето.',
+  ),
+  ScamCardModel(
+    id: 'vbucks_generator',
+    channel: ScamChannel.dm,
+    sender: '@free_vbucks_daily',
+    content:
+        'БЕСПЛАТЕН генератор на V-Bucks работи 100%! Само најави се со твоето корисничко име и лозинка тука за да добиеш 10.000 бесплатно 👉 vbux-gen.xyz',
+    isScam: true,
+    explanation:
+        'Бесплатните „генератори“ се трик за да ти го украдат профилот. Никогаш не внесувај корисничко име и лозинка на страница за да добиеш бесплатни пари во игра.',
+  ),
+  ScamCardModel(
+    id: 'parcel_fee',
+    channel: ScamChannel.sms,
+    sender: 'ROYAL-MAIL',
+    content:
+        'Твојот пакет чека, но такса за достава од 59 пени не е платена. Плати сега за да избегнеш враќање: rml-redelivery.info/pay',
+    isScam: true,
+    explanation:
+        'Лажни пораки за достава создаваат паника околу ситна такса за да ти ги украдат податоците од картичката. Чудниот линк го открива — оди на вистинската страница на курирот.',
+  ),
+  ScamCardModel(
+    id: 'chain_letter',
+    channel: ScamChannel.dm,
+    sender: '@viral_alerts',
+    content:
+        '⚠️ СПОДЕЛИ ГО ОВА НА 10 ПРИЈАТЕЛИ ВЕДНАШ или твојата сметка ќе биде избришана утре! Ова е 100% вистина, администраторите го потврдија!!!',
+    isScam: true,
+    explanation:
+        'Синџир-пораки што те притискаат да споделиш и даваат страшни тврдења се дезинформации. Не ги препраќај — само избриши ги.',
+  ),
+  ScamCardModel(
+    id: 'stranger_school',
+    channel: ScamChannel.dm,
+    sender: '@cool_gamer_2011',
+    content:
+        'еј сакаш да бидеме пријатели? 😄 во кое училиште одиш и во колку часот завршуваш? можеби можам да те сретнам таму!',
+    isScam: true,
+    explanation:
+        'Странец што прашува во кое училиште одиш и кога завршуваш е опасен. Никогаш не споделувај каде ќе бидеш — кажи на возрасен на кого му веруваш.',
+  ),
+
+  // ── Безбедни и вистински ────────────────────────────────────────────────
+  ScamCardModel(
+    id: 'friend_football',
+    channel: ScamChannel.sms,
+    sender: 'Sam 🙂',
+    content:
+        'Еј! Сакаш да дојдеш по училиште да играме фудбал во паркот? ⚽',
+    isScam: false,
+    explanation:
+        'Ова е нормална порака од пријател. Не бара ништо тајно и нема сомнителни линкови — безбедно е да одговориш.',
+  ),
+  ScamCardModel(
+    id: 'school_trip',
+    channel: ScamChannel.email,
+    sender: 'office@greenwood-school.sch.uk',
+    subject: 'Формулар за дозвола за посета на музеј',
+    content:
+        'Почитуван ученику, замоли родител или старател да го потпише прикачениот формулар за петочната посета на музејот. Благодариме!',
+    isScam: false,
+    explanation:
+        'Вистинска порака од твоето училиште. Бара родител да потпише формулар и не бара лозинки или пари — оваа е безбедна.',
+  ),
+  ScamCardModel(
+    id: 'friend_birthday',
+    channel: ScamChannel.dm,
+    sender: '@maya_draws',
+    content:
+        'Среќен роденден!!! 🎂🎉 се надевам дека ќе имаш најубав ден, се гледаме на забавата во сабота!',
+    isScam: false,
+    explanation:
+        'Љубезна роденденска порака од пријател што го познаваш. Нема линкови, нема барања — нема од што да се грижиш.',
+  ),
+  ScamCardModel(
+    id: 'library_reminder',
+    channel: ScamChannel.sms,
+    sender: 'Градска библиотека',
+    content:
+        'Потсетник: твоите книги од библиотеката треба да се вратат следниот понеделник. Нема такса ако се вратат навреме. Благодариме!',
+    isScam: false,
+    explanation:
+        'Корисен потсетник без линк за допирање и ништо за плаќање. Ова е нормална, безбедна порака.',
+  ),
+  ScamCardModel(
+    id: 'streak_email',
+    channel: ScamChannel.email,
+    sender: 'hello@duolingo.com',
+    subject: 'Достигна серија од 7 дена! 🔥',
+    content:
+        'Одлична работа — вежбаше 7 дена по ред! Продолжи утре за да ја заштитиш серијата.',
+    isScam: false,
+    explanation:
+        'Пријателска порака за напредок што само те охрабрува. Никогаш не бара лозинка или лични податоци, па е безбедна.',
+  ),
+  ScamCardModel(
+    id: 'mum_pickup',
+    channel: ScamChannel.sms,
+    sender: 'Мама ❤️',
+    content:
+        'Доцнам околу 10 минути да те земам — чекај кај училишната порта и ќе бидам таму наскоро 🙂',
+    isScam: false,
+    explanation:
+        'Нормална порака од твојата мама на нејзиниот вообичаен број. Не споделува ништо тајно и не бара ништо необично — безбедно.',
+  ),
+  ScamCardModel(
+    id: 'grandma_dm',
+    channel: ScamChannel.dm,
+    sender: 'Баба Роза',
+    content:
+        'Баба е! 💛 Многу ми е драго што ми покажа како да го користам ова. Едвај чекам да те видам на неделниот ручек!',
+    isScam: false,
+    explanation:
+        'Топла порака од член на семејството што го познаваш и со кого си зборувал претходно. Ништо сомнително тука — безбедно.',
   ),
 ];

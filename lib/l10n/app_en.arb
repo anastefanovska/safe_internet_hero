@@ -23,6 +23,14 @@
   },
   "settingsSoundEffects": "Sound effects",
   "settingsVibration": "Vibration",
+  "settingsPreferences": "Preferences",
+  "settingsProfile": "Profile",
+  "settingsNotifications": "Notifications",
+  "settingsPrivacy": "Privacy settings",
+  "settingsHelpCenter": "Help Center",
+  "settingsLogOut": "LOG OUT",
+  "settingsLogOutConfirmTitle": "Log Out?",
+  "settingsLogOutConfirmBody": "Are you sure you want to log out?",
 
   "settingsLanguage": "Language",
   "@settingsLanguage": {
@@ -39,5 +47,940 @@
   "languagePickerTitle": "Choose a language",
   "@languagePickerTitle": {
     "description": "Title of the language picker sheet"
-  }
+  },
+
+  "commonOr": "OR",
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonDelete": "Delete",
+  "commonRetry": "Retry",
+  "commonClose": "Close",
+  "commonDone": "Done",
+
+  "authEmailHint": "Email address",
+  "authPasswordHint": "Password",
+  "authFillAllFields": "Please fill in all fields",
+
+  "loginWelcomeBack": "Welcome back!",
+  "loginSubtitle": "Login to continue your journey",
+  "loginButton": "LOG IN",
+  "loginLoggingIn": "Logging in…",
+  "loginFailed": "Login failed",
+  "loginContinueGuest": "Continue as Guest",
+  "loginNoAccount": "Don't have an account? ",
+  "loginCreateOne": "Create one",
+
+  "registerTitle": "Create account",
+  "registerSubtitle": "Join thousands of internet heroes",
+  "registerUsernameHint": "Username",
+  "registerButton": "CREATE ACCOUNT",
+  "registerCreating": "Creating…",
+  "registerFailed": "Registration failed",
+  "registerUsernameTaken": "That username is already taken — try another",
+  "registerHaveAccount": "Already have an account? ",
+  "registerLogIn": "Log in",
+
+  "landingTagline": "Learn to stay safe online,\none lesson at a time.",
+  "landingGetStarted": "GET STARTED",
+  "landingHaveAccount": "I HAVE AN ACCOUNT",
+  "landingContinueGuest": "Continue as guest",
+
+  "navHome": "Home",
+  "navLearn": "Learn",
+  "navGames": "Games",
+  "navShop": "Shop",
+  "navLeaderboard": "Leaderboard",
+  "navProfile": "Profile",
+  "navMore": "More",
+  "navLogOut": "Log out",
+
+  "panelYourStats": "YOUR STATS",
+  "panelActiveBoosts": "ACTIVE BOOSTS",
+  "statDayStreak": "Day Streak",
+  "statTotalStars": "Total Stars",
+  "statCoins": "Coins",
+
+  "guestCreateProfilePrompt": "Create a profile to save your progress!",
+  "guestCreateProfileButton": "CREATE A PROFILE",
+  "guestSignIn": "SIGN IN",
+
+  "boostXpTitle": "XP Boost Active",
+  "boostXpSubtitle": "2× stars on quizzes",
+  "boostFreezeTitle": "{count, plural, one{{count} Streak Freeze} other{{count} Streak Freezes}}",
+  "@boostFreezeTitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "boostFreezeSubtitle": "Your streak is protected",
+
+  "commonSeeAll": "See all",
+
+  "homeDefaultName": "Hero",
+  "homePracticeCategory": "Practice",
+  "homeWeakSpots": "Weak Spots",
+  "homeBecomeModerator": "Become a Moderator",
+  "homeCouldNotLoad": "Could not load content",
+  "homeGreeting": "Hey, {username}!",
+  "@homeGreeting": {
+    "placeholders": { "username": { "type": "String" } }
+  },
+  "homeStreakBadge": "{count, plural, one{{count} day streak!} other{{count} day streak!}}",
+  "@homeStreakBadge": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "homeHeroSubtitle": "Pick a quiz below and start\nearning stars.",
+  "homeChooseTopic": "Choose a topic",
+  "homeAdminPanel": "Admin Panel",
+  "homeModeratorTools": "Moderator Tools",
+  "homeChooseQuest": "Choose your quest",
+  "homeContinue": "Continue",
+  "homeStart": "Start",
+  "homeTopicsCount": "{count, plural, one{{count} topic} other{{count} topics}}",
+  "@homeTopicsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "homeTopicsCompleted": "{done} / {total} topics completed",
+  "@homeTopicsCompleted": {
+    "placeholders": { "done": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "homePracticeWeakSpots": "Practice Weak Spots",
+  "homePracticeSubtitle": "{count, plural, one{{count} question to review · +3 coins} other{{count} questions to review · +3 coins}}",
+  "@homePracticeSubtitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "homePracticeButton": "Practice",
+
+  "commonYou": "You",
+
+  "shopSubtitle": "Spend your coins on power-ups",
+  "shopPurchased": "Purchased!",
+  "shopNotEnoughCoins": "Not enough coins!",
+  "shopPowerUps": "Power-Ups",
+  "shopCosmetics": "Cosmetics",
+  "shopStreakFreeze": "Streak Freeze",
+  "shopStreakFreezeDesc": "Miss a day without losing your streak. You can hold up to 2.",
+  "shopXpBoost": "XP Boost",
+  "shopXpBoostDesc": "Earn 2× stars on your next quiz. Used automatically.",
+  "shopGoldFrame": "Gold Frame",
+  "shopGoldFrameDesc": "Add a golden ring around your profile picture.",
+  "shopTagActive": "ACTIVE",
+  "shopTagOwned": "OWNED",
+  "shopGuestTitle": "Unlock the Shop",
+  "shopGuestSubtitle": "Earn coins by completing quizzes.\nSpend them on power-ups and cosmetics.",
+
+  "commonAdd": "Add",
+  "commonAccept": "Accept",
+  "commonDecline": "Decline",
+  "commonSearch": "Search",
+  "commonLoadMore": "Load more",
+  "commonFriends": "Friends",
+
+  "tierCyberLegend": "Cyber Legend",
+  "tierGuardian": "Guardian",
+  "tierHero": "Hero",
+  "tierApprentice": "Apprentice",
+  "tierRookie": "Rookie",
+
+  "badgePrivacyPro": "Privacy Pro",
+  "badgeKeyMaster": "Key Master",
+  "badgeDefender": "Defender",
+  "badgeSocialSafe": "Social Safe",
+  "badgePhishFighter": "Phish Fighter",
+  "badgeLegend": "Legend",
+
+  "profileMonths": "January,February,March,April,May,June,July,August,September,October,November,December",
+  "@profileMonths": {
+    "description": "Comma-separated month names, Jan..Dec, used to render the join date"
+  },
+  "profileJoined": "Joined {month} {year}",
+  "@profileJoined": {
+    "placeholders": { "month": { "type": "String" }, "year": { "type": "String" } }
+  },
+  "profileFriendsCount": "{count, plural, one{{count} Friend} other{{count} Friends}}",
+  "@profileFriendsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileGhostStars": "Stars",
+  "profileGhostStreak": "Streak",
+  "profileGhostQuizzes": "Quizzes",
+  "profileGuestTitle": "Build your profile",
+  "profileGuestSubtitle": "Track your progress, earn badges\nand climb the leaderboard.",
+  "profileStatistics": "Statistics",
+  "profileDayStreak": "Day streak",
+  "profileTotalXp": "Total XP",
+  "profileLeague": "League",
+  "profileQuizzesDone": "Quizzes done",
+  "profileAchievements": "Achievements",
+  "profileFollowing": "FOLLOWING",
+  "profileFollowingCount": "FOLLOWING ({count})",
+  "@profileFollowingCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileRequests": "REQUESTS",
+  "profileRequestsCount": "REQUESTS ({count})",
+  "@profileRequestsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileFollowingEmpty": "Learning is more fun and effective\nwhen you connect with others",
+  "profileNoRequests": "No pending requests",
+  "profileNoRequestsBody": "When someone sends you a friend\nrequest it will appear here",
+  "profileXp": "{count} XP",
+  "@profileXp": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileViewAll": "View all",
+  "profileViewAllCount": "View all ({count})",
+  "@profileViewAllCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileSearchFriends": "Search for friends",
+  "profileResultsCount": "{count, plural, one{{count} result} other{{count} results}}",
+  "@profileResultsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileFindPeople": "Find people you know",
+  "profileTypeUsername": "Type a username to search",
+  "profileNoResultsFor": "No results for \"{query}\"",
+  "@profileNoResultsFor": {
+    "placeholders": { "query": { "type": "String" } }
+  },
+  "profileTryDifferent": "Try a different username",
+  "profileRequested": "Requested",
+
+  "quizResultPerfectReplay": "Perfect Replay!",
+  "quizResultGoodReplay": "Good Replay!",
+  "quizResultKeepTrying": "Keep Trying!",
+  "quizResultPerfectPractice": "Perfect Practice!",
+  "quizResultGoodPractice": "Good Practice!",
+  "quizResultKeepPracticing": "Keep Practicing!",
+  "quizResultGoodJob": "Good Job!",
+  "quizResultGreatWork": "Great Work!",
+  "quizResultPerfectScore": "Perfect Score!",
+  "quizResultMotivReplay": "Practice makes perfect!",
+  "quizResultMotivPractice": "Reviewing weak spots makes you stronger.",
+  "quizResultMotivHero": "You're becoming a true internet safety hero!",
+  "quizResultMotivDefault": "Every question makes you safer online!",
+  "quizResultReplaySubtitle": "Replay · {category}",
+  "@quizResultReplaySubtitle": {
+    "placeholders": { "category": { "type": "String" } }
+  },
+  "quizResultPracticeSession": "Practice Session",
+  "quizResultReplayNoRewards": "Replay mode · no rewards earned",
+  "quizResultPracticeCoins": "+3 coins earned",
+  "quizResultRewardsBoosted": "+{stars} XP ⚡  ·  +{coins} coins",
+  "@quizResultRewardsBoosted": {
+    "placeholders": { "stars": { "type": "int" }, "coins": { "type": "int" } }
+  },
+  "quizResultRewards": "+{stars} XP  ·  +{coins} coins",
+  "@quizResultRewards": {
+    "placeholders": { "stars": { "type": "int" }, "coins": { "type": "int" } }
+  },
+  "quizResultCorrect": "Correct",
+  "quizResultScore": "Score",
+  "quizResultPoints": "Points",
+  "quizResultBackToTopics": "Back to Topics",
+  "quizResultReplayTopic": "Replay this topic",
+  "quizResultUpNext": "UP NEXT",
+  "quizResultSaveProgress": "Save your progress!",
+  "quizResultSaveWithStars": "{count, plural, one{You earned {count} star — create a free account to keep it!} other{You earned {count} stars — create a free account to keep them!}}",
+  "@quizResultSaveWithStars": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "quizResultSaveNoStars": "Create a free account to track your learning and climb the leaderboard.",
+  "quizResultCreateAccount": "Create Free Account",
+  "quizResultSkip": "Skip for now",
+
+  "quizTopicComplete": "Topic Complete!",
+  "quizTopicCompleteBody": "You've answered all questions\nin {topic}.",
+  "@quizTopicCompleteBody": {
+    "placeholders": { "topic": { "type": "String" } }
+  },
+  "quizQuestionsMastered": "{count, plural, one{{count} question mastered} other{{count} questions mastered}}",
+  "@quizQuestionsMastered": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "quizPracticeAgain": "Practice Again",
+  "quizGoBack": "Go Back",
+  "quizComingSoon": "Coming Soon",
+  "quizComingSoonBody": "Questions for this topic are\nbeing prepared. Check back soon!",
+  "quizAllCaughtUp": "All caught up!",
+  "quizAllCaughtUpBody": "Nothing left to review right now.\nKeep playing to build your streak!",
+  "quizPracticeMode": "⚡ Practice Mode",
+  "quizQuestionProgress": "Question {current} of {total}",
+  "@quizQuestionProgress": {
+    "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "quizQuitTitle": "Wait, don't go!",
+  "quizQuitBody": "You'll lose your progress\nif you quit now",
+  "quizKeepLearning": "KEEP LEARNING",
+  "quizEndSession": "END SESSION",
+  "quizCorrect": "Correct!",
+  "quizNotQuite": "Not quite...",
+  "quizSeeResults": "See Results",
+
+  "topicsAllTopics": "All Topics",
+  "topicsSubtitle": "All learning topics",
+  "topicsFilterAll": "All",
+  "topicsBadgeNew": "NEW",
+  "topicsBadgeUpd": "UPD",
+  "topicsSearchHint": "Search topics...",
+  "topicsNoMatch": "No topics match \"{query}\"",
+  "@topicsNoMatch": {
+    "placeholders": { "query": { "type": "String" } }
+  },
+  "topicsNoneAvailable": "No topics available",
+  "topicsCompletedBody": "You've answered all questions in \"{topic}\"!",
+  "@topicsCompletedBody": {
+    "placeholders": { "topic": { "type": "String" } }
+  },
+  "topicsPlayAgain": "Play Again",
+  "topicsCouldNotLoad": "Could not load topics",
+
+  "learnSubtitle": "Articles and videos to level up your skills",
+  "learnFilterAll": "All",
+  "learnFilterArticles": "Articles",
+  "learnFilterVideos": "Videos",
+  "learnNoContentFor": "No content for \"{label}\" yet",
+  "@learnNoContentFor": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "learnNoContent": "No content yet",
+  "learnCheckBackSoon": "Check back soon — new content is on the way!",
+
+  "contentSaveError": "Couldn't save your progress",
+  "contentSaveErrorBody": "Check your connection and try again.",
+  "contentTryAgain": "Try again",
+  "contentCompleteBody": "Great job! Keep exploring to level up.",
+  "contentXpEarned": "+{xp} XP earned",
+  "@contentXpEarned": {
+    "placeholders": { "xp": { "type": "int" } }
+  },
+  "contentXpBadge": "+{xp} XP",
+  "@contentXpBadge": {
+    "placeholders": { "xp": { "type": "int" } }
+  },
+  "contentAlreadyCompleted": "Already completed",
+
+  "articleTypeBadge": "article",
+  "articleMinRead": "{count} MIN READ",
+  "@articleMinRead": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "articleKeyTakeaways": "Key Takeaways",
+  "articleComplete": "Article Complete!",
+  "articleAlreadyEarned": "You already earned XP for this article.",
+  "articleGuestTitle": "Want to earn XP for reading?",
+  "articleGuestBody": "Create a free account to save your progress\nand earn XP for every article you read.",
+
+  "videoTypeBadge": "video",
+  "videoTapToWatch": "Tap to watch on YouTube",
+  "videoAlreadyWatched": "Already watched",
+  "videoAlreadyEarned": "You already earned XP for this video.",
+  "videoComplete": "Video Complete!",
+  "videoGuestTitle": "Want to earn XP for watching?",
+  "videoGuestBody": "Create a free account to save your progress\nand earn XP for every video you watch.",
+
+  "gamesDailyChallenges": "Daily Challenges",
+  "gamesMiniGames": "Mini Games",
+  "gamesChallengesSubtitle": "Complete challenges to earn coins",
+  "gamesMiniGamesSubtitle": "Quick games to sharpen your safety skills",
+  "gamesTabChallenges": "Challenges",
+  "gamesTodaysChallenge": "Today's Challenge",
+  "gamesMoreChallengesTitle": "More challenges unlock soon",
+  "gamesMoreChallengesSubtitle": "Keep playing to reveal weekly goals.",
+  "gamesMoreGamesTitle": "More games on the way",
+  "gamesMoreGamesSubtitle": "New challenges are in the works.",
+  "gamesPlay": "Play",
+  "gamesSoon": "SOON",
+  "gamesClaim": "Claim",
+  "gamesStartChallenge": "Start challenge",
+  "gamesAnswer5": "Answer 5 questions",
+  "gamesGuestTitle": "Unlock daily challenges",
+  "gamesGuestSubtitle": "Create a free account to earn coins\nfrom daily challenges and mini games.",
+  "gamesDailyChallengeName": "Daily Challenge",
+  "gamesNoWeakSpots": "Play a few quizzes first to build weak spots!",
+  "gamesNoQuestions": "No questions available yet — check back soon!",
+
+  "gameSpotScamTitle": "Spot the Scam",
+  "gameSpotScamSubtitle": "Judge real messages and climb the detective ranks.",
+  "gameRedFlagTitle": "Tap the Red Flag",
+  "gameRedFlagSubtitle": "Hunt down every suspicious clue hidden in a message.",
+  "gamePrivacySetupTitle": "Privacy Setup",
+  "gamePrivacySetupSubtitle": "Set who sees each field: public, friends or private.",
+  "gamePasswordPowerTitle": "Password Power",
+  "gamePasswordPowerSubtitle": "Pick the changes that turn a weak password strong.",
+  "gameMatchMadnessTitle": "Match Madness",
+  "gameMatchMadnessSubtitle": "Match safety terms to their meaning against the clock.",
+
+  "gamesChallengeAnswer5": "Answer 5 questions",
+  "gamesChallengeAnswer10": "Answer 10 questions",
+  "gamesChallengeThreeStar": "Ace a quiz with 3 stars",
+  "gamesChallengePrivacy": "Answer 5 Privacy questions",
+  "gamesChallengePasswords": "Answer 5 Passwords questions",
+  "gamesChallengeWeak": "Practice your weak spots once",
+
+  "miniGameCoinsEarned": "+{coins} coins earned",
+  "@miniGameCoinsEarned": {
+    "placeholders": { "coins": { "type": "int" } }
+  },
+  "miniGameCoinsAlready": "Coins already earned today — play on for fun!",
+  "miniGameDoBetter": "Do better to earn coins!",
+  "miniGamePlayAgain": "Play again",
+  "miniGameNotQuite": "Not quite",
+
+  "scamRankRookie": "Rookie",
+  "scamRankJunior": "Junior Detective",
+  "scamRankDetective": "Detective",
+  "scamRankSenior": "Senior Detective",
+  "scamRankMaster": "Master Detective",
+  "scamChannelSms": "Text message",
+  "scamChannelEmail": "Email",
+  "scamChannelDm": "Direct message",
+  "scamStampScam": "SCAM",
+  "scamStampSafe": "SAFE",
+  "scamSwipeLeft": "Swipe left · Scam",
+  "scamSwipeRight": "Safe · Swipe right",
+  "scamChoiceScam": "Scam",
+  "scamChoiceSafe": "Safe",
+  "scamCoinsAlready": "Coins already earned today — keep sleuthing for fun!",
+  "scamCoinsMore": "Spot more scams to earn coins!",
+  "scamHeadline3": "Case cracked!",
+  "scamHeadline2": "Sharp work, detective",
+  "scamHeadline1": "Case closed",
+  "scamHeadline0": "Keep investigating",
+  "scamJudged": "You judged {score} of {total} correctly",
+  "@scamJudged": {
+    "placeholders": { "score": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "scamNewCase": "New case",
+  "scamRankedUp": "Ranked up!",
+  "scamDetectiveRank": "Detective rank",
+  "scamSolved": "+{count} solved",
+  "@scamSolved": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scamTopRank": "Top rank reached — {total} scams busted!",
+  "@scamTopRank": {
+    "placeholders": { "total": { "type": "int" } }
+  },
+  "scamRemaining": "{count} more to reach {rank}",
+  "@scamRemaining": {
+    "placeholders": { "count": { "type": "int" }, "rank": { "type": "String" } }
+  },
+  "scamWasScam": "This was a scam",
+  "scamWasSafe": "This was safe",
+  "scamCloseCase": "Close the case",
+  "scamNextMessage": "Next message",
+
+  "redFlagHeadline3": "Eagle eyes!",
+  "redFlagHeadline2": "Sharp spotting!",
+  "redFlagHeadline1": "Keep looking",
+  "redFlagHeadline0": "Keep practising!",
+  "redFlagCaught": "You caught {score} of {total} red flags",
+  "@redFlagCaught": {
+    "placeholders": { "score": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "redFlagTapSuspicious": "Tap everything suspicious",
+  "redFlagSeeResults": "See results",
+  "redFlagSkip": "Skip — I'm done",
+
+  "pwHeadline3": "Password wizard!",
+  "pwHeadline2": "Strong choices!",
+  "pwHeadline1": "Keep practising",
+  "pwHeadline0": "Keep practising!",
+  "pwSmartChoices": "You made {score} of {total} smart choices",
+  "@pwSmartChoices": {
+    "placeholders": { "score": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "pwMakeStronger": "Make this password stronger",
+  "pwPickChanges": "Pick every change that helps:",
+  "pwNextPassword": "Next password",
+  "pwCheck": "Check",
+  "pwStrong": "Strong",
+  "pwGettingThere": "Getting there",
+  "pwWeak": "Weak",
+  "pwVeryWeak": "Very weak",
+
+  "privacyHeadline3": "Locked down tight!",
+  "privacyHeadline2": "Well protected!",
+  "privacyHeadline1": "Getting safer",
+  "privacyHeadline0": "Review your settings",
+  "privacyFieldsSafe": "You set {correct} of {total} fields safely",
+  "@privacyFieldsSafe": {
+    "placeholders": { "correct": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "privacyGreenSafe": "Green is the safe setting",
+  "privacyWhoCanSee": "Who can see each field?",
+  "privacyStartPublic": "Everything starts Public — lock down what should be private.",
+  "privacyCheckProfile": "Check my profile",
+  "privacyPublic": "Public",
+  "privacyFriends": "Friends",
+  "privacyPrivate": "Private",
+
+  "matchHeadline3": "Match master!",
+  "matchHeadline2": "Great matching!",
+  "matchHeadline1": "Nice effort!",
+  "matchHeadline0": "Keep practising!",
+  "matchCoinsMore": "Match more pairs to earn coins!",
+  "matchAllPairs": "All {total} pairs matched in {time}",
+  "@matchAllPairs": {
+    "placeholders": { "total": { "type": "int" }, "time": { "type": "String" } }
+  },
+  "matchSomePairs": "You matched {score} of {total} pairs",
+  "@matchSomePairs": {
+    "placeholders": { "score": { "type": "int" }, "total": { "type": "int" } }
+  },
+
+  "friendsAllFriends": "All friends",
+  "friendsSubtitle": "Stay connected and cheer each other on",
+  "friendsNoFriends": "No friends yet",
+  "friendsRemove": "Remove",
+  "friendsRemoveConfirm": "Remove {username}?",
+  "@friendsRemoveConfirm": {
+    "placeholders": { "username": { "type": "String" } }
+  },
+  "friendsRemoveBody": "They will no longer be on your friends list.",
+  "friendsNoRequestsBody": "When someone sends you a friend request\nit will appear here",
+
+  "leaderboardSubtitle": "See how you rank against other heroes",
+  "leaderboardGuestTitle": "Compete with heroes worldwide",
+  "leaderboardGuestSubtitle": "Create a free account to appear on the leaderboard and track your rank.",
+  "leaderboardTop50": "Top 50",
+  "leaderboardUnknown": "Unknown",
+  "leaderboardYourRank": "Your Rank",
+  "leaderboardTopHeroes": "Top Heroes",
+  "leagueCyberLegend": "Cyber Legend League",
+  "leagueGuardian": "Guardian League",
+  "leagueHero": "Hero League",
+  "leagueApprentice": "Apprentice League",
+  "leagueRookie": "Rookie League",
+  "leagueStarsEarned": "{count} stars earned",
+  "@leagueStarsEarned": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "leagueTopReached": "You reached the top league! 🎉",
+  "leagueLevelUp": "{count, plural, one{{count} more star to level up!} other{{count} more stars to level up!}}",
+  "@leagueLevelUp": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "notifNone": "No notifications",
+  "notifNoneBody": "Updates and friend requests will appear here",
+  "notifReviewQueue": "REVIEW QUEUE",
+  "notifAllCaughtUp": "All caught up",
+  "notifAllCaughtUpBody": "No moderator requests or submissions to review",
+  "notifModeratorRequests": "{count, plural, one{{count} moderator request to review} other{{count} moderator requests to review}}",
+  "@notifModeratorRequests": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "notifTapRequestsTab": "Tap to open the Requests tab",
+  "notifQuestionSubmissions": "{count, plural, one{{count} question submission to review} other{{count} question submissions to review}}",
+  "@notifQuestionSubmissions": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "notifTapSubmissionsTab": "Tap to open the Submissions tab",
+  "notifSentRequest": "Sent you a friend request",
+  "notifNowFriends": "You and {username} are now friends!",
+  "@notifNowFriends": {
+    "placeholders": { "username": { "type": "String" } }
+  },
+
+  "statusApproved": "Approved",
+  "statusRejected": "Rejected",
+  "statusPendingReview": "Pending review",
+  "statusNeedsChanges": "Needs changes",
+
+  "modReqSent": "Request sent! An admin will review it.",
+  "modReqError": "Could not send request: {error}",
+  "@modReqError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "modReqSubtitle": "Help review and grow the quiz",
+  "modReqPending": "Request pending",
+  "modReqPendingBody": "An admin is reviewing your request. You'll be notified once there's a decision.",
+  "modReqStatsError": "Couldn't load your stats",
+  "modReqStatsErrorBody": "Please try again in a moment.",
+  "modReqWhatTitle": "What moderators do",
+  "modReqWhatBody": "Moderators can submit new quiz questions. An admin reviews each submission before it goes live.",
+  "modReqRequirements": "REQUIREMENTS",
+  "modReqAnswerQuestions": "Answer questions",
+  "modReqReadContent": "Read learning content",
+  "modReqRank": "Leaderboard rank",
+  "modReqDeclined": "Your previous request was declined. Keep going — you can apply again once you meet the requirements.",
+  "modReqSending": "Sending...",
+  "modReqButton": "Request moderator access",
+  "modReqKeepLearning": "Keep learning to unlock the request button.",
+
+  "modSubtitle": "Submit questions for admin review",
+  "modSubmitNew": "Submit a new question",
+  "modMySubmissions": "MY SUBMISSIONS",
+  "modTotalCount": "{count} total",
+  "@modTotalCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "modNoSubmissions": "No submissions yet. Tap \"Submit a new question\" to add one.",
+  "modNothingFilter": "Nothing here in this filter.",
+  "modFilterAll": "All",
+  "modFilterPending": "Pending",
+  "modReviewerFeedback": "Reviewer feedback",
+  "modEditResubmit": "Edit & resubmit",
+  "modDeleteTitle": "Delete submission?",
+  "modDeleteBody": "This permanently removes your submission. This can't be undone.",
+  "modSubmissionDeleted": "Submission deleted",
+  "modDeleteError": "Could not delete: {error}",
+  "@modDeleteError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "modReviseTitle": "Revise & Resubmit",
+  "modReviseSubtitle": "Address the feedback, then send it back for review",
+  "modSubmitTitle": "Submit a Question",
+  "modSubmitSubtitle": "An admin will review it before it goes live",
+
+  "formSelectCategoryTopic": "Select category and topic",
+  "formFillOptions": "Fill in all 4 options",
+  "formResubmitted": "Resubmitted for review!",
+  "formQuestionUpdated": "Question updated!",
+  "formSubmittedReview": "Question submitted for review!",
+  "formQuestionSaved": "Question saved!",
+  "formError": "Error: {error}",
+  "@formError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "formReviewerAskedChanges": "Reviewer asked for changes",
+  "formLocation": "Location",
+  "formCategory": "Category",
+  "formSelectCategory": "Select category",
+  "formTopic": "Topic",
+  "formSelectTopic": "Select topic",
+  "formSetup": "Setup",
+  "formType": "Type",
+  "formMultipleChoice": "Multiple Choice",
+  "formTrueFalse": "True / False",
+  "formDifficulty": "Difficulty",
+  "formBeginner": "Beginner",
+  "formIntermediate": "Intermediate",
+  "formAdvanced": "Advanced",
+  "formQuestionAnswers": "Question & Answers",
+  "formQuestionText": "Question text",
+  "formQuestionHint": "Type your question here...",
+  "formRequired": "Required",
+  "formOptionsHint": "Options - tap letter to mark correct",
+  "formCorrectAnswer": "Correct answer",
+  "formExplanation": "Explanation",
+  "formExplanationHint": "Why is this the correct answer?",
+  "formAwardsPoints": "This question awards {points} points",
+  "@formAwardsPoints": {
+    "placeholders": { "points": { "type": "int" } }
+  },
+  "formResubmitting": "Resubmitting...",
+  "formSubmitting": "Submitting...",
+  "formSaving": "Saving...",
+  "formResubmitButton": "Resubmit for review",
+  "formSubmitReview": "Submit for review",
+  "formSaveQuestion": "Save Question",
+  "formEditDraft": "Edit Draft",
+  "formOptionHint": "Option {letter}",
+  "@formOptionHint": {
+    "placeholders": { "letter": { "type": "String" } }
+  },
+  "adminEditing": "Editing: {title}",
+  "@adminEditing": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+
+  "adminTitle": "Admin",
+  "adminBadge": "ADMIN",
+  "adminSectionContent": "Content",
+  "adminSectionStructure": "Structure",
+  "adminSectionCommunity": "Community",
+  "adminSectionTools": "Tools",
+  "adminQuestions": "Questions",
+  "adminQuestionsSub": "Create quiz questions, set difficulty and correct answers.",
+  "adminGenerateAi": "Generate with AI",
+  "adminGenerateAiSub": "Draft quiz questions with AI, then review and save.",
+  "adminTranslate": "Translate Questions",
+  "adminTranslateSub": "Add a Macedonian copy of every question with AI.",
+  "adminLearningContent": "Learning Content",
+  "adminLearningContentSub": "Create and edit articles and video resources.",
+  "adminCategoriesTopics": "Categories & Topics",
+  "adminCategoriesTopicsSub": "Organise categories and their topics.",
+  "adminModerators": "Moderators",
+  "adminModeratorsSub": "Review moderator requests and approve submitted questions.",
+  "adminImportJson": "Import JSON",
+  "adminImportJsonSub": "Bulk-upload questions or articles from a JSON file.",
+  "adminExcludedNote": "Admin accounts are excluded from the leaderboard and public rankings.",
+
+  "translateLoadError": "Could not load questions",
+  "translateAlready": "Already in Macedonian",
+  "translateStillTo": "Still to translate",
+  "translateProgress": "Translating {processed} of {pending}...",
+  "@translateProgress": {
+    "placeholders": { "processed": { "type": "int" }, "pending": { "type": "int" } }
+  },
+  "translateStop": "Stop",
+  "translateAllDone": "Everything is translated",
+  "translateAllDoneBody": "All {total} questions have a Macedonian copy. Switch the app language in Settings to see them.",
+  "@translateAllDoneBody": {
+    "placeholders": { "total": { "type": "int" } }
+  },
+  "translateButton": "{count, plural, one{Translate {count} question} other{Translate {count} questions}}",
+  "@translateButton": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "translateInfo": "Runs one question at a time and writes each result as it arrives, so stopping early keeps what has already been done. The English original is never overwritten.",
+  "translateLastRun": "Last run: {translated} translated, {failed} failed",
+  "@translateLastRun": {
+    "placeholders": { "translated": { "type": "int" }, "failed": { "type": "int" } }
+  },
+
+  "commonEdit": "Edit",
+  "badgeTF": "T/F",
+  "badgeMCQ": "MCQ",
+  "adminAllCategories": "All categories",
+  "adminAllTopics": "All topics",
+  "adminNoMatches": "No matches",
+  "adminNoMatchesSub": "Try a different search or filter",
+  "adminDeleted": "Deleted",
+  "adminAddQuestion": "Add Question",
+  "adminAllQuestions": "All Questions",
+  "adminDeleteQuestion": "Delete question?",
+  "adminSearchQuestions": "Search questions...",
+  "adminNoQuestions": "No questions yet",
+  "adminNoQuestionsSub": "Add some from the \"Add Question\" tab",
+  "adminEditQuestion": "Edit Question",
+
+  "lcTabAdd": "Add Content",
+  "lcTabAll": "All Content",
+  "lcTitleContentRequired": "Title and content are required",
+  "lcContentUpdated": "Content updated!",
+  "lcContentSaved": "Content saved!",
+  "lcContentType": "Content type",
+  "lcArticle": "Article",
+  "lcVideo": "Video",
+  "lcDetails": "Details",
+  "lcTitle": "Title",
+  "lcTitleHint": "Content title",
+  "lcDescription": "Description",
+  "lcDescriptionHint": "Short description shown on card",
+  "lcYoutubeId": "YouTube Video ID",
+  "lcArticleText": "Article text",
+  "lcYoutubeHint": "e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "lcArticleHint": "Write your article here...",
+  "lcReadTime": "Read time (minutes)",
+  "lcReadTimeHint": "e.g. 3",
+  "lcUpdateContent": "Update Content",
+  "lcSaveContent": "Save Content",
+  "lcDeleteTitle": "Delete content?",
+  "lcDeleteBody": "Delete \"{title}\"?",
+  "@lcDeleteBody": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "lcSearchHint": "Search content...",
+  "lcNoContent": "No content yet",
+  "lcNoContentSub": "Add some from the \"Add Content\" tab",
+  "lcBadgeVideo": "VIDEO",
+  "lcBadgeArticle": "ARTICLE",
+
+  "ctAddCategory": "Add Category",
+  "ctEditCategory": "Edit Category",
+  "ctCategoryName": "Category Name",
+  "ctEnterCategoryName": "Enter category name",
+  "ctIdLabel": "ID: {slug}",
+  "@ctIdLabel": {
+    "placeholders": { "slug": { "type": "String" } }
+  },
+  "ctDisplayOrder": "Display order",
+  "ctUpdate": "Update",
+  "ctAddTopic": "Add Topic",
+  "ctEditTopic": "Edit Topic",
+  "ctTopicName": "Topic Name",
+  "ctEnterTopicName": "Enter topic name",
+  "ctShortDescription": "Short description",
+  "ctToggleNew": "New",
+  "ctToggleUpdated": "Updated",
+  "ctDeleteTopicTitle": "Delete \"{name}\"?",
+  "@ctDeleteTopicTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "ctDeleteTopicBody": "Questions and content linked to this topic will also be deleted.",
+  "ctDeleteCategoryTitle": "Delete \"{title}\"?",
+  "@ctDeleteCategoryTitle": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "ctDeleteCategoryBody": "All topics, questions, and content will be permanently deleted.",
+  "ctAddCategoryTooltip": "Add category",
+  "ctDeleteCategory": "Delete category",
+  "ctNoCategories": "No categories yet",
+  "ctNoCategoriesSub": "Tap + to add your first category",
+  "ctNoTopics": "No topics yet. Tap Add Topic to create one.",
+  "ctTopicCount": "{count, plural, one{{count} topic} other{{count} topics}}",
+  "@ctTopicCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "genSelectCategoryTopic": "Select a category and topic first",
+  "genSomethingWrong": "Something went wrong. Please try again.",
+  "genSaved": "{count, plural, one{Saved {count} question!} other{Saved {count} questions!}}",
+  "@genSaved": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "genCouldNotSave": "Could not save. Please try again.",
+  "genReview": "Review",
+  "genNoCategoriesSub": "Create a category and topic before generating questions.",
+  "genFocus": "Focus (optional)",
+  "genFocusHint": "e.g. spotting fake giveaways",
+  "genQuestionType": "Question type",
+  "genMixed": "Mixed",
+  "genHowMany": "How many",
+  "genGenerateButton": "Generate questions",
+  "genNothingLeft": "Nothing left to save",
+  "genNothingLeftSub": "You deleted every generated question.",
+  "genStartOver": "Start over",
+  "genDiscard": "Discard",
+  "genSaveCount": "Save {count}",
+  "@genSaveCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "genGenerating": "Generating questions...",
+  "genGeneratingSub": "This usually takes a few seconds",
+  "genDisclaimer": "AI can make mistakes. Review every question before saving — nothing is stored until you tap Save.",
+
+  "modTabRequests": "Requests",
+  "modTabSubmissions": "Submissions",
+  "modReasonRequiredHint": "What needs to change? (shown to the author)",
+  "modReasonOptionalHint": "Optional reason (shown to the user)",
+  "modNowModerator": "{username} is now a moderator",
+  "@modNowModerator": {
+    "placeholders": { "username": { "type": "String" } }
+  },
+  "modRejectReqTitle": "Reject {username}?",
+  "@modRejectReqTitle": {
+    "placeholders": { "username": { "type": "String" } }
+  },
+  "modRejectReqBody": "They'll be notified and can apply again later.",
+  "modReject": "Reject",
+  "modRequestRejected": "Request rejected",
+  "modRevokeTitle": "Revoke moderator?",
+  "modRevokeBody": "{username} will lose the ability to submit questions.",
+  "@modRevokeBody": {
+    "placeholders": { "username": { "type": "String" } }
+  },
+  "modRevoke": "Revoke",
+  "modAccessRevoked": "Moderator access revoked",
+  "modPendingRequests": "PENDING REQUESTS",
+  "modApplicationsHere": "Moderator applications will appear here",
+  "modCurrentMods": "CURRENT MODERATORS",
+  "modNoModerators": "No moderators yet",
+  "modRequestedAgo": "Requested {time}",
+  "@modRequestedAgo": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "modApprove": "Approve",
+  "modStatusPending": "Pending",
+  "modQuestionApproved": "Question approved & live",
+  "modRejectQuestionTitle": "Reject this question?",
+  "modRejectQuestionBody": "It won't go live and the author can't edit it. They'll be notified.",
+  "modSubmissionRejected": "Submission rejected",
+  "modRequestChangesTitle": "Request changes",
+  "modRequestChangesBody": "The author keeps the question and can edit & resubmit it.",
+  "modRequestChangesBtn": "Request changes",
+  "modSend": "Send",
+  "modSentBack": "Sent back for changes",
+  "modDeleteSubmissionBody": "This permanently removes the submission. This can't be undone.",
+  "modNothingHere": "Nothing here",
+  "modNewSubmissionsHere": "New moderator submissions will appear here",
+  "modNoStatusSubmissions": "No {status} submissions",
+  "@modNoStatusSubmissions": {
+    "placeholders": { "status": { "type": "String" } }
+  },
+  "modExplanationLabel": "Explanation: {text}",
+  "@modExplanationLabel": {
+    "placeholders": { "text": { "type": "String" } }
+  },
+  "modFeedbackSent": "Feedback sent: {text}",
+  "@modFeedbackSent": {
+    "placeholders": { "text": { "type": "String" } }
+  },
+
+  "importTitle": "Import Data",
+  "importTabQuestions": "Questions",
+  "importTabArticles": "Articles",
+  "importInstructionsQuestions": "Paste a JSON array of questions. Each object needs: categoryId, topicId, text, options, correctIndex, explanation, difficulty, points, type.",
+  "importInstructionsArticles": "Paste a JSON array of articles. Each object needs: categoryId, topicId, title, body (or content), readTimeMinutes. Optional: keyPoints array.",
+  "importJsonError": "JSON error: {detail}",
+  "@importJsonError": {
+    "placeholders": { "detail": { "type": "String" } }
+  },
+  "importUploadedQuestions": "{count, plural, one{Uploaded {count} question successfully!} other{Uploaded {count} questions successfully!}}",
+  "@importUploadedQuestions": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "importUploadedArticles": "{count, plural, one{Uploaded {count} article successfully!} other{Uploaded {count} articles successfully!}}",
+  "@importUploadedArticles": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "importFailed": "Failed: {detail}",
+  "@importFailed": {
+    "placeholders": { "detail": { "type": "String" } }
+  },
+  "importReadyQuestions": "{count, plural, one{{count} question ready to upload} other{{count} questions ready to upload}}",
+  "@importReadyQuestions": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "importReadyArticles": "{count, plural, one{{count} article ready to upload} other{{count} articles ready to upload}}",
+  "@importReadyArticles": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "importPreview": "PREVIEW",
+  "importUploading": "Uploading...",
+  "importUploadBtnQuestions": "{count, plural, one{Upload {count} Question} other{Upload {count} Questions}}",
+  "@importUploadBtnQuestions": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "importUploadBtnArticles": "{count, plural, one{Upload {count} Article} other{Upload {count} Articles}}",
+  "@importUploadBtnArticles": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "importTopicIdRef": "Topic ID Reference",
+  "importUseExactIds": "Use these exact IDs in your JSON.",
+  "importCopied": "Copied: {id}",
+  "@importCopied": {
+    "placeholders": { "id": { "type": "String" } }
+  },
+
+  "notifReasonNote": " Reason: {reason}",
+  "@notifReasonNote": {
+    "placeholders": { "reason": { "type": "String" } }
+  },
+  "notifModApprovedTitle": "You're now a moderator! 🎉",
+  "notifModApprovedBody": "Your moderator request was approved. You can now submit quiz questions for review.",
+  "notifModRejectedTitle": "Moderator request update",
+  "notifModRejectedBody": "Your moderator request wasn't approved this time.{note} Keep learning and you can apply again later.",
+  "@notifModRejectedBody": {
+    "placeholders": { "note": { "type": "String" } }
+  },
+  "notifModRevokedTitle": "Moderator access changed",
+  "notifModRevokedBody": "Your moderator access has been removed by an admin.",
+  "notifSubApprovedTitle": "Your question went live! ✅",
+  "notifSubApprovedBody": "A question you submitted was approved and is now in the quiz.",
+  "notifSubChangesTitle": "Changes requested on your question ✏️",
+  "notifSubChangesBody": "A reviewer asked for changes: {reason} Open Moderator Tools to edit and resubmit it.",
+  "@notifSubChangesBody": {
+    "placeholders": { "reason": { "type": "String" } }
+  },
+  "notifSubRejectedTitle": "Question submission update",
+  "notifSubRejectedBody": "A question you submitted wasn't approved.{note} Thanks for helping keep the quiz great!",
+  "@notifSubRejectedBody": {
+    "placeholders": { "note": { "type": "String" } }
+  },
+
+  "categoryPrivacyName": "Privacy",
+  "categoryPasswordsName": "Passwords",
+  "categoryCyberbullyingName": "Cyberbullying",
+  "categorySocialMediaName": "Social Media",
+  "categoryPhishingName": "Phishing",
+
+  "ctNameMkLabel": "Name (Macedonian)",
+  "ctDescMkLabel": "Description (Macedonian)"
 }

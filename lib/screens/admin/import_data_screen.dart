@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../models/category_model.dart';
 import '../../models/learning_content_model.dart';
@@ -73,11 +74,11 @@ class _ImportDataScreenState extends State<ImportDataScreen>
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Import Data',
+                      AppLocalizations.of(context).importTitle,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
@@ -102,9 +103,9 @@ class _ImportDataScreenState extends State<ImportDataScreen>
                 unselectedLabelColor: AppColors.textSecondary,
                 indicatorColor: AppColors.blue,
                 indicatorWeight: 3,
-                tabs: const [
-                  Tab(text: 'Questions'),
-                  Tab(text: 'Articles'),
+                tabs: [
+                  Tab(text: AppLocalizations.of(context).importTabQuestions),
+                  Tab(text: AppLocalizations.of(context).importTabArticles),
                 ],
               ),
             ),
@@ -157,6 +158,7 @@ class _ImportTabState extends State<_ImportTab>
   String? _parseError;
   bool _uploading = false;
   String? _uploadResult;
+  bool _uploadOk = false;
 
   bool get _isQuestions => widget.mode == _ImportMode.questions;
 
@@ -214,13 +216,14 @@ class _ImportTabState extends State<_ImportTab>
       setState(() {
         _questions = [];
         _articles = [];
-        _parseError = 'JSON error: ${e.toString().split('\n').first}';
+        _parseError = AppLocalizations.of(context).importJsonError(e.toString().split('\n').first);
         _uploadResult = null;
       });
     }
   }
 
   Future<void> _upload() async {
+    final l10n = AppLocalizations.of(context);
     final count = _isQuestions ? _questions.length : _articles.length;
     if (count == 0) return;
 
@@ -236,14 +239,18 @@ class _ImportTabState extends State<_ImportTab>
         await LearningService().seedContent(_articles);
       }
       setState(() {
-        _uploadResult = 'Uploaded $count ${_isQuestions ? 'question' : 'article'}${count == 1 ? '' : 's'} successfully!';
+        _uploadResult = _isQuestions
+            ? l10n.importUploadedQuestions(count)
+            : l10n.importUploadedArticles(count);
+        _uploadOk = true;
         _questions = [];
         _articles = [];
         _controller.clear();
       });
     } catch (e) {
       setState(() {
-        _uploadResult = 'Failed: ${e.toString().split('\n').first}';
+        _uploadResult = l10n.importFailed(e.toString().split('\n').first);
+        _uploadOk = false;
       });
     } finally {
       setState(() => _uploading = false);
@@ -253,10 +260,10 @@ class _ImportTabState extends State<_ImportTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final l10n = AppLocalizations.of(context);
     final count = _isQuestions ? _questions.length : _articles.length;
     final hasItems = count > 0;
-    final resultIsSuccess =
-        _uploadResult != null && !_uploadResult!.startsWith('Failed');
+    final resultIsSuccess = _uploadResult != null && _uploadOk;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
@@ -279,8 +286,8 @@ class _ImportTabState extends State<_ImportTab>
               Expanded(
                 child: Text(
                   _isQuestions
-                      ? 'Paste a JSON array of questions. Each object needs: categoryId, topicId, text, options, correctIndex, explanation, difficulty, points, type.'
-                      : 'Paste a JSON array of articles. Each object needs: categoryId, topicId, title, body (or content), readTimeMinutes. Optional: keyPoints array.',
+                      ? l10n.importInstructionsQuestions
+                      : l10n.importInstructionsArticles,
                   style: GoogleFonts.nunito(
                     color: AppColors.blueDark,
                     fontSize: 12,
@@ -357,7 +364,7 @@ class _ImportTabState extends State<_ImportTab>
         else if (hasItems)
           _StatusBanner(
             icon: Icons.check_circle_outline_rounded,
-            text: '$count ${_isQuestions ? 'question' : 'article'}${count == 1 ? '' : 's'} ready to upload',
+            text: _isQuestions ? l10n.importReadyQuestions(count) : l10n.importReadyArticles(count),
             color: AppColors.green,
             bg: AppColors.greenLight,
           ),
@@ -380,7 +387,7 @@ class _ImportTabState extends State<_ImportTab>
         // â”€â”€ Preview list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         if (hasItems) ...[
           Text(
-            'PREVIEW',
+            l10n.importPreview,
             style: GoogleFonts.nunito(
               color: AppColors.textSecondary,
               fontSize: 11,
@@ -408,8 +415,8 @@ class _ImportTabState extends State<_ImportTab>
                 : const Icon(Icons.cloud_upload_rounded),
             label: Text(
               _uploading
-                  ? 'Uploading...'
-                  : 'Upload $count ${_isQuestions ? 'Question' : 'Article'}${count == 1 ? '' : 's'}',
+                  ? l10n.importUploading
+                  : (_isQuestions ? l10n.importUploadBtnQuestions(count) : l10n.importUploadBtnArticles(count)),
               style: GoogleFonts.nunito(
                   fontWeight: FontWeight.w800, fontSize: 15),
             ),
@@ -674,7 +681,7 @@ class _TopicIdReferenceState extends State<_TopicIdReference> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Topic ID Reference',
+                  AppLocalizations.of(context).importTopicIdRef,
                   style: GoogleFonts.nunito(
                     color: AppColors.blue,
                     fontWeight: FontWeight.w700,
@@ -709,7 +716,7 @@ class _TopicIdReferenceState extends State<_TopicIdReference> {
                             Container(height: 1, color: AppColors.border),
                             const SizedBox(height: 10),
                             Text(
-                              'Use these exact IDs in your JSON.',
+                              AppLocalizations.of(context).importUseExactIds,
                               style: GoogleFonts.nunito(
                                 color: AppColors.textSecondary,
                                 fontSize: 11,
@@ -758,7 +765,7 @@ class _CategoryBlock extends StatelessWidget {
               onTap: () {
                 Clipboard.setData(ClipboardData(text: category.id));
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('Copied: ${category.id}',
+                  content: Text(AppLocalizations.of(context).importCopied(category.id),
                       style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
                   backgroundColor: AppColors.blue,
                   behavior: SnackBarBehavior.floating,
@@ -795,7 +802,7 @@ class _CategoryBlock extends StatelessWidget {
                       onTap: () {
                         Clipboard.setData(ClipboardData(text: t.id));
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Copied: ${t.id}',
+                          content: Text(AppLocalizations.of(context).importCopied(t.id),
                               style: GoogleFonts.nunito(
                                   fontWeight: FontWeight.w700)),
                           backgroundColor: AppColors.blue,

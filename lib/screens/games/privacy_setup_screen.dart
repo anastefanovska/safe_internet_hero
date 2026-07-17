@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../data/privacy_fields.dart';
 import '../../models/privacy_field_model.dart';
@@ -143,13 +144,13 @@ class _PrivacySetupScreenState extends State<PrivacySetupScreen> {
                       ? MiniGameResult(
                           stars: stars,
                           headline: switch (stars) {
-                            3 => 'Locked down tight!',
-                            2 => 'Well protected!',
-                            1 => 'Getting safer',
-                            _ => 'Review your settings',
+                            3 => AppLocalizations.of(context).privacyHeadline3,
+                            2 => AppLocalizations.of(context).privacyHeadline2,
+                            1 => AppLocalizations.of(context).privacyHeadline1,
+                            _ => AppLocalizations.of(context).privacyHeadline0,
                           },
                           subtitle:
-                              'You set $_correct of ${_fields.length} fields safely',
+                              AppLocalizations.of(context).privacyFieldsSafe(_correct, _fields.length),
                           awarding: _awarding,
                           awardedCoins: _awardedCoins,
                           coinsPossible: _coinsPossible,
@@ -183,8 +184,8 @@ class _PrivacySetupScreenState extends State<PrivacySetupScreen> {
                     Expanded(
                       child: Text(
                         _checked
-                            ? 'Green is the safe setting'
-                            : 'Who can see each field?',
+                            ? AppLocalizations.of(context).privacyGreenSafe
+                            : AppLocalizations.of(context).privacyWhoCanSee,
                         style: GoogleFonts.nunito(
                           color: AppColors.textPrimary,
                           fontSize: 16,
@@ -197,7 +198,7 @@ class _PrivacySetupScreenState extends State<PrivacySetupScreen> {
                 if (!_checked) ...[
                   const SizedBox(height: 2),
                   Text(
-                    'Everything starts Public — lock down what should be private.',
+                    AppLocalizations.of(context).privacyStartPublic,
                     style: GoogleFonts.nunito(
                       color: AppColors.textSecondary,
                       fontSize: 12.5,
@@ -215,13 +216,13 @@ class _PrivacySetupScreenState extends State<PrivacySetupScreen> {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
           child: _checked
               ? AppButton(
-                  label: 'See results',
+                  label: AppLocalizations.of(context).redFlagSeeResults,
                   variant: AppButtonVariant.success,
                   icon: Icons.arrow_forward_rounded,
                   onTap: _finish,
                 )
               : AppButton(
-                  label: 'Check my profile',
+                  label: AppLocalizations.of(context).privacyCheckProfile,
                   icon: Icons.shield_rounded,
                   onTap: _check,
                 ),
@@ -351,7 +352,7 @@ class _PrivacySetupScreenState extends State<PrivacySetupScreen> {
               Icon(v.icon, color: fg, size: 18),
               const SizedBox(height: 3),
               Text(
-                v.label,
+                v.labelOf(AppLocalizations.of(context)),
                 style: GoogleFonts.nunito(
                   color: fg,
                   fontSize: 11.5,

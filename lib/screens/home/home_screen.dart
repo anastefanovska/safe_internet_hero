@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/category_model.dart';
@@ -55,10 +56,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
     final isGuest = auth.isGuest;
-    final username = isGuest ? 'Hero' : (user?.username ?? 'Hero');
+    final username = isGuest ? l10n.homeDefaultName : (user?.username ?? l10n.homeDefaultName);
     final stars = user?.totalStars ?? 0;
     final streak = user?.currentStreak ?? 0;
     final coins = user?.coins ?? 0;
@@ -79,9 +81,9 @@ class _HomeScreenState extends State<HomeScreen> {
             AppPageRoute(
               builder: (_) => QuizScreen(
                 categoryId: 'practice',
-                categoryName: 'Practice',
+                categoryName: l10n.homePracticeCategory,
                 topicId: '',
-                topicName: 'Weak Spots',
+                topicName: l10n.homeWeakSpots,
                 color: AppColors.orange,
                 specificIds: user.incorrectlyAnsweredIds.take(10).toList(),
               ),
@@ -180,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
       else if (!isGuest && user != null && user.isAdmin != true) ...[
         const SizedBox(height: 8),
         AppButton(
-          label: 'Become a Moderator',
+          label: l10n.homeBecomeModerator,
           variant: AppButtonVariant.secondary,
           icon: Icons.shield_outlined,
           onTap: () => Navigator.push(
@@ -247,7 +249,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildError() => Padding(
+  Widget _buildError() {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
         padding: const EdgeInsets.symmetric(vertical: 32),
         child: Center(
           child: Column(
@@ -256,17 +260,18 @@ class _HomeScreenState extends State<HomeScreen> {
               const Icon(Icons.wifi_off_rounded,
                   color: AppColors.textLight, size: 36),
               const SizedBox(height: 10),
-              const Text('Could not load content',
-                  style: TextStyle(
+              Text(l10n.homeCouldNotLoad,
+                  style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontWeight: FontWeight.w700)),
               TextButton(
                   onPressed: () => setState(() {}),
-                  child: const Text('Retry')),
+                  child: Text(l10n.commonRetry)),
             ],
           ),
         ),
       );
+  }
 }
 
 // ─── Hero banner ──────────────────────────────────────────────────────────────
@@ -285,6 +290,7 @@ class _HeroBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -355,7 +361,7 @@ class _HeroBanner extends StatelessWidget {
                                   size: 13),
                               const SizedBox(width: 4),
                               Text(
-                                '$streak day streak!',
+                                l10n.homeStreakBadge(streak),
                                 style: GoogleFonts.nunito(
                                   color: Colors.white,
                                   fontSize: 11,
@@ -371,7 +377,7 @@ class _HeroBanner extends StatelessWidget {
                       ],
 
                       Text(
-                        'Hey, $username!',
+                        l10n.homeGreeting(username),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.nunito(
@@ -384,7 +390,7 @@ class _HeroBanner extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Pick a quiz below and start\nearning stars.',
+                        l10n.homeHeroSubtitle,
                         style: GoogleFonts.nunito(
                           color: Colors.white.withValues(alpha: 0.85),
                           fontSize: 13,
@@ -400,7 +406,7 @@ class _HeroBanner extends StatelessWidget {
                           const Icon(Icons.keyboard_arrow_down_rounded,
                               color: Colors.white, size: 16),
                           Text(
-                            'Choose a topic',
+                            l10n.homeChooseTopic,
                             style: GoogleFonts.nunito(
                               color: Colors.white.withValues(alpha: 0.7),
                               fontSize: 11,
@@ -490,7 +496,7 @@ class _AdminPanelButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final button = AppButton(
-      label: 'Admin Panel',
+      label: AppLocalizations.of(context).homeAdminPanel,
       variant: AppButtonVariant.secondary,
       icon: Icons.admin_panel_settings_rounded,
       onTap: () => Navigator.push(
@@ -523,7 +529,7 @@ class _ModeratorToolsButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final button = AppButton(
-      label: 'Moderator Tools',
+      label: AppLocalizations.of(context).homeModeratorTools,
       variant: AppButtonVariant.secondary,
       icon: Icons.shield_rounded,
       onTap: () => Navigator.push(
@@ -585,7 +591,7 @@ class _NotificationBell extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         IconButton(
-          tooltip: 'Notifications',
+          tooltip: AppLocalizations.of(context).settingsNotifications,
           icon: const Icon(Icons.notifications_rounded,
               color: Colors.white, size: 24),
           onPressed: () => Navigator.push(
@@ -631,6 +637,7 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -645,7 +652,7 @@ class _SectionHeader extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Text(
-          'Choose your quest',
+          l10n.homeChooseQuest,
           style: GoogleFonts.nunito(
             color: AppColors.textPrimary,
             fontSize: 18,
@@ -662,7 +669,7 @@ class _SectionHeader extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  'See all',
+                  l10n.commonSeeAll,
                   style: GoogleFonts.nunito(
                     color: AppColors.blue,
                     fontSize: 13,
@@ -735,6 +742,7 @@ class _QuestCardState extends State<_QuestCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final color = AppCategoryIcon.colorFor(widget.category.title);
     final darkColor = AppCategoryIcon.darkColorFor(widget.category.title);
     final icon = AppCategoryIcon.iconFor(widget.category.title);
@@ -813,7 +821,7 @@ class _QuestCardState extends State<_QuestCard> {
                           children: [
                             Expanded(
                               child: Text(
-                                widget.category.title,
+                                AppCategoryIcon.localizedTitle(widget.category.title, l10n),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.nunito(
@@ -839,13 +847,14 @@ class _QuestCardState extends State<_QuestCard> {
 
                                   if (isComplete) {
                                     return _ActionChip(
-                                      label: 'Done',
+                                      label: l10n.commonDone,
                                       icon: Icons.check_rounded,
                                       color: AppColors.green,
+                                      isDone: true,
                                     );
                                   }
                                   return _ActionChip(
-                                    label: hasStarted ? 'Continue' : 'Start',
+                                    label: hasStarted ? l10n.homeContinue : l10n.homeStart,
                                     icon: hasStarted
                                         ? Icons.play_arrow_rounded
                                         : Icons.rocket_launch_rounded,
@@ -855,7 +864,7 @@ class _QuestCardState extends State<_QuestCard> {
                               )
                             else
                               _ActionChip(
-                                label: 'Start',
+                                label: l10n.homeStart,
                                 icon: Icons.rocket_launch_rounded,
                                 color: color,
                               ),
@@ -899,8 +908,8 @@ class _QuestCardState extends State<_QuestCard> {
                                   Text(
                                     snap.connectionState ==
                                             ConnectionState.waiting
-                                        ? '$total topics'
-                                        : '${snap.data ?? 0} / $total topics completed',
+                                        ? l10n.homeTopicsCount(total)
+                                        : l10n.homeTopicsCompleted(snap.data ?? 0, total),
                                     style: GoogleFonts.nunito(
                                       color: AppColors.textLight,
                                       fontSize: 11,
@@ -913,7 +922,7 @@ class _QuestCardState extends State<_QuestCard> {
                           )
                         else
                           Text(
-                            '$total topics',
+                            l10n.homeTopicsCount(total),
                             style: GoogleFonts.nunito(
                               color: AppColors.textLight,
                               fontSize: 11,
@@ -937,12 +946,12 @@ class _ActionChip extends StatelessWidget {
   final String label;
   final IconData icon;
   final Color color;
+  final bool isDone;
   const _ActionChip(
-      {required this.label, required this.icon, required this.color});
+      {required this.label, required this.icon, required this.color, this.isDone = false});
 
   @override
   Widget build(BuildContext context) {
-    final isDone = label == 'Done';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -986,6 +995,7 @@ class _PracticeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -1024,7 +1034,7 @@ class _PracticeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Practice Weak Spots',
+                      l10n.homePracticeWeakSpots,
                       style: GoogleFonts.nunito(
                         color: AppColors.orangeDark,
                         fontWeight: FontWeight.w900,
@@ -1032,7 +1042,7 @@ class _PracticeCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '$count question${count == 1 ? '' : 's'} to review · +3 coins',
+                      l10n.homePracticeSubtitle(count),
                       style: GoogleFonts.nunito(
                         color: AppColors.orange,
                         fontWeight: FontWeight.w600,
@@ -1057,7 +1067,7 @@ class _PracticeCard extends StatelessWidget {
                   ],
                 ),
                 child: Text(
-                  'Practice',
+                  l10n.homePracticeButton,
                   style: GoogleFonts.nunito(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,

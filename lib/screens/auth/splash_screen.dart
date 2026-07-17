@@ -2,6 +2,7 @@
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
@@ -177,6 +178,7 @@ class LandingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final desktop = isDesktop(context);
 
     Widget content = Column(
@@ -251,7 +253,7 @@ class LandingScreen extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   Text(
-                    'Learn to stay safe online,\none lesson at a time.',
+                    l10n.landingTagline,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.nunito(
                       color: Colors.white.withValues(alpha: 0.85),
@@ -281,7 +283,7 @@ class LandingScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   AppButton(
-                    label: 'GET STARTED',
+                    label: l10n.landingGetStarted,
                     variant: AppButtonVariant.success,
                     icon: Icons.arrow_forward_rounded,
                     onTap: () => Navigator.push(
@@ -293,7 +295,7 @@ class LandingScreen extends StatelessWidget {
                   const SizedBox(height: 14),
 
                   AppButton(
-                    label: 'I HAVE AN ACCOUNT',
+                    label: l10n.landingHaveAccount,
                     variant: AppButtonVariant.secondary,
                     onTap: () => Navigator.push(
                         context,
@@ -314,7 +316,7 @@ class LandingScreen extends StatelessWidget {
                         );
                       },
                       child: Text(
-                        'Continue as guest',
+                        l10n.landingContinueGuest,
                         style: GoogleFonts.nunito(
                           color: AppColors.textSecondary,
                           fontSize: 14,

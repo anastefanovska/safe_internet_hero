@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
+import '../../models/learning_content_model.dart';
 import '../../models/question_model.dart';
+import '../../models/topic_model.dart';
 import '../../services/ai_translation_service.dart';
+import '../../services/learning_service.dart';
 import '../../services/questions_service.dart';
+import '../../services/topics_service.dart';
 import '../../widgets/admin_widgets.dart';
 
 class TranslateQuestionsScreen extends StatefulWidget {
@@ -19,9 +24,13 @@ class _TranslateQuestionsScreenState extends State<TranslateQuestionsScreen> {
   static const _targetLang = 'mk';
 
   final _questionService = QuestionService();
+  final _topicsService = TopicsService();
+  final _learningService = LearningService();
   final _aiService = AiTranslationService();
 
   List<QuestionModel>? _questions;
+  List<TopicModel>? _topics;
+  List<LearningContentModel>? _content;
   String? _loadError;
 
   bool _running = false;
@@ -39,23 +48,49 @@ class _TranslateQuestionsScreenState extends State<TranslateQuestionsScreen> {
   Future<void> _load() async {
     setState(() {
       _questions = null;
+      _topics = null;
+      _content = null;
       _loadError = null;
     });
     try {
-      final questions = await _questionService.getAllQuestionsForTranslation();
-      if (mounted) setState(() => _questions = questions);
+      final results = await Future.wait([
+        _questionService.getAllQuestionsForTranslation(),
+        _topicsService.getAllTopicsForTranslation(),
+        _learningService.getAllContentForTranslation(),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _questions = results[0] as List<QuestionModel>;
+        _topics = results[1] as List<TopicModel>;
+        _content = results[2] as List<LearningContentModel>;
+      });
     } catch (e) {
       if (mounted) setState(() => _loadError = '$e');
     }
   }
 
-  List<QuestionModel> get _pending =>
+  bool get _loaded =>
+      _questions != null && _topics != null && _content != null;
+
+  List<QuestionModel> get _pendingQuestions =>
       _questions?.where((q) => !q.hasTranslation(_targetLang)).toList() ??
       const [];
+  List<TopicModel> get _pendingTopics =>
+      _topics?.where((t) => !t.hasTranslation(_targetLang)).toList() ?? const [];
+  List<LearningContentModel> get _pendingContent =>
+      _content?.where((c) => !c.hasTranslation(_targetLang)).toList() ??
+      const [];
+
+  int get _total =>
+      (_questions?.length ?? 0) +
+      (_topics?.length ?? 0) +
+      (_content?.length ?? 0);
+  int get _pendingCount =>
+      _pendingQuestions.length + _pendingTopics.length + _pendingContent.length;
 
   Future<void> _run() async {
-    final pending = _pending;
-    if (pending.isEmpty) return;
+    final total = _pendingCount;
+    if (total == 0) return;
 
     setState(() {
       _running = true;
@@ -65,25 +100,56 @@ class _TranslateQuestionsScreenState extends State<TranslateQuestionsScreen> {
       _failures.clear();
     });
 
-    for (final question in pending) {
+    // Questions
+    for (final question in _pendingQuestions) {
       if (_cancelled || !mounted) break;
-
       try {
-        final translation = await _aiService.translate(question);
-        await _questionService.saveTranslation(
-          question,
-          lang: _targetLang,
-          text: translation.text,
-          options: translation.options,
-          explanation: translation.explanation,
-        );
+        final t = await _aiService.translate(question);
+        await _questionService.saveTranslation(question,
+            lang: _targetLang,
+            text: t.text,
+            options: t.options,
+            explanation: t.explanation);
         if (mounted) setState(() => _translated++);
       } catch (e) {
-        if (mounted) {
-          setState(() => _failures.add('${_preview(question.text)} — $e'));
-        }
+        if (mounted) setState(() => _failures.add('${_preview(question.text)} — $e'));
       }
+      if (mounted) setState(() => _processed++);
+    }
 
+    // Topics
+    for (final topic in _pendingTopics) {
+      if (_cancelled || !mounted) break;
+      try {
+        final t = await _aiService.translateFields(
+            {'name': topic.nameEn, 'desc': topic.descEn});
+        await _topicsService.saveTopicTranslation(topic,
+            lang: _targetLang, name: t['name'] ?? '', desc: t['desc'] ?? '');
+        if (mounted) setState(() => _translated++);
+      } catch (e) {
+        if (mounted) setState(() => _failures.add('${_preview(topic.nameEn)} — $e'));
+      }
+      if (mounted) setState(() => _processed++);
+    }
+
+    // Learning content
+    for (final item in _pendingContent) {
+      if (_cancelled || !mounted) break;
+      try {
+        final t = await _aiService.translateFields({
+          'title': item.titleEn,
+          'description': item.descriptionEn,
+          'content': item.contentEn,
+        });
+        await _learningService.saveContentTranslation(item,
+            lang: _targetLang,
+            title: t['title'] ?? '',
+            description: t['description'] ?? '',
+            body: t['content'] ?? '');
+        if (mounted) setState(() => _translated++);
+      } catch (e) {
+        if (mounted) setState(() => _failures.add('${_preview(item.titleEn)} — $e'));
+      }
       if (mounted) setState(() => _processed++);
     }
 
@@ -101,7 +167,7 @@ class _TranslateQuestionsScreenState extends State<TranslateQuestionsScreen> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          const AdminHeader(title: 'Translate Questions'),
+          AdminHeader(title: AppLocalizations.of(context).adminTranslate),
           Expanded(child: _body()),
         ],
       ),
@@ -109,19 +175,20 @@ class _TranslateQuestionsScreenState extends State<TranslateQuestionsScreen> {
   }
 
   Widget _body() {
+    final l10n = AppLocalizations.of(context);
     if (_loadError != null) {
       return AdminEmptyState(
         icon: Icons.error_outline_rounded,
-        title: 'Could not load questions',
+        title: l10n.translateLoadError,
         subtitle: _loadError!,
       );
     }
-    if (_questions == null) {
+    if (!_loaded) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final total = _questions!.length;
-    final pending = _pending.length;
+    final total = _total;
+    final pending = _pendingCount;
     final done = total - pending;
 
     return SingleChildScrollView(
@@ -130,15 +197,19 @@ class _TranslateQuestionsScreenState extends State<TranslateQuestionsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AdminCard(
-            title: 'Macedonian',
+            title: l10n.languageMacedonian,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _StatRow(label: 'Questions', value: '$total'),
+                _StatRow(label: l10n.adminQuestions, value: '${_questions!.length}'),
                 const SizedBox(height: 8),
-                _StatRow(label: 'Already in Macedonian', value: '$done'),
+                _StatRow(label: l10n.adminCategoriesTopics, value: '${_topics!.length}'),
                 const SizedBox(height: 8),
-                _StatRow(label: 'Still to translate', value: '$pending'),
+                _StatRow(label: l10n.adminLearningContent, value: '${_content!.length}'),
+                const Divider(height: 20),
+                _StatRow(label: l10n.translateAlready, value: '$done'),
+                const SizedBox(height: 8),
+                _StatRow(label: l10n.translateStillTo, value: '$pending'),
               ],
             ),
           ),
@@ -153,7 +224,7 @@ class _TranslateQuestionsScreenState extends State<TranslateQuestionsScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Translating $_processed of $pending...',
+              l10n.translateProgress(_processed, pending),
               style: GoogleFonts.nunito(
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w700,
@@ -161,27 +232,23 @@ class _TranslateQuestionsScreenState extends State<TranslateQuestionsScreen> {
             ),
             const SizedBox(height: 16),
             AdminSecondaryButton(
-              label: 'Stop',
+              label: l10n.translateStop,
               onTap: () => setState(() => _cancelled = true),
             ),
           ] else if (pending == 0) ...[
             AdminEmptyState(
               icon: Icons.check_circle_outline_rounded,
-              title: 'Everything is translated',
-              subtitle:
-                  'All $total questions have a Macedonian copy. Switch the app '
-                  'language in Settings to see them.',
+              title: l10n.translateAllDone,
+              subtitle: l10n.translateAllDoneBody(total),
             ),
           ] else ...[
             AdminPrimaryButton(
-              label: 'Translate $pending question${pending == 1 ? '' : 's'}',
+              label: l10n.translateButton(pending),
               onTap: _run,
             ),
             const SizedBox(height: 10),
             Text(
-              'Runs one question at a time and writes each result as it '
-              'arrives, so stopping early keeps what has already been done. '
-              'The English original is never overwritten.',
+              l10n.translateInfo,
               style: GoogleFonts.nunito(
                 color: AppColors.textSecondary,
                 fontSize: 13,
@@ -193,7 +260,7 @@ class _TranslateQuestionsScreenState extends State<TranslateQuestionsScreen> {
           if (!_running && _processed > 0) ...[
             const SizedBox(height: 24),
             Text(
-              'Last run: $_translated translated, ${_failures.length} failed',
+              l10n.translateLastRun(_translated, _failures.length),
               style: GoogleFonts.nunito(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w800,

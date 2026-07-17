@@ -1,8 +1,33 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/app_locale.dart';
 import '../models/learning_content_model.dart';
 
 class LearningService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  /// Every content item, for the admin translation tool.
+  Future<List<LearningContentModel>> getAllContentForTranslation() async {
+    final snap = await _db.collection('learning_content').get();
+    return snap.docs
+        .map((doc) => LearningContentModel.fromMap({'id': doc.id, ...doc.data()}))
+        .toList();
+  }
+
+  /// Files a translation under [lang] on the three translatable fields,
+  /// keeping the languages already on the document.
+  Future<void> saveContentTranslation(
+    LearningContentModel content, {
+    required String lang,
+    required String title,
+    required String description,
+    required String body,
+  }) async {
+    await _db.collection('learning_content').doc(content.id).update({
+      'title': mergeLocalized(content.titleRaw, title, lang),
+      'description': mergeLocalized(content.descriptionRaw, description, lang),
+      'content': mergeLocalized(content.contentRaw, body, lang),
+    });
+  }
 
   Stream<List<LearningContentModel>> getAllContent() {
     return _db

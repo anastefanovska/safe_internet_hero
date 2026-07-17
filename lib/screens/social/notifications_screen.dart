@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/app_notification_model.dart';
@@ -59,11 +60,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               color: AppColors.textPrimary, size: 20),
                           onPressed: () => Navigator.pop(context),
                         ),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Notifications',
+                          AppLocalizations.of(context).settingsNotifications,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 17,
                             fontWeight: FontWeight.w800,
@@ -139,17 +140,17 @@ class _EmptyState extends StatelessWidget {
                 color: AppColors.teal, size: 40),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'No notifications',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context).notifNone,
+            style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Updates and friend requests will appear here',
-            style: TextStyle(color: AppColors.textSecondary),
+          Text(
+            AppLocalizations.of(context).notifNoneBody,
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -179,7 +180,7 @@ class _AdminQueueSection extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10, left: 2),
-                  child: Text('REVIEW QUEUE',
+                  child: Text(AppLocalizations.of(context).notifReviewQueue,
                       style: GoogleFonts.nunito(
                           color: AppColors.textSecondary,
                           fontSize: 11,
@@ -190,8 +191,8 @@ class _AdminQueueSection extends StatelessWidget {
                   _QueueCard(
                     icon: Icons.check_circle_rounded,
                     color: AppColors.green,
-                    title: 'All caught up',
-                    subtitle: 'No moderator requests or submissions to review',
+                    title: AppLocalizations.of(context).notifAllCaughtUp,
+                    subtitle: AppLocalizations.of(context).notifAllCaughtUpBody,
                     onTap: null,
                   )
                 else ...[
@@ -199,19 +200,16 @@ class _AdminQueueSection extends StatelessWidget {
                     _QueueCard(
                       icon: Icons.how_to_reg_rounded,
                       color: AppColors.blue,
-                      title: '$reqCount moderator '
-                          '${reqCount == 1 ? 'request' : 'requests'} to review',
-                      subtitle: 'Tap to open the Requests tab',
+                      title: AppLocalizations.of(context).notifModeratorRequests(reqCount),
+                      subtitle: AppLocalizations.of(context).notifTapRequestsTab,
                       onTap: () => _open(context, 0),
                     ),
                   if (subCount > 0)
                     _QueueCard(
                       icon: Icons.inbox_rounded,
                       color: AppColors.orange,
-                      title: '$subCount question '
-                          '${subCount == 1 ? 'submission' : 'submissions'} '
-                          'to review',
-                      subtitle: 'Tap to open the Submissions tab',
+                      title: AppLocalizations.of(context).notifQuestionSubmissions(subCount),
+                      subtitle: AppLocalizations.of(context).notifTapSubmissionsTab,
                       onTap: () => _open(context, 1),
                     ),
                 ],
@@ -314,8 +312,37 @@ class _NotificationCard extends StatelessWidget {
     return (AppColors.blue, Icons.notifications_rounded);
   }
 
+  /// Localized title for a known notification type; the stored (English) title
+  /// is a fallback for legacy/unknown types.
+  String _title(AppLocalizations l10n) => switch (notification.type) {
+        'mod_request_approved' => l10n.notifModApprovedTitle,
+        'mod_request_rejected' => l10n.notifModRejectedTitle,
+        'mod_revoked' => l10n.notifModRevokedTitle,
+        'submission_approved' => l10n.notifSubApprovedTitle,
+        'submission_changes' => l10n.notifSubChangesTitle,
+        'submission_rejected' => l10n.notifSubRejectedTitle,
+        _ => notification.title,
+      };
+
+  /// Localized body, weaving in the admin's [reason] (content) where the type
+  /// has one. Falls back to the stored (English) body for unknown types.
+  String _body(AppLocalizations l10n) {
+    final reason = notification.reason.trim();
+    final note = reason.isEmpty ? '' : l10n.notifReasonNote(reason);
+    return switch (notification.type) {
+      'mod_request_approved' => l10n.notifModApprovedBody,
+      'mod_request_rejected' => l10n.notifModRejectedBody(note),
+      'mod_revoked' => l10n.notifModRevokedBody,
+      'submission_approved' => l10n.notifSubApprovedBody,
+      'submission_changes' => l10n.notifSubChangesBody(reason),
+      'submission_rejected' => l10n.notifSubRejectedBody(note),
+      _ => notification.body,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final (color, icon) = _accent;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -349,13 +376,13 @@ class _NotificationCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(notification.title,
+                Text(_title(l10n),
                     style: GoogleFonts.nunito(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w800,
                         fontSize: 14)),
                 const SizedBox(height: 2),
-                Text(notification.body,
+                Text(_body(l10n),
                     style: GoogleFonts.nunito(
                         color: AppColors.textSecondary,
                         fontSize: 12.5,
@@ -397,7 +424,7 @@ class _FriendRequestTile extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const SizedBox();
         final data = snapshot.data!.data() as Map<String, dynamic>?;
-        final username = data?['username'] ?? 'Unknown';
+        final username = data?['username'] ?? AppLocalizations.of(context).leaderboardUnknown;
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
@@ -435,9 +462,9 @@ class _FriendRequestTile extends StatelessWidget {
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold),
                     ),
-                    const Text(
-                      'Sent you a friend request',
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context).notifSentRequest,
+                      style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 12),
                     ),
                   ],
@@ -454,7 +481,7 @@ class _FriendRequestTile extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content:
-                          Text('You and $username are now friends!'),
+                          Text(AppLocalizations.of(context).notifNowFriends(username)),
                       backgroundColor: AppColors.correct,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(

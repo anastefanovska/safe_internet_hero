@@ -117,6 +117,83 @@ ${const JsonEncoder.withIndent('  ').convert(payload)}
 Return ONLY JSON matching the required schema.''';
   }
 
+  /// Translates the free-text [fields] (English -> [languageName]) as one JSON
+  /// object, returning a `{key: translated}` map with exactly the same keys.
+  /// Shared by the topic and learning-content translators.
+  Future<Map<String, String>> translateFields(
+    Map<String, String> fields, {
+    String languageName = 'Macedonian (Cyrillic script)',
+  }) async {
+    final keys = fields.keys.toList();
+    final model = _ai.generativeModel(
+      model: _modelName,
+      generationConfig: GenerationConfig(
+        responseMimeType: 'application/json',
+        responseSchema: Schema.object(properties: {
+          for (final k in keys) k: Schema.string(),
+        }),
+        temperature: 0.2,
+      ),
+    );
+
+    final prompt = '''
+You are a professional translator localising a children's internet-safety
+learning app into $languageName.
+
+Translate ONLY the values in the JSON below from English to $languageName.
+Rules:
+- Keep every JSON key exactly as-is; translate only the values.
+- Use natural, age-appropriate language a child or teenager would understand.
+- Preserve any line breaks and paragraph structure inside long text.
+- Keep well-known technical terms readable (e.g. "phishing" -> "фишинг").
+- Do NOT translate proper nouns, brand names, URLs or YouTube IDs.
+
+JSON to translate:
+${const JsonEncoder.withIndent('  ').convert(fields)}
+
+Return ONLY JSON matching the required schema.''';
+
+    for (var attempt = 0; attempt < _maxRetries; attempt++) {
+      try {
+        final response = await model.generateContent([Content.text(prompt)]);
+        final raw = response.text;
+        if (raw == null || raw.trim().isEmpty) {
+          throw AiTranslationException('The AI returned an empty response.');
+        }
+        final decoded = jsonDecode(raw);
+        if (decoded is! Map) {
+          throw AiTranslationException('The AI response had an unexpected shape.');
+        }
+        final result = <String, String>{};
+        for (final k in keys) {
+          final v = (decoded[k] ?? '').toString().trim();
+          // A blank source field is legitimately blank; a blank translation of
+          // non-empty source is a failure.
+          if (v.isEmpty && fields[k]!.trim().isNotEmpty) {
+            throw AiTranslationException('The AI left "$k" empty.');
+          }
+          result[k] = v;
+        }
+        return result;
+      } on FirebaseAIException catch (e) {
+        final msg = e.message.toLowerCase();
+        final isRateLimit = msg.contains('429') ||
+            msg.contains('resource') ||
+            msg.contains('quota') ||
+            msg.contains('rate');
+        if (isRateLimit && attempt < _maxRetries - 1) {
+          await Future.delayed(Duration(seconds: (attempt + 1) * 20));
+          continue;
+        }
+        throw AiTranslationException(e.message);
+      } catch (e) {
+        if (e is AiTranslationException) rethrow;
+        throw AiTranslationException('Could not reach the AI service: $e');
+      }
+    }
+    throw AiTranslationException('Failed after $_maxRetries attempts.');
+  }
+
   QuestionTranslation _parse(String raw, {required int sourceOptionCount}) {
     final dynamic decoded;
     try {

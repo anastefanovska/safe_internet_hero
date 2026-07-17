@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/app_page_route.dart';
 import '../../core/theme.dart';
 import '../../models/learning_content_model.dart';
@@ -19,10 +20,10 @@ import 'video_screen.dart';
 enum _TypeFilter { all, articles, videos }
 
 extension _TypeFilterX on _TypeFilter {
-  String get label => switch (this) {
-        _TypeFilter.all => 'All',
-        _TypeFilter.articles => 'Articles',
-        _TypeFilter.videos => 'Videos',
+  String labelOf(AppLocalizations l10n) => switch (this) {
+        _TypeFilter.all => l10n.learnFilterAll,
+        _TypeFilter.articles => l10n.learnFilterArticles,
+        _TypeFilter.videos => l10n.learnFilterVideos,
       };
   IconData get icon => switch (this) {
         _TypeFilter.all => Icons.apps_rounded,
@@ -74,8 +75,8 @@ class _LearnScreenState extends State<LearnScreen> {
     });
   }
 
-  String _categoryLabel(String id) =>
-      _categoryNames[id] ?? _slugToTitle(id);
+  String _categoryLabel(String id) => AppCategoryIcon.localizedTitle(
+      _categoryNames[id] ?? _slugToTitle(id), AppLocalizations.of(context));
 
   String _topicLabel(String id) =>
       _topicNames[id] ?? _slugToTitle(id);
@@ -108,6 +109,7 @@ class _LearnScreenState extends State<LearnScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final user = context.watch<AuthProvider>().user;
 
     final desktop = isDesktop(context);
@@ -129,9 +131,9 @@ class _LearnScreenState extends State<LearnScreen> {
                     coins: user?.coins ?? 0,
                   ),
                 if (!desktop) Container(height: 1, color: AppColors.border),
-                const TabHeader(
-                  title: 'Learn',
-                  subtitle: 'Articles and videos to level up your skills',
+                TabHeader(
+                  title: l10n.navLearn,
+                  subtitle: l10n.learnSubtitle,
                 ),
                 Container(height: 1, color: AppColors.border),
               ],
@@ -215,7 +217,7 @@ class _LearnScreenState extends State<LearnScreen> {
                               label: _selectedCategoryId != null
                                   ? _categoryLabel(_selectedCategoryId!)
                                   : _typeFilter != _TypeFilter.all
-                                      ? _typeFilter.label
+                                      ? _typeFilter.labelOf(l10n)
                                       : null)
                           : ListView.builder(
                               padding: const EdgeInsets.fromLTRB(
@@ -277,6 +279,7 @@ class _FilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final showCategories =
         typeFilter != _TypeFilter.all && categories.isNotEmpty;
 
@@ -328,7 +331,7 @@ class _FilterBar extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            f.label,
+                            f.labelOf(l10n),
                             style: GoogleFonts.nunito(
                               color: selected
                                   ? Colors.white
@@ -359,7 +362,7 @@ class _FilterBar extends StatelessWidget {
                     horizontal: 12, vertical: 4),
                 children: [
                   _Chip(
-                    label: 'All',
+                    label: l10n.topicsFilterAll,
                     selected: selectedCategoryId == null,
                     color: AppColors.blue,
                     onTap: () => onCategoryChanged(null),
@@ -486,7 +489,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             Text(
-              label != null ? 'No content for "$label" yet' : 'No content yet',
+              label != null ? AppLocalizations.of(context).learnNoContentFor(label!) : AppLocalizations.of(context).learnNoContent,
               textAlign: TextAlign.center,
               style: GoogleFonts.nunito(
                 fontSize: 18,
@@ -496,7 +499,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Check back soon — new content is on the way!',
+              AppLocalizations.of(context).learnCheckBackSoon,
               textAlign: TextAlign.center,
               style: GoogleFonts.nunito(
                 color: AppColors.textSecondary,

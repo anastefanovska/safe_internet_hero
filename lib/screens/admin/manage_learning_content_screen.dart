@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../models/category_model.dart';
 import '../../models/learning_content_model.dart';
@@ -41,9 +42,9 @@ class _ManageLearningContentScreenState
       body: Column(
         children: [
           AdminHeader(
-            title: 'Learning Content',
+            title: AppLocalizations.of(context).adminLearningContent,
             tabController: _tabs,
-            tabs: const ['Add Content', 'All Content'],
+            tabs: [AppLocalizations.of(context).lcTabAdd, AppLocalizations.of(context).lcTabAll],
           ),
           Expanded(
             child: Align(
@@ -148,9 +149,11 @@ class _AddContentFormState extends State<_AddContentForm> {
   void loadForEdit(LearningContentModel item) {
     setState(() {
       _editing = item;
-      _titleCtrl.text = item.title;
-      _descCtrl.text = item.description;
-      _contentCtrl.text = item.content;
+      // Edit the English source; any Macedonian copy (from the Translate tool)
+      // is preserved on save.
+      _titleCtrl.text = item.titleEn;
+      _descCtrl.text = item.descriptionEn;
+      _contentCtrl.text = item.contentEn;
       _readTimeCtrl.text =
           item.readTimeMinutes > 0 ? '${item.readTimeMinutes}' : '';
       // Treat infographic as article when editing (image type removed)
@@ -175,36 +178,42 @@ class _AddContentFormState extends State<_AddContentForm> {
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context);
     if (_categoryId == null || _topicId == null) {
-      _snack('Select category and topic', isError: true);
+      _snack(l10n.formSelectCategoryTopic, isError: true);
       return;
     }
     if (_titleCtrl.text.trim().isEmpty || _contentCtrl.text.trim().isEmpty) {
-      _snack('Title and content are required', isError: true);
+      _snack(l10n.lcTitleContentRequired, isError: true);
       return;
     }
     setState(() => _saving = true);
     try {
+      // When editing an item that already has a Macedonian copy, keep it by
+      // writing an {en, mk} map for that field; otherwise a plain English string.
+      final e = _editing;
+      Object withMk(String value, String mk) =>
+          mk.isNotEmpty ? {'en': value, 'mk': mk} : value;
       final model = LearningContentModel(
-        id: _editing?.id ?? '',
+        id: e?.id ?? '',
         categoryId: _categoryId!,
         topicId: _topicId!,
-        title: _titleCtrl.text.trim(),
-        description: _descCtrl.text.trim(),
+        title: withMk(_titleCtrl.text.trim(), e?.titleMk ?? ''),
+        description: withMk(_descCtrl.text.trim(), e?.descriptionMk ?? ''),
         type: _type,
-        content: _contentCtrl.text.trim(),
+        content: withMk(_contentCtrl.text.trim(), e?.contentMk ?? ''),
         readTimeMinutes: int.tryParse(_readTimeCtrl.text.trim()) ?? 0,
-        createdAt: _editing?.createdAt ?? DateTime.now(),
+        createdAt: e?.createdAt ?? DateTime.now(),
       );
       _editing != null
           ? await _learningService.updateContent(model)
           : await _learningService.saveContent(model);
       _clearForm();
       setState(() => _saving = false);
-      _snack(_editing != null ? 'Content updated!' : 'Content saved!');
+      _snack(_editing != null ? l10n.lcContentUpdated : l10n.lcContentSaved);
     } catch (e) {
       setState(() => _saving = false);
-      _snack('Error: $e', isError: true);
+      _snack(l10n.formError('$e'), isError: true);
     }
   }
 
@@ -221,6 +230,7 @@ class _AddContentFormState extends State<_AddContentForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_loading) {
       return const Center(
           child: CircularProgressIndicator(color: AppColors.blue));
@@ -234,13 +244,13 @@ class _AddContentFormState extends State<_AddContentForm> {
 
         // â”€â”€ Location â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         AdminCard(
-          title: 'Location',
+          title: l10n.formLocation,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const AdminLabel('Category'),
+            AdminLabel(l10n.formCategory),
             const SizedBox(height: 8),
             AdminDropdown<String>(
               value: _categoryId,
-              hint: 'Select category',
+              hint: l10n.formSelectCategory,
               items: _categories
                   .map((c) =>
                       DropdownMenuItem(value: c.id, child: Text(c.title)))
@@ -255,11 +265,11 @@ class _AddContentFormState extends State<_AddContentForm> {
               },
             ),
             const SizedBox(height: 12),
-            const AdminLabel('Topic'),
+            AdminLabel(l10n.formTopic),
             const SizedBox(height: 8),
             AdminDropdown<String>(
               value: _topicId,
-              hint: 'Select topic',
+              hint: l10n.formSelectTopic,
               items: _topics
                   .map((t) =>
                       DropdownMenuItem(value: t.id, child: Text(t.name)))
@@ -272,11 +282,11 @@ class _AddContentFormState extends State<_AddContentForm> {
 
         // â”€â”€ Type â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         AdminCard(
-          title: 'Content type',
+          title: l10n.lcContentType,
           child: Row(children: [
             Expanded(
               child: AdminTypeButton(
-                label: 'Article',
+                label: l10n.lcArticle,
                 icon: Icons.article_rounded,
                 selected: _type == ContentType.article,
                 onTap: () => setState(() => _type = ContentType.article),
@@ -285,7 +295,7 @@ class _AddContentFormState extends State<_AddContentForm> {
             const SizedBox(width: 10),
             Expanded(
               child: AdminTypeButton(
-                label: 'Video',
+                label: l10n.lcVideo,
                 icon: Icons.play_circle_rounded,
                 selected: _type == ContentType.video,
                 onTap: () => setState(() => _type = ContentType.video),
@@ -297,38 +307,38 @@ class _AddContentFormState extends State<_AddContentForm> {
 
         // â”€â”€ Details â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         AdminCard(
-          title: 'Details',
+          title: l10n.lcDetails,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const AdminLabel('Title'),
+            AdminLabel(l10n.lcTitle),
             const SizedBox(height: 8),
-            AdminField(controller: _titleCtrl, hint: 'Content title'),
+            AdminField(controller: _titleCtrl, hint: l10n.lcTitleHint),
             const SizedBox(height: 12),
-            const AdminLabel('Description'),
+            AdminLabel(l10n.lcDescription),
             const SizedBox(height: 8),
             AdminField(
               controller: _descCtrl,
-              hint: 'Short description shown on card',
+              hint: l10n.lcDescriptionHint,
               maxLines: 2,
             ),
             const SizedBox(height: 12),
             AdminLabel(_type == ContentType.video
-                ? 'YouTube Video ID'
-                : 'Article text'),
+                ? l10n.lcYoutubeId
+                : l10n.lcArticleText),
             const SizedBox(height: 8),
             AdminField(
               controller: _contentCtrl,
               maxLines: _type == ContentType.article ? 8 : 1,
               hint: _type == ContentType.video
-                  ? 'e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-                  : 'Write your article here...',
+                  ? l10n.lcYoutubeHint
+                  : l10n.lcArticleHint,
             ),
             if (_type == ContentType.article) ...[
               const SizedBox(height: 12),
-              const AdminLabel('Read time (minutes)'),
+              AdminLabel(l10n.lcReadTime),
               const SizedBox(height: 8),
               AdminField(
                 controller: _readTimeCtrl,
-                hint: 'e.g. 3',
+                hint: l10n.lcReadTimeHint,
                 keyboardType: TextInputType.number,
               ),
             ],
@@ -337,8 +347,8 @@ class _AddContentFormState extends State<_AddContentForm> {
         const SizedBox(height: 16),
         AdminPrimaryButton(
           label: _saving
-              ? 'Saving...'
-              : (_editing != null ? 'Update Content' : 'Save Content'),
+              ? l10n.formSaving
+              : (_editing != null ? l10n.lcUpdateContent : l10n.lcSaveContent),
           onTap: _saving ? () {} : _save,
         ),
       ],
@@ -431,25 +441,26 @@ class _ContentBrowserState extends State<_ContentBrowser> {
 
   Future<void> _delete(
       BuildContext context, LearningContentModel item) async {
+    final l10n = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete content?',
+        title: Text(l10n.lcDeleteTitle,
             style: GoogleFonts.nunito(fontWeight: FontWeight.w800)),
-        content: Text('Delete "${item.title}"?',
+        content: Text(l10n.lcDeleteBody(item.title),
             style: GoogleFonts.nunito(
                 color: AppColors.textSecondary, fontSize: 13)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text('Cancel',
+              child: Text(l10n.commonCancel,
                   style:
                       GoogleFonts.nunito(color: AppColors.textSecondary))),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text('Delete',
+              child: Text(l10n.commonDelete,
                   style: GoogleFonts.nunito(
                       color: AppColors.red, fontWeight: FontWeight.w700))),
         ],
@@ -459,7 +470,7 @@ class _ContentBrowserState extends State<_ContentBrowser> {
     await LearningService().deleteContent(item.id);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Deleted',
+      content: Text(l10n.adminDeleted,
           style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
       backgroundColor: AppColors.blue,
       behavior: SnackBarBehavior.floating,
@@ -470,13 +481,14 @@ class _ContentBrowserState extends State<_ContentBrowser> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: AdminSearchField(
             controller: _searchCtrl,
-            hint: 'Search content...',
+            hint: l10n.lcSearchHint,
             onChanged: (v) => setState(() => _search = v),
           ),
         ),
@@ -489,7 +501,7 @@ class _ContentBrowserState extends State<_ContentBrowser> {
                   icon: Icons.category_outlined,
                   value: _categoryId ?? 'all',
                   options: [
-                    (value: 'all', label: 'All categories'),
+                    (value: 'all', label: l10n.adminAllCategories),
                     for (final c in _categories) (value: c.id, label: c.title),
                   ],
                   onChanged: (v) => setState(() {
@@ -505,7 +517,7 @@ class _ContentBrowserState extends State<_ContentBrowser> {
                     icon: Icons.tag_rounded,
                     value: _topicId ?? 'all',
                     options: [
-                      (value: 'all', label: 'All topics'),
+                      (value: 'all', label: l10n.adminAllTopics),
                       for (final t in _topicsForCategory)
                         (value: t.id, label: t.name),
                     ],
@@ -525,18 +537,18 @@ class _ContentBrowserState extends State<_ContentBrowser> {
                     child: CircularProgressIndicator(color: AppColors.blue));
               }
               if (snap.data!.isEmpty) {
-                return const AdminEmptyState(
+                return AdminEmptyState(
                   icon: Icons.library_books_rounded,
-                  title: 'No content yet',
-                  subtitle: 'Add some from the "Add Content" tab',
+                  title: l10n.lcNoContent,
+                  subtitle: l10n.lcNoContentSub,
                 );
               }
               final items = _applyFilters(snap.data!);
               if (items.isEmpty) {
-                return const AdminEmptyState(
+                return AdminEmptyState(
                   icon: Icons.search_off_rounded,
-                  title: 'No matches',
-                  subtitle: 'Try a different search or filter',
+                  title: l10n.adminNoMatches,
+                  subtitle: l10n.adminNoMatchesSub,
                 );
               }
               return Column(
@@ -590,9 +602,10 @@ class _ContentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isVideo = item.type == ContentType.video;
     final typeColor = isVideo ? AppColors.red : AppColors.blue;
-    final typeLabel = isVideo ? 'VIDEO' : 'ARTICLE';
+    final typeLabel = isVideo ? l10n.lcBadgeVideo : l10n.lcBadgeArticle;
     final typeIcon =
         isVideo ? Icons.play_circle_rounded : Icons.article_rounded;
 
@@ -643,14 +656,14 @@ class _ContentRow extends StatelessWidget {
           ]),
         ),
         IconButton(
-          tooltip: 'Edit',
+          tooltip: l10n.commonEdit,
           icon:
               const Icon(Icons.edit_outlined, color: AppColors.blue, size: 19),
           visualDensity: VisualDensity.compact,
           onPressed: onEdit,
         ),
         IconButton(
-          tooltip: 'Delete',
+          tooltip: l10n.commonDelete,
           icon: const Icon(Icons.delete_outline_rounded,
               color: AppColors.red, size: 19),
           visualDensity: VisualDensity.compact,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../models/enums.dart';
 import '../../models/moderator_request_model.dart';
@@ -55,9 +56,9 @@ class _ManageModeratorsScreenState extends State<ManageModeratorsScreen>
                 builder: (context, subSnap) {
                   final subCount = subSnap.data?.length ?? 0;
                   return AdminHeader(
-                    title: 'Moderators',
+                    title: AppLocalizations.of(context).adminModerators,
                     tabController: _tabs,
-                    tabs: const ['Requests', 'Submissions'],
+                    tabs: [AppLocalizations.of(context).modTabRequests, AppLocalizations.of(context).modTabSubmissions],
                     tabBadges: [reqCount, subCount],
                   );
                 },
@@ -111,6 +112,7 @@ Future<String?> _reasonDialog(
   required Color actionColor,
   required bool requireReason,
 }) async {
+  final l10n = AppLocalizations.of(context);
   final controller = TextEditingController();
   final result = await showDialog<String>(
     context: context,
@@ -139,8 +141,8 @@ Future<String?> _reasonDialog(
                 style: GoogleFonts.nunito(fontSize: 13),
                 decoration: InputDecoration(
                   hintText: requireReason
-                      ? 'What needs to change? (shown to the author)'
-                      : 'Optional reason (shown to the user)',
+                      ? l10n.modReasonRequiredHint
+                      : l10n.modReasonOptionalHint,
                   hintStyle: GoogleFonts.nunito(
                       color: AppColors.textLight, fontSize: 12.5),
                   border: OutlineInputBorder(
@@ -154,7 +156,7 @@ Future<String?> _reasonDialog(
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('Cancel',
+                child: Text(l10n.commonCancel,
                     style:
                         GoogleFonts.nunito(color: AppColors.textSecondary))),
             TextButton(
@@ -241,23 +243,25 @@ class _RequestsTab extends StatelessWidget {
 
   Future<void> _approve(
       BuildContext context, ModeratorRequestModel req) async {
+    final l10n = AppLocalizations.of(context);
     final adminUid = _adminUid(context);
     try {
       await _service.approveRequest(req, adminUid);
       if (!context.mounted) return;
-      _snack(context, '${req.username} is now a moderator');
+      _snack(context, l10n.modNowModerator(req.username));
     } catch (e) {
       if (!context.mounted) return;
-      _snack(context, 'Error: $e', isError: true);
+      _snack(context, l10n.formError('$e'), isError: true);
     }
   }
 
   Future<void> _reject(
       BuildContext context, ModeratorRequestModel req) async {
+    final l10n = AppLocalizations.of(context);
     final reason = await _reasonDialog(context,
-        title: 'Reject ${req.username}?',
-        message: 'They\'ll be notified and can apply again later.',
-        actionLabel: 'Reject',
+        title: l10n.modRejectReqTitle(req.username),
+        message: l10n.modRejectReqBody,
+        actionLabel: l10n.modReject,
         actionColor: AppColors.red,
         requireReason: false);
     if (reason == null || !context.mounted) return;
@@ -265,32 +269,33 @@ class _RequestsTab extends StatelessWidget {
     try {
       await _service.rejectRequest(req, adminUid, reason: reason);
       if (!context.mounted) return;
-      _snack(context, 'Request rejected');
+      _snack(context, l10n.modRequestRejected);
     } catch (e) {
       if (!context.mounted) return;
-      _snack(context, 'Error: $e', isError: true);
+      _snack(context, l10n.formError('$e'), isError: true);
     }
   }
 
   Future<void> _revoke(BuildContext context, UserModel mod) async {
+    final l10n = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Revoke moderator?',
+        title: Text(l10n.modRevokeTitle,
             style: GoogleFonts.nunito(fontWeight: FontWeight.w800)),
         content: Text(
-            '${mod.username} will lose the ability to submit questions.',
+            l10n.modRevokeBody(mod.username),
             style: GoogleFonts.nunito(
                 color: AppColors.textSecondary, fontSize: 13)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text('Cancel',
+              child: Text(l10n.commonCancel,
                   style: GoogleFonts.nunito(color: AppColors.textSecondary))),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text('Revoke',
+              child: Text(l10n.modRevoke,
                   style: GoogleFonts.nunito(
                       color: AppColors.red, fontWeight: FontWeight.w700))),
         ],
@@ -301,19 +306,20 @@ class _RequestsTab extends StatelessWidget {
     try {
       await _service.revokeModerator(mod.id, adminUid);
       if (!context.mounted) return;
-      _snack(context, 'Moderator access revoked');
+      _snack(context, l10n.modAccessRevoked);
     } catch (e) {
       if (!context.mounted) return;
-      _snack(context, 'Error: $e', isError: true);
+      _snack(context, l10n.formError('$e'), isError: true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
       children: [
-        const _SectionLabel('PENDING REQUESTS'),
+        _SectionLabel(l10n.modPendingRequests),
         StreamBuilder<List<ModeratorRequestModel>>(
           stream: _service.watchPendingRequests(),
           builder: (context, snap) {
@@ -326,10 +332,10 @@ class _RequestsTab extends StatelessWidget {
             }
             final reqs = snap.data!;
             if (reqs.isEmpty) {
-              return const AdminEmptyState(
+              return AdminEmptyState(
                 icon: Icons.how_to_reg_rounded,
-                title: 'No pending requests',
-                subtitle: 'Moderator applications will appear here',
+                title: l10n.profileNoRequests,
+                subtitle: l10n.modApplicationsHere,
               );
             }
             return Column(
@@ -344,7 +350,7 @@ class _RequestsTab extends StatelessWidget {
           },
         ),
         const SizedBox(height: 24),
-        const _SectionLabel('CURRENT MODERATORS'),
+        _SectionLabel(l10n.modCurrentMods),
         StreamBuilder<List<UserModel>>(
           stream: _service.watchModerators(),
           builder: (context, snap) {
@@ -353,7 +359,7 @@ class _RequestsTab extends StatelessWidget {
             }
             final mods = snap.data!;
             if (mods.isEmpty) {
-              return Text('No moderators yet',
+              return Text(l10n.modNoModerators,
                   style: GoogleFonts.nunito(
                       color: AppColors.textLight, fontSize: 13));
             }
@@ -407,7 +413,7 @@ class _RequestCard extends StatelessWidget {
             const Icon(Icons.schedule_rounded,
                 color: AppColors.textLight, size: 13),
             const SizedBox(width: 4),
-            Text('Requested ${timeAgo(request.createdAt)}',
+            Text(AppLocalizations.of(context).modRequestedAgo(timeAgo(request.createdAt)),
                 style: GoogleFonts.nunito(
                     color: AppColors.textLight,
                     fontSize: 11,
@@ -417,13 +423,13 @@ class _RequestCard extends StatelessWidget {
         const SizedBox(height: 12),
         Row(children: [
           _ActionButton(
-              label: 'Approve',
+              label: AppLocalizations.of(context).modApprove,
               color: AppColors.green,
               icon: Icons.check_rounded,
               onTap: onApprove),
           const SizedBox(width: 8),
           _ActionButton(
-              label: 'Reject',
+              label: AppLocalizations.of(context).modReject,
               color: AppColors.red,
               icon: Icons.close_rounded,
               onTap: onReject),
@@ -460,7 +466,7 @@ class _ModeratorCard extends StatelessWidget {
         ),
         TextButton(
           onPressed: onRevoke,
-          child: Text('Revoke',
+          child: Text(AppLocalizations.of(context).modRevoke,
               style: GoogleFonts.nunito(
                   color: AppColors.red, fontWeight: FontWeight.w700)),
         ),
@@ -472,11 +478,18 @@ class _ModeratorCard extends StatelessWidget {
 // ─── Submissions tab ─────────────────────────────────────────────────────────
 
 /// Label + colour for a submission status (admin side).
-(String, Color) _subStatusStyle(QuestionStatus s) => switch (s) {
-      QuestionStatus.approved => ('APPROVED', AppColors.green),
-      QuestionStatus.rejected => ('REJECTED', AppColors.red),
-      QuestionStatus.pending => ('PENDING', AppColors.orange),
-      QuestionStatus.needsRevision => ('NEEDS CHANGES', AppColors.blue),
+Color _subStatusColor(QuestionStatus s) => switch (s) {
+      QuestionStatus.approved => AppColors.green,
+      QuestionStatus.rejected => AppColors.red,
+      QuestionStatus.pending => AppColors.orange,
+      QuestionStatus.needsRevision => AppColors.blue,
+    };
+
+String _subStatusLabel(QuestionStatus s, AppLocalizations l10n) => switch (s) {
+      QuestionStatus.approved => l10n.statusApproved,
+      QuestionStatus.rejected => l10n.statusRejected,
+      QuestionStatus.pending => l10n.modStatusPending,
+      QuestionStatus.needsRevision => l10n.statusNeedsChanges,
     };
 
 class _SubmissionsTab extends StatefulWidget {
@@ -491,23 +504,24 @@ class _SubmissionsTabState extends State<_SubmissionsTab> {
   QuestionStatus _filter = QuestionStatus.pending;
 
   Future<void> _approve(BuildContext context, QuestionModel q) async {
+    final l10n = AppLocalizations.of(context);
     final adminUid = context.read<AuthProvider>().user?.id ?? '';
     try {
       await _service.approveSubmission(q, adminUid);
       if (!context.mounted) return;
-      _snack(context, 'Question approved & live');
+      _snack(context, l10n.modQuestionApproved);
     } catch (e) {
       if (!context.mounted) return;
-      _snack(context, 'Error: $e', isError: true);
+      _snack(context, l10n.formError('$e'), isError: true);
     }
   }
 
   Future<void> _reject(BuildContext context, QuestionModel q) async {
+    final l10n = AppLocalizations.of(context);
     final reason = await _reasonDialog(context,
-        title: 'Reject this question?',
-        message: 'It won\'t go live and the author can\'t edit it. '
-            'They\'ll be notified.',
-        actionLabel: 'Reject',
+        title: l10n.modRejectQuestionTitle,
+        message: l10n.modRejectQuestionBody,
+        actionLabel: l10n.modReject,
         actionColor: AppColors.red,
         requireReason: false);
     if (reason == null || !context.mounted) return;
@@ -515,18 +529,19 @@ class _SubmissionsTabState extends State<_SubmissionsTab> {
     try {
       await _service.rejectSubmission(q, adminUid, reason: reason);
       if (!context.mounted) return;
-      _snack(context, 'Submission rejected');
+      _snack(context, l10n.modSubmissionRejected);
     } catch (e) {
       if (!context.mounted) return;
-      _snack(context, 'Error: $e', isError: true);
+      _snack(context, l10n.formError('$e'), isError: true);
     }
   }
 
   Future<void> _requestChanges(BuildContext context, QuestionModel q) async {
+    final l10n = AppLocalizations.of(context);
     final reason = await _reasonDialog(context,
-        title: 'Request changes',
-        message: 'The author keeps the question and can edit & resubmit it.',
-        actionLabel: 'Send',
+        title: l10n.modRequestChangesTitle,
+        message: l10n.modRequestChangesBody,
+        actionLabel: l10n.modSend,
         actionColor: AppColors.blue,
         requireReason: true);
     if (reason == null || !context.mounted) return;
@@ -534,32 +549,33 @@ class _SubmissionsTabState extends State<_SubmissionsTab> {
     try {
       await _service.requestChangesSubmission(q, adminUid, reason);
       if (!context.mounted) return;
-      _snack(context, 'Sent back for changes');
+      _snack(context, l10n.modSentBack);
     } catch (e) {
       if (!context.mounted) return;
-      _snack(context, 'Error: $e', isError: true);
+      _snack(context, l10n.formError('$e'), isError: true);
     }
   }
 
   Future<void> _delete(BuildContext context, QuestionModel q) async {
+    final l10n = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete submission?',
+        title: Text(l10n.modDeleteTitle,
             style: GoogleFonts.nunito(fontWeight: FontWeight.w800)),
         content: Text(
-            'This permanently removes the submission. This can\'t be undone.',
+            l10n.modDeleteSubmissionBody,
             style: GoogleFonts.nunito(
                 color: AppColors.textSecondary, fontSize: 13)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text('Cancel',
+              child: Text(l10n.commonCancel,
                   style: GoogleFonts.nunito(color: AppColors.textSecondary))),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text('Delete',
+              child: Text(l10n.commonDelete,
                   style: GoogleFonts.nunito(
                       color: AppColors.red, fontWeight: FontWeight.w700))),
         ],
@@ -569,10 +585,10 @@ class _SubmissionsTabState extends State<_SubmissionsTab> {
     try {
       await QuestionService().deleteQuestion(q.id);
       if (!context.mounted) return;
-      _snack(context, 'Submission deleted');
+      _snack(context, l10n.modSubmissionDeleted);
     } catch (e) {
       if (!context.mounted) return;
-      _snack(context, 'Error: $e', isError: true);
+      _snack(context, l10n.formError('$e'), isError: true);
     }
   }
 
@@ -601,11 +617,10 @@ class _SubmissionsTabState extends State<_SubmissionsTab> {
               child: items.isEmpty
                   ? AdminEmptyState(
                       icon: Icons.inbox_rounded,
-                      title: 'Nothing here',
+                      title: AppLocalizations.of(context).modNothingHere,
                       subtitle: _filter == QuestionStatus.pending
-                          ? 'New moderator submissions will appear here'
-                          : 'No ${_subStatusStyle(_filter).$1.toLowerCase()} '
-                              'submissions',
+                          ? AppLocalizations.of(context).modNewSubmissionsHere
+                          : AppLocalizations.of(context).modNoStatusSubmissions(_subStatusLabel(_filter, AppLocalizations.of(context)).toLowerCase()),
                     )
                   : ListView.builder(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
@@ -651,7 +666,8 @@ class _SubFilterBar extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: order.map((s) {
-          final (label, color) = _subStatusStyle(s);
+          final label = _subStatusLabel(s, AppLocalizations.of(context));
+          final color = _subStatusColor(s);
           final count = all.where((q) => q.status == s).length;
           final active = selected == s;
           return Padding(
@@ -703,15 +719,20 @@ class _SubmissionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final q = question;
     final diffColor = q.difficulty == DifficultyLevel.beginner
         ? AppColors.green
         : q.difficulty == DifficultyLevel.intermediate
             ? AppColors.orange
             : AppColors.red;
-    final diffLabel =
-        q.difficulty.name[0].toUpperCase() + q.difficulty.name.substring(1);
-    final (statusLabel, statusColor) = _subStatusStyle(q.status);
+    final diffLabel = switch (q.difficulty) {
+      DifficultyLevel.beginner => l10n.formBeginner,
+      DifficultyLevel.intermediate => l10n.formIntermediate,
+      DifficultyLevel.advanced => l10n.formAdvanced,
+    };
+    final statusLabel = _subStatusLabel(q.status, l10n);
+    final statusColor = _subStatusColor(q.status);
     final isPending = q.status == QuestionStatus.pending;
 
     return Container(
@@ -726,13 +747,13 @@ class _SubmissionCard extends StatelessWidget {
         Row(children: [
           AdminBadge(text: diffLabel, color: diffColor),
           AdminBadge(
-              text: q.type == QuestionType.trueFalse ? 'T/F' : 'MCQ',
+              text: q.type == QuestionType.trueFalse ? l10n.badgeTF : l10n.badgeMCQ,
               color: AppColors.blue),
-          AdminBadge(text: statusLabel, color: statusColor),
+          AdminBadge(text: statusLabel.toUpperCase(), color: statusColor),
           const Spacer(),
           if (onDelete != null)
             IconButton(
-              tooltip: 'Delete',
+              tooltip: l10n.commonDelete,
               icon: const Icon(Icons.delete_outline_rounded,
                   color: AppColors.textLight, size: 20),
               padding: EdgeInsets.zero,
@@ -786,7 +807,7 @@ class _SubmissionCard extends StatelessWidget {
               color: AppColors.blueLight,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Text('Explanation: ${q.explanation}',
+            child: Text(l10n.modExplanationLabel(q.explanation),
                 style: GoogleFonts.nunito(
                     color: AppColors.textSecondary,
                     fontSize: 12,
@@ -804,7 +825,7 @@ class _SubmissionCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: statusColor.withValues(alpha: 0.25)),
             ),
-            child: Text('Feedback sent: ${q.reviewNote}',
+            child: Text(l10n.modFeedbackSent(q.reviewNote),
                 style: GoogleFonts.nunito(
                     color: AppColors.textSecondary,
                     fontSize: 12,
@@ -820,17 +841,17 @@ class _SubmissionCard extends StatelessWidget {
           const SizedBox(height: 12),
           Wrap(spacing: 8, runSpacing: 8, children: [
             _ActionButton(
-                label: 'Approve',
+                label: l10n.modApprove,
                 color: AppColors.green,
                 icon: Icons.check_rounded,
                 onTap: onApprove),
             _ActionButton(
-                label: 'Request changes',
+                label: l10n.modRequestChangesBtn,
                 color: AppColors.blue,
                 icon: Icons.rate_review_rounded,
                 onTap: onRequestChanges),
             _ActionButton(
-                label: 'Reject',
+                label: l10n.modReject,
                 color: AppColors.red,
                 icon: Icons.close_rounded,
                 onTap: onReject),

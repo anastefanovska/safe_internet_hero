@@ -651,25 +651,33 @@ class _SectionHeader extends StatelessWidget {
           child: const Icon(Icons.quiz_rounded, color: AppColors.blue, size: 17),
         ),
         const SizedBox(width: 10),
-        Text(
-          l10n.homeChooseQuest,
-          style: GoogleFonts.nunito(
-            color: AppColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.5,
-            height: 1.05,
+        Expanded(
+          child: Text(
+            l10n.homeChooseQuest,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.nunito(
+              color: AppColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.5,
+              height: 1.05,
+            ),
           ),
         ),
-        const Spacer(),
+        const SizedBox(width: 8),
         MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: onSeeAll,
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   l10n.commonSeeAll,
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.visible,
                   style: GoogleFonts.nunito(
                     color: AppColors.blue,
                     fontSize: 13,

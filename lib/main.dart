@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -10,6 +11,25 @@ import 'providers/auth_provider.dart';
 import 'providers/locale_provider.dart';
 
 void main() async {
+  // TEMP DIAGNOSTIC: show any crash on screen instead of a blank page.
+  ErrorWidget.builder = (FlutterErrorDetails details) => Directionality(
+        textDirection: TextDirection.ltr,
+        child: Container(
+          color: const Color(0xFFB00020),
+          padding: const EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: Text(
+              'STARTUP ERROR:\n\n${details.exceptionAsString()}\n\n${details.stack}',
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ),
+        ),
+      );
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    debugPrint('CAUGHT: ${details.exceptionAsString()}');
+  };
+
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // Resolved before the first frame so the app opens in the saved language.

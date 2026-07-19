@@ -61,11 +61,14 @@ class SettingsScreen extends StatelessWidget {
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     behavior: HitTestBehavior.opaque,
-                    child: SizedBox(
-                      width: 48,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minWidth: 48),
                       child: Text(
                         l10n.settingsDone,
                         textAlign: TextAlign.right,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.visible,
                         style: const TextStyle(
                           color: AppColors.blue,
                           fontSize: 15,
